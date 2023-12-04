@@ -6,7 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(target "glfw3")
 
-add_library(${target} src/glfw3.cpp)
+set(glfw3_sources
+    src/cpp/glfw3.cpp
+    src/cpp/emscripten/glfw3/Context.h
+    src/cpp/emscripten/glfw3/Context.cpp
+)
+
+add_library(${target} ${glfw3_sources})
 
 target_include_directories(${target} PUBLIC external)
 

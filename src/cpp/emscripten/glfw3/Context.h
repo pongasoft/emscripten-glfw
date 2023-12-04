@@ -16,10 +16,25 @@
  * @author Yan Pujante
  */
 
-#include <GLFW/glfw3.h>
+#ifndef EMSCRIPTEN_GLFW_CONTEXT_H
+#define EMSCRIPTEN_GLFW_CONTEXT_H
 
-int main()
+#include <memory>
+
+namespace emscripten::glfw3 {
+
+class Context
 {
-  glfwInit();
-  glfwTerminate();
+public:
+  static std::unique_ptr<Context> init();
+
+public:
+
+
+private:
+  Context() = default;
+};
+
 }
+
+#endif //EMSCRIPTEN_GLFW_CONTEXT_H

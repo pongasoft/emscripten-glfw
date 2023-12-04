@@ -16,10 +16,17 @@
  * @author Yan Pujante
  */
 
-#include <GLFW/glfw3.h>
+#include "Context.h"
 
-int main()
+namespace emscripten::glfw3 {
+
+//------------------------------------------------------------------------
+// Context::init
+//------------------------------------------------------------------------
+std::unique_ptr<Context> Context::init()
 {
-  glfwInit();
-  glfwTerminate();
+  return std::unique_ptr<Context>(new Context{});
+}
+
+
 }
