@@ -20,6 +20,8 @@
 #define EMSCRIPTEN_GLFW_CONTEXT_H
 
 #include <memory>
+#include <GLFW/glfw3.h>
+#include "ErrorHandler.h"
 
 namespace emscripten::glfw3 {
 
@@ -29,10 +31,15 @@ public:
   static std::unique_ptr<Context> init();
 
 public:
-
+  static inline GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback) { return fErrorHandler.setErrorCallback(iCallback); }
+  static inline int getError(const char** iDescription) { return fErrorHandler.popError(iDescription); }
+  static void logError(int iErrorCode, char const *iErrorMessage) { fErrorHandler.logError(iErrorCode, iErrorMessage); }
 
 private:
   Context() = default;
+
+private:
+  static ErrorHandler fErrorHandler;
 };
 
 }

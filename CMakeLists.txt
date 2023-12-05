@@ -10,6 +10,8 @@ set(glfw3_sources
     src/cpp/glfw3.cpp
     src/cpp/emscripten/glfw3/Context.h
     src/cpp/emscripten/glfw3/Context.cpp
+    src/cpp/emscripten/glfw3/ErrorHandler.h
+    src/cpp/emscripten/glfw3/ErrorHandler.cpp
 )
 
 add_library(${target} ${glfw3_sources})

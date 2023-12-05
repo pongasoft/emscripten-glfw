@@ -25,26 +25,30 @@
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
 static std::unique_ptr<emscripten::glfw3::Context> kContext{};
-static inline emscripten::glfw3::Context *getContext() { return kContext.get(); }
+static inline emscripten::glfw3::Context *getContext() {
+  if(!kContext)
+    emscripten::glfw3::Context::logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+  return kContext.get();
+}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 //------------------------------------------------------------------------
-// glfwInit()
+// glfwInit
 //------------------------------------------------------------------------
 GLFWAPI int glfwInit()
 {
   printf("glfwInit()\n");
   if(kContext)
-    return GLFW_FALSE;
+    return GLFW_TRUE;
   kContext = std::move(emscripten::glfw3::Context::init());
   return GLFW_TRUE;
 }
 
 //------------------------------------------------------------------------
-// glfwTerminate()
+// glfwTerminate
 //------------------------------------------------------------------------
 GLFWAPI void glfwTerminate(void)
 {
@@ -53,7 +57,7 @@ GLFWAPI void glfwTerminate(void)
 }
 
 //------------------------------------------------------------------------
-// glfwGetVersion()
+// glfwGetVersion
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev)
 {
@@ -63,7 +67,7 @@ GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev)
 }
 
 //------------------------------------------------------------------------
-// glfwGetVersionString()
+// glfwGetVersionString
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetVersionString(void)
 {
@@ -72,9 +76,23 @@ GLFWAPI const char* glfwGetVersionString(void)
   return kVersionString;
 }
 
+//------------------------------------------------------------------------
+// glfwSetErrorCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
+{
+  return emscripten::glfw3::Context::setErrorCallback(callback);
+}
+
+//------------------------------------------------------------------------
+// glfwGetError
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetError(const char** description)
+{
+  return emscripten::glfw3::Context::getError(description);
+}
+
 GLFWAPI void glfwInitHint(int hint, int value){ not_implemented(); }
-GLFWAPI int glfwGetError(const char** description){ not_implemented(); }
-GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback){ not_implemented(); }
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetPrimaryMonitor(void){ not_implemented(); }
 GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos){ not_implemented(); }

@@ -16,19 +16,27 @@
  * @author Yan Pujante
  */
 
-#include "Context.h"
+#ifndef EMSCRIPTEN_GLFW_ERRORHANDLER_H
+#define EMSCRIPTEN_GLFW_ERRORHANDLER_H
+
+#include <GLFW/glfw3.h>
+#include <string>
 
 namespace emscripten::glfw3 {
 
-ErrorHandler Context::fErrorHandler{};
-
-//------------------------------------------------------------------------
-// Context::init
-//------------------------------------------------------------------------
-std::unique_ptr<Context> Context::init()
+class ErrorHandler
 {
-  return std::unique_ptr<Context>(new Context{});
+public:
+  GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback);
+  int popError(const char** iDescription);
+  void logError(int iErrorCode, char const *iErrorMessage);
+
+private:
+  GLFWerrorfun fErrorCallback{};
+  int fLastErrorCode{GLFW_NO_ERROR};
+  std::string fLastErrorMessage{};
+};
+
 }
 
-
-}
+#endif //EMSCRIPTEN_GLFW_ERRORHANDLER_H

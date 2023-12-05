@@ -17,9 +17,16 @@
  */
 
 #include <GLFW/glfw3.h>
+#include <stdio.h>
+
+static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
+{
+  printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);
+}
 
 int main()
 {
+  glfwSetErrorCallback(consoleErrorHandler);
   glfwInit();
   glfwTerminate();
 }
