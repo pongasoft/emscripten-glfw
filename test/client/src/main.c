@@ -18,15 +18,44 @@
 
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <emscripten/html5.h>
 
 static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 {
   printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);
 }
 
+EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *userData) {
+  printf("key_callback\n");
+  glfwSetWindowShouldClose((GLFWwindow *) userData, GLFW_TRUE);
+  return GLFW_TRUE;
+}
+
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
-  glfwInit();
+
+  if(!glfwInit())
+    return -1;
+
+  GLFWwindow *window = glfwCreateWindow(600, 500, "hello world", NULL, NULL);
+  if(!window)
+  {
+    glfwTerminate();
+    return -1;
+  }
+
+  glfwMakeContextCurrent(window);
+
+  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window, 1, key_callback);
+
+  while(!glfwWindowShouldClose(window))
+  {
+//    glClear(GL_COLOR_BUFFER_BIT);
+    emscripten_sleep(100);
+  }
+
+  glfwDestroyWindow(window);
+
   glfwTerminate();
 }

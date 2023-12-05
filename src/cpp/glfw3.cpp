@@ -92,7 +92,77 @@ GLFWAPI int glfwGetError(const char** description)
   return emscripten::glfw3::Context::getError(description);
 }
 
-GLFWAPI void glfwInitHint(int hint, int value){ not_implemented(); }
+//------------------------------------------------------------------------
+// glfwCreateWindow
+//------------------------------------------------------------------------
+GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share)
+{
+  auto context = getContext();
+  if(context)
+    return context->createWindow(width, height, title, monitor, share);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwDestroyWindow
+//------------------------------------------------------------------------
+GLFWAPI void glfwDestroyWindow(GLFWwindow* window)
+{
+  auto context = getContext();
+  if(context)
+    context->destroyWindow(window);
+}
+
+//------------------------------------------------------------------------
+// glfwWindowShouldClose
+//------------------------------------------------------------------------
+GLFWAPI int glfwWindowShouldClose(GLFWwindow* window)
+{
+  auto context = getContext();
+  if(context)
+    return context->windowShouldClose(window);
+  else
+    return GLFW_TRUE;
+}
+
+//------------------------------------------------------------------------
+// glfwSetWindowShouldClose
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* window, int value)
+{
+  auto context = getContext();
+  if(context)
+    return context->setWindowShouldClose(window, value);
+}
+
+//------------------------------------------------------------------------
+// glfwMakeContextCurrent
+//------------------------------------------------------------------------
+GLFWAPI void glfwMakeContextCurrent(GLFWwindow* window)
+{
+  auto context = getContext();
+  if(context)
+    context->makeContextCurrent(window);
+}
+
+//------------------------------------------------------------------------
+// glfwGetCurrentContext
+//------------------------------------------------------------------------
+GLFWAPI GLFWwindow* glfwGetCurrentContext(void)
+{
+  auto context = getContext();
+  if(context)
+    return context->getCurrentContext();
+  else
+    return nullptr;
+}
+
+GLFWAPI void glfwInitHint(int hint, int value) {  /** no init hint applies to this impl **/ }
+
+//------------------------------------------------------------------------
+// not_implemented
+//------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetPrimaryMonitor(void){ not_implemented(); }
 GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos){ not_implemented(); }
@@ -111,10 +181,6 @@ GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ 
 GLFWAPI void glfwDefaultWindowHints(void){ not_implemented(); }
 GLFWAPI void glfwWindowHint(int hint, int value){ not_implemented(); }
 GLFWAPI void glfwWindowHintString(int hint, const char* value){ not_implemented(); }
-GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share){ not_implemented(); }
-GLFWAPI void glfwDestroyWindow(GLFWwindow* window){ not_implemented(); }
-GLFWAPI int glfwWindowShouldClose(GLFWwindow* window){ not_implemented(); }
-GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* window, int value){ not_implemented(); }
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title){ not_implemented(); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images){ not_implemented(); }
 GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos){ not_implemented(); }
@@ -194,8 +260,6 @@ GLFWAPI double glfwGetTime(void){ not_implemented(); }
 GLFWAPI void glfwSetTime(double time){ not_implemented(); }
 GLFWAPI uint64_t glfwGetTimerValue(void){ not_implemented(); }
 GLFWAPI uint64_t glfwGetTimerFrequency(void){ not_implemented(); }
-GLFWAPI void glfwMakeContextCurrent(GLFWwindow* window){ not_implemented(); }
-GLFWAPI GLFWwindow* glfwGetCurrentContext(void){ not_implemented(); }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSwapInterval(int interval){ not_implemented(); }
 GLFWAPI int glfwExtensionSupported(const char* extension){ not_implemented(); }

@@ -22,8 +22,17 @@
 #include <memory>
 #include <GLFW/glfw3.h>
 #include "ErrorHandler.h"
+#include <vector>
 
 namespace emscripten::glfw3 {
+
+struct Window
+{
+  int fId{};
+  int fWidth{};
+  int fHeight{};
+  int fShouldClose{}; // GLFW bool
+};
 
 class Context
 {
@@ -35,11 +44,23 @@ public:
   static inline int getError(const char** iDescription) { return fErrorHandler.popError(iDescription); }
   static void logError(int iErrorCode, char const *iErrorMessage) { fErrorHandler.logError(iErrorCode, iErrorMessage); }
 
+public:
+  GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
+  void destroyWindow(GLFWwindow *iWindow);
+  int windowShouldClose(GLFWwindow* iWindow) const;
+  void setWindowShouldClose(GLFWwindow* iWindow, int iValue);
+  void makeContextCurrent(GLFWwindow* iWindow);
+  GLFWwindow* getCurrentContext();
+
 private:
   Context() = default;
+  std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
 
 private:
   static ErrorHandler fErrorHandler;
+
+  std::vector<std::shared_ptr<Window>> fWindows{};
+  std::shared_ptr<Window> fCurrentWindow{};
 };
 
 }
