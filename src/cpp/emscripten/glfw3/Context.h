@@ -32,12 +32,14 @@ struct Window
   int fWidth{};
   int fHeight{};
   int fShouldClose{}; // GLFW bool
+  bool fHasGLContext{};
 };
 
 class Context
 {
 public:
   static std::unique_ptr<Context> init();
+  ~Context();
 
 public:
   static inline GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback) { return fErrorHandler.setErrorCallback(iCallback); }
@@ -53,7 +55,7 @@ public:
   GLFWwindow* getCurrentContext();
 
 private:
-  Context() = default;
+  Context();
   std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
 
 private:

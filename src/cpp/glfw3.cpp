@@ -263,7 +263,7 @@ GLFWAPI uint64_t glfwGetTimerFrequency(void){ not_implemented(); }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSwapInterval(int interval){ not_implemented(); }
 GLFWAPI int glfwExtensionSupported(const char* extension){ not_implemented(); }
-GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname){ not_implemented(); }
+// GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname){ not_implemented(); } implemented by emscripten GL
 GLFWAPI int glfwVulkanSupported(void){ not_implemented(); }
 GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count){ not_implemented(); }
 

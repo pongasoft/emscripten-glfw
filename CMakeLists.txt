@@ -17,6 +17,7 @@ set(glfw3_sources
 add_library(${target} ${glfw3_sources})
 
 target_include_directories(${target} PUBLIC external)
+target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("test/client" EXCLUDE_FROM_ALL)

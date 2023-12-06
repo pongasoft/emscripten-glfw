@@ -20,6 +20,15 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
+extern "C" {
+void emscripten_glfw3_context_init();
+void emscripten_glfw3_context_destroy();
+int emscripten_glfw3_context_gl_init(int iCanvasId, char const *iCanvasSelector);
+int emscripten_glfw3_context_gl_bool_attribute(int iCanvasId, char const *iAttributeName, bool iAttributeValue);
+int emscripten_glfw3_context_gl_create_context(int iCanvasId);
+int emscripten_glfw3_context_gl_make_context_current(int iCanvasId);
+}
+
 namespace emscripten::glfw3 {
 
 ErrorHandler Context::fErrorHandler{};
@@ -32,6 +41,22 @@ constexpr char const *kCanvasSelector = "#canvas";
 std::unique_ptr<Context> Context::init()
 {
   return std::unique_ptr<Context>(new Context{});
+}
+
+//------------------------------------------------------------------------
+// Context::Context
+//------------------------------------------------------------------------
+Context::Context()
+{
+  emscripten_glfw3_context_init();
+}
+
+//------------------------------------------------------------------------
+// Context::~Context
+//------------------------------------------------------------------------
+Context::~Context()
+{
+  emscripten_glfw3_context_destroy();
 }
 
 //------------------------------------------------------------------------
@@ -71,6 +96,31 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 //  }
   window->fWidth = iWidth;
   window->fHeight = iHeight;
+
+  // if hint GLFW_CLIENT_API != GLFW_NO_API
+
+  if(emscripten_glfw3_context_gl_init(window->fId, kCanvasSelector) == EMSCRIPTEN_RESULT_SUCCESS)
+  {
+    emscripten_glfw3_context_gl_bool_attribute(window->fId, "antialias", false);
+    emscripten_glfw3_context_gl_bool_attribute(window->fId, "depth", true);
+    emscripten_glfw3_context_gl_bool_attribute(window->fId, "stencil", true);
+    emscripten_glfw3_context_gl_bool_attribute(window->fId, "alpha", true);
+
+    emscripten_glfw3_context_gl_create_context(window->fId);
+    
+    window->fHasGLContext = true;
+  }
+
+  /*
+   *           var contextAttributes = {
+            antialias: (GLFW.hints[0x0002100D] > 1), // GLFW_SAMPLES
+            depth: (GLFW.hints[0x00021005] > 0),     // GLFW_DEPTH_BITS
+            stencil: (GLFW.hints[0x00021006] > 0),   // GLFW_STENCIL_BITS
+            alpha: (GLFW.hints[0x00021004] > 0)      // GLFW_ALPHA_BITS
+          }
+
+   */
+
   fWindows.emplace_back(std::move(window));
   return reinterpret_cast<GLFWwindow *>(fWindows[id].get());
 }
@@ -117,6 +167,8 @@ void Context::setWindowShouldClose(GLFWwindow *iWindow, int iValue)
 void Context::makeContextCurrent(GLFWwindow *iWindow)
 {
   fCurrentWindow = getWindow(iWindow);
+  if(fCurrentWindow && fCurrentWindow->fHasGLContext)
+    emscripten_glfw3_context_gl_make_context_current(fCurrentWindow->fId);
 }
 
 //------------------------------------------------------------------------
