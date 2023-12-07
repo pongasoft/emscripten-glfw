@@ -184,6 +184,28 @@ GLFWAPI void glfwWindowHint(int hint, int value)
 }
 
 //------------------------------------------------------------------------
+// glfwGetWindowContentScale
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetWindowContentScale(GLFWwindow* window, float* xscale, float* yscale)
+{
+  auto context = getContext();
+  if(context)
+    context->getWindowContentScale(window, xscale, yscale);
+}
+
+//------------------------------------------------------------------------
+// glfwSetWindowContentScaleCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* window, GLFWwindowcontentscalefun callback)
+{
+  auto context = getContext();
+  if(context)
+    return context->setWindowContentScaleCallback(window, callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // not_implemented
 //------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count){ not_implemented(); }
@@ -212,7 +234,6 @@ GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom){
 GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height){ not_implemented(); }
 GLFWAPI void glfwGetFramebufferSize(GLFWwindow* window, int* width, int* height){ not_implemented(); }
 GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int* right, int* bottom){ not_implemented(); }
-GLFWAPI void glfwGetWindowContentScale(GLFWwindow* window, float* xscale, float* yscale){ not_implemented(); }
 GLFWAPI float glfwGetWindowOpacity(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity){ not_implemented(); }
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window){ not_implemented(); }
@@ -236,7 +257,6 @@ GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwi
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, GLFWwindowmaximizefun callback){ not_implemented(); }
 GLFWAPI GLFWframebuffersizefun glfwSetFramebufferSizeCallback(GLFWwindow* window, GLFWframebuffersizefun callback){ not_implemented(); }
-GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* window, GLFWwindowcontentscalefun callback){ not_implemented(); }
 GLFWAPI void glfwPollEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }

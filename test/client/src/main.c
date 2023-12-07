@@ -31,6 +31,11 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
   return GLFW_TRUE;
 }
 
+void onContentScaleChange(GLFWwindow *iWindow, float xScale, float yScale)
+{
+  printf("onContentScaleChange: %fx%f\n", xScale, yScale);
+}
+
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
@@ -38,12 +43,16 @@ int main()
   if(!glfwInit())
     return -1;
 
+  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+
   GLFWwindow *window = glfwCreateWindow(600, 500, "hello world", NULL, NULL);
   if(!window)
   {
     glfwTerminate();
     return -1;
   }
+
+  glfwSetWindowContentScaleCallback(window, onContentScaleChange);
 
   glfwMakeContextCurrent(window);
 

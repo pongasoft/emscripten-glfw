@@ -46,15 +46,20 @@ struct Config
 
 struct Window
 {
-  int fId{};
+  int fId;
+  Config fConfig;
   int fWidth{};
   int fHeight{};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
-  Config fConfig{};
+  GLFWwindowcontentscalefun fContentScaleCallback{};
+  GLFWwindow *asGLFWwindow();
 
   bool isHiDPIAware() const;
   inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
+
+  Window(int id, Config iConfig);
+  ~Window();
 };
 
 class Context
@@ -83,6 +88,11 @@ public:
   void setWindowShouldClose(GLFWwindow* iWindow, int iValue);
   void makeContextCurrent(GLFWwindow* iWindow);
   GLFWwindow* getCurrentContext() const;
+  void getWindowContentScale(GLFWwindow* iWindow, float* iXScale, float* iYScale);
+  GLFWwindowcontentscalefun setWindowContentScaleCallback(GLFWwindow* iWindow, GLFWwindowcontentscalefun iCallback);
+
+public:
+  void onScaleChange();
 
 private:
   Context();
@@ -94,6 +104,7 @@ private:
   std::vector<std::shared_ptr<Window>> fWindows{};
   std::shared_ptr<Window> fCurrentWindow{};
   Config fConfig{};
+  float fScale{1.0f};
 };
 
 }
