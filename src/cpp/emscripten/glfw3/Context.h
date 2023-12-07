@@ -23,8 +23,26 @@
 #include <GLFW/glfw3.h>
 #include "ErrorHandler.h"
 #include <vector>
+#include <string>
 
 namespace emscripten::glfw3 {
+
+struct Config
+{
+  // GL Context
+  int fClientAPI   {GLFW_OPENGL_API}; // GLFW_CLIENT_API
+
+  // Window
+  int fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
+
+  // Framebuffer
+  int fAlphaBits   {8};  // GLFW_ALPHA_BITS
+  int fDepthBits   {24}; // GLFW_DEPTH_BITS
+  int fStencilBits {8};  // GLFW_STENCIL_BITS
+  int fSamples     {0};  // GLFW_SAMPLES
+
+  std::string fCanvasSelector{"#canvas"};
+};
 
 struct Window
 {
@@ -33,6 +51,10 @@ struct Window
   int fHeight{};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
+  Config fConfig{};
+
+  bool isHiDPIAware() const;
+  inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
 };
 
 class Context
@@ -44,15 +66,23 @@ public:
 public:
   static inline GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback) { return fErrorHandler.setErrorCallback(iCallback); }
   static inline int getError(const char** iDescription) { return fErrorHandler.popError(iDescription); }
-  static void logError(int iErrorCode, char const *iErrorMessage) { fErrorHandler.logError(iErrorCode, iErrorMessage); }
+
+  template<typename ... Args>
+  static void logError(int iErrorCode, char const *iErrorMessage, Args... args) { fErrorHandler.logError(iErrorCode, iErrorMessage, std::forward<Args>(args)...); }
+
+  template<typename ... Args>
+  static void logWarning(char const *iWarningMessage, Args... args) { fErrorHandler.logWarning(iWarningMessage, std::forward<Args>(args)...); }
 
 public:
+  void defaultWindowHints() { fConfig = {}; }
+  void windowHint(int iHint, int iValue);
+
   GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
   void destroyWindow(GLFWwindow *iWindow);
   int windowShouldClose(GLFWwindow* iWindow) const;
   void setWindowShouldClose(GLFWwindow* iWindow, int iValue);
   void makeContextCurrent(GLFWwindow* iWindow);
-  GLFWwindow* getCurrentContext();
+  GLFWwindow* getCurrentContext() const;
 
 private:
   Context();
@@ -63,6 +93,7 @@ private:
 
   std::vector<std::shared_ptr<Window>> fWindows{};
   std::shared_ptr<Window> fCurrentWindow{};
+  Config fConfig{};
 };
 
 }

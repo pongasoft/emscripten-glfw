@@ -21,6 +21,7 @@
 
 #include <GLFW/glfw3.h>
 #include <string>
+#include <cstdio>
 
 namespace emscripten::glfw3 {
 
@@ -29,13 +30,59 @@ class ErrorHandler
 public:
   GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback);
   int popError(const char** iDescription);
-  void logError(int iErrorCode, char const *iErrorMessage);
+
+  template<typename ... Args>
+  void logError(int iErrorCode, char const *iErrorMessage, Args... args);
+
+  template<typename ... Args>
+  void logWarning(char const *iWarningMessage, Args... args);
+
+private:
+  void doLogError(int iErrorCode, char const *iErrorMessage);
+  void doLogWarning(char const *iWarningMessage);
 
 private:
   GLFWerrorfun fErrorCallback{};
   int fLastErrorCode{GLFW_NO_ERROR};
   std::string fLastErrorMessage{};
 };
+
+//------------------------------------------------------------------------
+// ErrorHandler::logError
+//------------------------------------------------------------------------
+template<typename... Args>
+void ErrorHandler::logError(int iErrorCode, char const *iErrorMessage, Args... args)
+{
+  if constexpr(sizeof...(args) > 0)
+  {
+    constexpr int kMessageSize = 1024;
+    char message[kMessageSize];
+    std::snprintf(message, sizeof(message), iErrorMessage, args ...);
+    message[sizeof(message) - 1] = '\0';
+    doLogError(iErrorCode, message);
+  }
+  else
+    doLogError(iErrorCode, iErrorMessage);
+}
+
+//------------------------------------------------------------------------
+// ErrorHandler::logWarning
+//------------------------------------------------------------------------
+template<typename... Args>
+void ErrorHandler::logWarning(char const *iWarningMessage, Args... args)
+{
+  if constexpr(sizeof...(args) > 0)
+  {
+    constexpr int kMessageSize = 1024;
+    char message[kMessageSize];
+    std::snprintf(message, sizeof(message), iWarningMessage, args ...);
+    message[sizeof(message) - 1] = '\0';
+    doLogWarning(message);
+  }
+  else
+    doLogWarning(iWarningMessage);
+}
+
 
 }
 

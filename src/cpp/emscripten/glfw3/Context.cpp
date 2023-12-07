@@ -33,8 +33,6 @@ namespace emscripten::glfw3 {
 
 ErrorHandler Context::fErrorHandler{};
 
-constexpr char const *kCanvasSelector = "#canvas";
-
 //------------------------------------------------------------------------
 // Context::init
 //------------------------------------------------------------------------
@@ -84,9 +82,10 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   auto window = std::make_unique<Window>();
   auto id = static_cast<int>(fWindows.size());
   window->fId = id;
-  if(emscripten_set_canvas_element_size(kCanvasSelector, iWidth, iHeight) != EMSCRIPTEN_RESULT_SUCCESS)
+  window->fConfig = fConfig;
+  if(emscripten_set_canvas_element_size(window->getCanvasSelector(), iWidth, iHeight) != EMSCRIPTEN_RESULT_SUCCESS)
   {
-    logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element");
+    logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", window->getCanvasSelector());
     return nullptr;
   }
 //  if(emscripten_set_keypress_callback(kCanvasSelector, this, true, key_callback) != EMSCRIPTEN_RESULT_SUCCESS)
@@ -99,17 +98,21 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   // if hint GLFW_CLIENT_API != GLFW_NO_API
 
-  if(emscripten_glfw3_context_gl_init(window->fId, kCanvasSelector) == EMSCRIPTEN_RESULT_SUCCESS)
+  if(window->fConfig.fClientAPI != GLFW_NO_API)
   {
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "antialias", false);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "depth", true);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "stencil", true);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "alpha", true);
+    if(emscripten_glfw3_context_gl_init(window->fId, window->getCanvasSelector()) == EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      emscripten_glfw3_context_gl_bool_attribute(window->fId, "antialias", window->fConfig.fSamples > 0);
+      emscripten_glfw3_context_gl_bool_attribute(window->fId, "depth", window->fConfig.fDepthBits > 0);
+      emscripten_glfw3_context_gl_bool_attribute(window->fId, "stencil", window->fConfig.fStencilBits > 0);
+      emscripten_glfw3_context_gl_bool_attribute(window->fId, "alpha", window->fConfig.fAlphaBits > 0);
 
-    emscripten_glfw3_context_gl_create_context(window->fId);
-    
-    window->fHasGLContext = true;
+      emscripten_glfw3_context_gl_create_context(window->fId);
+
+      window->fHasGLContext = true;
+    }
   }
+
 
   /*
    *           var contextAttributes = {
@@ -174,7 +177,7 @@ void Context::makeContextCurrent(GLFWwindow *iWindow)
 //------------------------------------------------------------------------
 // Context::getCurrentContext
 //------------------------------------------------------------------------
-GLFWwindow *Context::getCurrentContext()
+GLFWwindow *Context::getCurrentContext() const
 {
   if(fCurrentWindow)
     return reinterpret_cast<GLFWwindow *>(fCurrentWindow.get());
@@ -182,5 +185,52 @@ GLFWwindow *Context::getCurrentContext()
     return nullptr;
 }
 
+//------------------------------------------------------------------------
+// Context::windowHint
+//------------------------------------------------------------------------
+void Context::windowHint(int iHint, int iValue)
+{
+  switch(iHint)
+  {
+    // Gl Context
+    case GLFW_OPENGL_API:
+      fConfig.fClientAPI = iValue;
+      break;
+
+    // Window
+    case GLFW_SCALE_TO_MONITOR:
+      fConfig.fScaleToMonitor = iValue;
+      break;
+
+    // Framebuffer
+    case GLFW_ALPHA_BITS:
+      fConfig.fAlphaBits = iValue;
+      break;
+
+    case GLFW_DEPTH_BITS:
+      fConfig.fDepthBits = iValue;
+      break;
+
+    case GLFW_STENCIL_BITS:
+      fConfig.fStencilBits = iValue;
+      break;
+
+    case GLFW_SAMPLES:
+      fConfig.fSamples = iValue;
+      break;
+
+    default:
+      logWarning("Hint %d not currently supported on this platform.", iHint);
+  }
+
+}
+
+//------------------------------------------------------------------------
+// Window::isHiDPIAware
+//------------------------------------------------------------------------
+bool Window::isHiDPIAware() const
+{
+  return fConfig.fScaleToMonitor == GLFW_TRUE;
+}
 
 }

@@ -45,14 +45,26 @@ int ErrorHandler::popError(char const **iDescription)
 }
 
 //------------------------------------------------------------------------
-// ErrorHandler::logError
+// ErrorHandler::doLogError
 //------------------------------------------------------------------------
-void ErrorHandler::logError(int iErrorCode, char const *iErrorMessage)
+void ErrorHandler::doLogError(int iErrorCode, char const *iErrorMessage)
 {
   fLastErrorCode = iErrorCode;
   fLastErrorMessage = iErrorMessage;
   if(fErrorCallback)
     fErrorCallback(fLastErrorCode, fLastErrorMessage.data());
+}
+
+//------------------------------------------------------------------------
+// ErrorHandler::doLogWarning
+//------------------------------------------------------------------------
+void ErrorHandler::doLogWarning(char const *iWarningMessage)
+{
+  if(fErrorCallback)
+  {
+    std::string msg = "[Warning] " + std::string(iWarningMessage);
+    fErrorCallback(GLFW_NO_ERROR, msg.data());
+  }
 }
 
 }

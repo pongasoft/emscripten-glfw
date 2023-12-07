@@ -158,7 +158,30 @@ GLFWAPI GLFWwindow* glfwGetCurrentContext(void)
     return nullptr;
 }
 
+//------------------------------------------------------------------------
+// glfwInitHint
+//------------------------------------------------------------------------
 GLFWAPI void glfwInitHint(int hint, int value) {  /** no init hint applies to this impl **/ }
+
+//------------------------------------------------------------------------
+// glfwDefaultWindowHints
+//------------------------------------------------------------------------
+GLFWAPI void glfwDefaultWindowHints(void)
+{
+  auto context = getContext();
+  if(context)
+    context->defaultWindowHints();
+}
+
+//------------------------------------------------------------------------
+// glfwWindowHint
+//------------------------------------------------------------------------
+GLFWAPI void glfwWindowHint(int hint, int value)
+{
+  auto context = getContext();
+  if(context)
+    context->windowHint(hint, value);
+}
 
 //------------------------------------------------------------------------
 // not_implemented
@@ -178,8 +201,6 @@ GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor){ not_implement
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma){ not_implemented(); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ not_implemented(); }
-GLFWAPI void glfwDefaultWindowHints(void){ not_implemented(); }
-GLFWAPI void glfwWindowHint(int hint, int value){ not_implemented(); }
 GLFWAPI void glfwWindowHintString(int hint, const char* value){ not_implemented(); }
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title){ not_implemented(); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images){ not_implemented(); }
