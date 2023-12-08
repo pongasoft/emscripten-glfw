@@ -22,6 +22,15 @@
 namespace emscripten::glfw3 {
 
 //------------------------------------------------------------------------
+// ErrorHandler::getErrorHandler
+//------------------------------------------------------------------------
+ErrorHandler &ErrorHandler::instance()
+{
+  static ErrorHandler kInstance{};
+  return kInstance;
+}
+
+//------------------------------------------------------------------------
 // ErrorHandler::setErrorCallback
 //------------------------------------------------------------------------
 GLFWerrorfun ErrorHandler::setErrorCallback(GLFWerrorfun iCallback)

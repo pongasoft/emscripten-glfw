@@ -21,26 +21,18 @@
 #include <emscripten/html5.h>
 
 #include <utility>
-
+#include "ErrorHandler.h"
 
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
 void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback iScaleChangeCallback, void *iUserData);
 void emscripten_glfw3_context_destroy();
 int emscripten_glfw3_context_window_init(int iCanvasId, char const *iCanvasSelector);
-void emscripten_glfw3_context_window_destroy(int iCanvasId);
-void emscripten_glfw3_context_window_set_size(int iCanvasId, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_context_gl_init(int iCanvasId);
-void emscripten_glfw3_context_gl_bool_attribute(int iCanvasId, char const *iAttributeName, bool iAttributeValue);
-int emscripten_glfw3_context_gl_create_context(int iCanvasId);
-int emscripten_glfw3_context_gl_make_context_current(int iCanvasId);
 }
 
 namespace emscripten::glfw3 {
 
-extern std::unique_ptr<emscripten::glfw3::Context> kContext;
-
-ErrorHandler Context::fErrorHandler{};
+static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 
 //------------------------------------------------------------------------
 // Context::init
@@ -83,16 +75,12 @@ Context::~Context()
 //------------------------------------------------------------------------
 void Context::onScaleChange()
 {
-  auto scale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  if(fScale != scale)
+  printf("Context::onScaleChange\n");
+  fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
+  for(auto const &w: fWindows)
   {
-    printf("Context::onScaleChange\n");
-    fScale = scale;
-    for(auto const &w: fWindows)
-    {
-      if(w && w->isHiDPIAware() && w->fContentScaleCallback)
-        w->fContentScaleCallback(w->asGLFWwindow(), scale, scale);
-    }
+    if(w)
+      w->setScale(fScale);
   }
 }
 
@@ -103,13 +91,13 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 {
   auto window = reinterpret_cast<Window *>(iWindow);
 
-  if(window && window->fId < fWindows.size())
+  if(window && window->getId() < fWindows.size())
   {
-    auto sWindow = fWindows[window->fId];
+    auto sWindow = fWindows[window->getId()];
     if(window == sWindow.get())
       return sWindow;
   }
-  logError(GLFW_INVALID_VALUE, "window parameter invalid");
+  kErrorHandler.logError(GLFW_INVALID_VALUE, "window parameter invalid");
   return nullptr;
 }
 
@@ -123,42 +111,16 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   if(emscripten_glfw3_context_window_init(id, canvasSelector) != EMSCRIPTEN_RESULT_SUCCESS)
   {
-    logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector);
+    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector);
     return nullptr;
   }
 
-  auto window = std::make_unique<Window>(id, fConfig);
+  auto window = std::make_unique<Window>(id, fConfig, fScale);
 
-  int fbWidth = iWidth;
-  int fbHeight = iHeight;
+  window->setSize(iWidth, iHeight);
 
-  if(window->isHiDPIAware())
-  {
-    fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fScale));
-    fbHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fScale));
-  }
-
-  emscripten_glfw3_context_window_set_size(window->fId, iWidth, iHeight, fbWidth, fbHeight);
-
-  window->fWidth = iWidth;
-  window->fHeight = iHeight;
-
-  if(window->fConfig.fClientAPI != GLFW_NO_API)
-  {
-    emscripten_glfw3_context_gl_init(window->fId);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "antialias", window->fConfig.fSamples > 0);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "depth", window->fConfig.fDepthBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "stencil", window->fConfig.fStencilBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(window->fId, "alpha", window->fConfig.fAlphaBits > 0);
-
-    if(emscripten_glfw3_context_gl_create_context(window->fId) != EMSCRIPTEN_RESULT_SUCCESS)
-    {
-      logError(GLFW_PLATFORM_ERROR, "Cannot create GL context for [%s]", window->getCanvasSelector());
-      return nullptr;
-    }
-
-    window->fHasGLContext = true;
-  }
+  if(!window->createGLContext())
+    return nullptr;
 
   fWindows.emplace_back(std::move(window));
   return fWindows[id]->asGLFWwindow();
@@ -174,7 +136,7 @@ void Context::destroyWindow(GLFWwindow *iWindow)
   {
     if(window == fCurrentWindow)
       fCurrentWindow = nullptr;
-    fWindows[window->fId] = nullptr;
+    fWindows[window->getId()] = nullptr;
   }
 }
 
@@ -185,7 +147,7 @@ int Context::windowShouldClose(GLFWwindow *iWindow) const
 {
   auto window = getWindow(iWindow);
   if(window)
-    return window->fShouldClose;
+    return window->getShouldClose();
   else
     return GLFW_TRUE;
 }
@@ -197,7 +159,7 @@ void Context::setWindowShouldClose(GLFWwindow *iWindow, int iValue)
 {
   auto window = getWindow(iWindow);
   if(window)
-    window->fShouldClose = iValue;
+    window->setShouldClose(iValue);
 }
 
 //------------------------------------------------------------------------
@@ -206,8 +168,8 @@ void Context::setWindowShouldClose(GLFWwindow *iWindow, int iValue)
 void Context::makeContextCurrent(GLFWwindow *iWindow)
 {
   fCurrentWindow = getWindow(iWindow);
-  if(fCurrentWindow && fCurrentWindow->fHasGLContext)
-    emscripten_glfw3_context_gl_make_context_current(fCurrentWindow->fId);
+  if(fCurrentWindow)
+    fCurrentWindow->makeGLContextCurrent();
 }
 
 //------------------------------------------------------------------------
@@ -256,7 +218,7 @@ void Context::windowHint(int iHint, int iValue)
       break;
 
     default:
-      logWarning("Hint %d not currently supported on this platform.", iHint);
+      kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
   }
 
 }
@@ -270,8 +232,7 @@ GLFWwindowcontentscalefun Context::setWindowContentScaleCallback(GLFWwindow *iWi
   auto window = getWindow(iWindow);
   if(window)
   {
-    std::swap(window->fContentScaleCallback, iCallback);
-    return iCallback;
+    return window->setContentScaleCallback(iCallback);
   }
   else
     return nullptr;
@@ -294,37 +255,6 @@ void Context::getWindowContentScale(GLFWwindow *iWindow, float *iXScale, float *
   }
 }
 
-//------------------------------------------------------------------------
-// Window::isHiDPIAware
-//------------------------------------------------------------------------
-bool Window::isHiDPIAware() const
-{
-  return fConfig.fScaleToMonitor == GLFW_TRUE;
-}
-
-//------------------------------------------------------------------------
-// Window::Window
-//------------------------------------------------------------------------
-Window::Window(int id, Config iConfig) : fId{id}, fConfig{std::move(iConfig)}
-{
-  // empty
-}
-
-//------------------------------------------------------------------------
-// Window::~Window
-//------------------------------------------------------------------------
-Window::~Window()
-{
-  emscripten_glfw3_context_window_destroy(fId);
-}
-
-//------------------------------------------------------------------------
-// Window::asGLFWwindow
-//------------------------------------------------------------------------
-GLFWwindow *Window::asGLFWwindow()
-{
-  return reinterpret_cast<GLFWwindow *>(this);
-}
 
 
 }

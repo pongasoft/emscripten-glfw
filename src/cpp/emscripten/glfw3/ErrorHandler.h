@@ -37,6 +37,9 @@ public:
   template<typename ... Args>
   void logWarning(char const *iWarningMessage, Args... args);
 
+public:
+  static ErrorHandler &instance();
+
 private:
   void doLogError(int iErrorCode, char const *iErrorMessage);
   void doLogWarning(char const *iWarningMessage);

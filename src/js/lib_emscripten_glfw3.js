@@ -44,6 +44,7 @@ let impl = {
     const canvas = document.querySelector(canvasSelector);
     if(!canvas)
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+    // TODO : check for duplicate canvas
     var canvasCtx = {};
     canvasCtx.id = canvasId;
     canvasCtx.selector = canvasSelector;

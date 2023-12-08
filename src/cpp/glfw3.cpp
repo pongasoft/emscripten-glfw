@@ -21,13 +21,14 @@
 #include "emscripten/glfw3/Context.h"
 #include <stdexcept>
 #include <memory>
+#include "emscripten/glfw3/ErrorHandler.h"
 
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
 static std::unique_ptr<emscripten::glfw3::Context> kContext{};
 static inline emscripten::glfw3::Context *getContext() {
   if(!kContext)
-    emscripten::glfw3::Context::logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
   return kContext.get();
 }
 
@@ -81,7 +82,7 @@ GLFWAPI const char* glfwGetVersionString(void)
 //------------------------------------------------------------------------
 GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
 {
-  return emscripten::glfw3::Context::setErrorCallback(callback);
+  return emscripten::glfw3::ErrorHandler::instance().setErrorCallback(callback);
 }
 
 //------------------------------------------------------------------------
@@ -89,7 +90,7 @@ GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
 //------------------------------------------------------------------------
 GLFWAPI int glfwGetError(const char** description)
 {
-  return emscripten::glfw3::Context::getError(description);
+  return emscripten::glfw3::ErrorHandler::instance().popError(description);
 }
 
 //------------------------------------------------------------------------

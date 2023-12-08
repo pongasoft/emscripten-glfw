@@ -21,62 +21,17 @@
 
 #include <memory>
 #include <GLFW/glfw3.h>
-#include "ErrorHandler.h"
+#include "Window.h"
 #include <vector>
 #include <string>
 
 namespace emscripten::glfw3 {
-
-struct Config
-{
-  // GL Context
-  int fClientAPI   {GLFW_OPENGL_API}; // GLFW_CLIENT_API
-
-  // Window
-  int fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
-
-  // Framebuffer
-  int fAlphaBits   {8};  // GLFW_ALPHA_BITS
-  int fDepthBits   {24}; // GLFW_DEPTH_BITS
-  int fStencilBits {8};  // GLFW_STENCIL_BITS
-  int fSamples     {0};  // GLFW_SAMPLES
-
-  std::string fCanvasSelector{"#canvas"};
-};
-
-struct Window
-{
-  int fId;
-  Config fConfig;
-  int fWidth{};
-  int fHeight{};
-  int fShouldClose{}; // GLFW bool
-  bool fHasGLContext{};
-  GLFWwindowcontentscalefun fContentScaleCallback{};
-  GLFWwindow *asGLFWwindow();
-
-  bool isHiDPIAware() const;
-  inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
-
-  Window(int id, Config iConfig);
-  ~Window();
-};
 
 class Context
 {
 public:
   static std::unique_ptr<Context> init();
   ~Context();
-
-public:
-  static inline GLFWerrorfun setErrorCallback(GLFWerrorfun iCallback) { return fErrorHandler.setErrorCallback(iCallback); }
-  static inline int getError(const char** iDescription) { return fErrorHandler.popError(iDescription); }
-
-  template<typename ... Args>
-  static void logError(int iErrorCode, char const *iErrorMessage, Args... args) { fErrorHandler.logError(iErrorCode, iErrorMessage, std::forward<Args>(args)...); }
-
-  template<typename ... Args>
-  static void logWarning(char const *iWarningMessage, Args... args) { fErrorHandler.logWarning(iWarningMessage, std::forward<Args>(args)...); }
 
 public:
   void defaultWindowHints() { fConfig = {}; }
@@ -99,8 +54,6 @@ private:
   std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
 
 private:
-  static ErrorHandler fErrorHandler;
-
   std::vector<std::shared_ptr<Window>> fWindows{};
   std::shared_ptr<Window> fCurrentWindow{};
   Config fConfig{};
