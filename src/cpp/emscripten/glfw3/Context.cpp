@@ -244,9 +244,9 @@ GLFWwindowcontentscalefun Context::setWindowContentScaleCallback(GLFWwindow *iWi
 void Context::getWindowContentScale(GLFWwindow *iWindow, float *iXScale, float *iYScale)
 {
   auto window = getWindow(iWindow);
-  if(window && window->isHiDPIAware())
+  if(window)
   {
-
+    window->getContentScale(iXScale, iYScale);
   }
   else
   {
@@ -255,6 +255,41 @@ void Context::getWindowContentScale(GLFWwindow *iWindow, float *iXScale, float *
   }
 }
 
+//------------------------------------------------------------------------
+// Context::setWindowSize
+//------------------------------------------------------------------------
+void Context::setWindowSize(GLFWwindow *iWindow, int iWidth, int iHeight)
+{
+  auto window = getWindow(iWindow);
+  if(window)
+    window->setSize(iWidth, iHeight);
+}
+
+//------------------------------------------------------------------------
+// Context::getWindowSize
+//------------------------------------------------------------------------
+void Context::getWindowSize(GLFWwindow *iWindow, int *iWidth, int *iHeight)
+{
+  auto window = getWindow(iWindow);
+  if(window)
+  {
+    *iWidth = window->getWidth();
+    *iHeight = window->getHeight();
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::getFramebufferSize
+//------------------------------------------------------------------------
+void Context::getFramebufferSize(GLFWwindow *iWindow, int *iWidth, int *iHeight)
+{
+  auto window = getWindow(iWindow);
+  if(window)
+  {
+    *iWidth = window->getFramebufferWidth();
+    *iHeight = window->getFramebufferHeight();
+  }
+}
 
 
 }

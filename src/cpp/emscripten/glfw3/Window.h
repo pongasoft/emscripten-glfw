@@ -34,10 +34,17 @@ public:
   inline int getShouldClose() const { return fShouldClose; }
   inline void setShouldClose(int iShouldClose) { fShouldClose = iShouldClose; }
 
+  inline int getWidth() const { return fWidth; }
+  inline int getHeight() const { return fHeight; }
+  inline int getFramebufferWidth() const {  return fFramebufferWidth; }
+  inline int getFramebufferHeight() const { return fFramebufferHeight; }
+
   inline GLFWwindow *asGLFWwindow() { return reinterpret_cast<GLFWwindow *>(this); }
+  void getContentScale(float* iXScale, float* iYScale) const;
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) {
     return std::exchange(fContentScaleCallback, iCallback);
   }
+
   void setScale(float iScale);
   void setSize(int iWidth, int iHeight);
   bool createGLContext();

@@ -207,6 +207,37 @@ GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* 
 }
 
 //------------------------------------------------------------------------
+// glfwSetWindowSize
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height)
+{
+  auto context = getContext();
+  if(context)
+    context->setWindowSize(window, width, height);
+}
+
+//------------------------------------------------------------------------
+// glfwGetWindowSize
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetWindowSize(GLFWwindow* window, int* width, int* height)
+{
+  auto context = getContext();
+  if(context)
+    context->getWindowSize(window, width, height);
+}
+
+//------------------------------------------------------------------------
+// glfwGetFramebufferSize
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetFramebufferSize(GLFWwindow* window, int* width, int* height)
+{
+  auto context = getContext();
+  if(context)
+    context->getFramebufferSize(window, width, height);
+
+}
+
+//------------------------------------------------------------------------
 // not_implemented
 //------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count){ not_implemented(); }
@@ -232,8 +263,6 @@ GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos){ not_imple
 GLFWAPI void glfwGetWindowSize(GLFWwindow* window, int* width, int* height){ not_implemented(); }
 GLFWAPI void glfwSetWindowSizeLimits(GLFWwindow* window, int minwidth, int minheight, int maxwidth, int maxheight){ not_implemented(); }
 GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom){ not_implemented(); }
-GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height){ not_implemented(); }
-GLFWAPI void glfwGetFramebufferSize(GLFWwindow* window, int* width, int* height){ not_implemented(); }
 GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int* right, int* bottom){ not_implemented(); }
 GLFWAPI float glfwGetWindowOpacity(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity){ not_implemented(); }

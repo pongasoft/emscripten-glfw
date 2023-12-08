@@ -111,4 +111,14 @@ void Window::makeGLContextCurrent()
     emscripten_glfw3_context_gl_make_context_current(fId);
 }
 
+//------------------------------------------------------------------------
+// Window::getContentScale
+//------------------------------------------------------------------------
+void Window::getContentScale(float *iXScale, float *iYScale) const
+{
+  auto scale = isHiDPIAware() ? fScale : 1.0f;
+  *iXScale = scale;
+  *iYScale = scale;
+}
+
 }

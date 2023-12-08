@@ -39,12 +39,19 @@ public:
 
   GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
   void destroyWindow(GLFWwindow *iWindow);
+
   int windowShouldClose(GLFWwindow* iWindow) const;
   void setWindowShouldClose(GLFWwindow* iWindow, int iValue);
+
   void makeContextCurrent(GLFWwindow* iWindow);
   GLFWwindow* getCurrentContext() const;
+
   void getWindowContentScale(GLFWwindow* iWindow, float* iXScale, float* iYScale);
   GLFWwindowcontentscalefun setWindowContentScaleCallback(GLFWwindow* iWindow, GLFWwindowcontentscalefun iCallback);
+
+  void setWindowSize(GLFWwindow* iWindow, int iWidth, int iHeight);
+  void getWindowSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
+  void getFramebufferSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
 
 public:
   void onScaleChange();
