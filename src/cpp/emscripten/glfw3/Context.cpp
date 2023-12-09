@@ -223,6 +223,27 @@ void Context::windowHint(int iHint, int iValue)
 
 }
 
+// Making up a hint that is not currently used: TODO how to add to glfw???
+#define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
+
+//------------------------------------------------------------------------
+// Context::windowHint
+//------------------------------------------------------------------------
+void Context::windowHint(int iHint, char const *iValue)
+{
+  switch(iHint)
+  {
+    // Gl Context
+    case GLFW_EMSCRIPTEN_CANVAS_SELECTOR:
+      fConfig.fCanvasSelector = iValue;
+      break;
+
+    default:
+      kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
+  }
+
+}
+
 //------------------------------------------------------------------------
 // Context::setWindowContentScaleCallback
 //------------------------------------------------------------------------

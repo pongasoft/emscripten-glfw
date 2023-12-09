@@ -54,7 +54,8 @@ let impl = {
   },
 
   emscripten_glfw3_context_window_destroy: (canvasId) => {
-    GLFW3.fCanvasContexts[canvasId] = null;
+    if(GLFW3.fCanvasContexts)
+      GLFW3.fCanvasContexts[canvasId] = null;
   },
 
   emscripten_glfw3_context_window_set_size: (canvasId, width, height, fbWidth, fbHeight) => {

@@ -185,6 +185,16 @@ GLFWAPI void glfwWindowHint(int hint, int value)
 }
 
 //------------------------------------------------------------------------
+// glfwWindowHintString
+//------------------------------------------------------------------------
+GLFWAPI void glfwWindowHintString(int hint, const char* value)
+{
+  auto context = getContext();
+  if(context)
+    context->windowHint(hint, value);
+}
+
+//------------------------------------------------------------------------
 // glfwGetWindowContentScale
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetWindowContentScale(GLFWwindow* window, float* xscale, float* yscale)
@@ -280,7 +290,6 @@ GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor){ not_implement
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma){ not_implemented(); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ not_implemented(); }
-GLFWAPI void glfwWindowHintString(int hint, const char* value){ not_implemented(); }
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title){ not_implemented(); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images){ not_implemented(); }
 GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos){ not_implemented(); }

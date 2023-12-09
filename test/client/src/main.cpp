@@ -69,6 +69,8 @@ void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
   printf("onFramebufferSizeChange: %dx%d\n", width, height);
 }
 
+#define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
+
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
@@ -77,45 +79,63 @@ int main()
     return -1;
 
   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+  glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
 
-  auto window = glfwCreateWindow(600, 500, "hello world", nullptr, nullptr);
-  if(!window)
+  auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+  if(!window1)
   {
     glfwTerminate();
     return -1;
   }
 
-  glfwSetWindowContentScaleCallback(window, onContentScaleChange);
-  glfwSetWindowSizeCallback(window, onWindowSizeChange);
-  glfwSetFramebufferSizeCallback(window, onFramebufferSizeChange);
+  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
+  glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
+  auto window2 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+  if(!window2)
+  {
+    glfwTerminate();
+    return -1;
+  }
 
-  auto window1Triangle = Triangle::init(window);
+
+  glfwSetWindowContentScaleCallback(window1, onContentScaleChange);
+  glfwSetWindowSizeCallback(window1, onWindowSizeChange);
+  glfwSetFramebufferSizeCallback(window1, onFramebufferSizeChange);
+
+  auto window1Triangle = Triangle::init(window1);
   if(!window1Triangle)
   {
     glfwTerminate();
     return -1;
   }
-
   window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
 
-  glfwMakeContextCurrent(window);
+  auto window2Triangle = Triangle::init(window2);
+  if(!window2Triangle)
+  {
+    glfwTerminate();
+    return -1;
+  }
+  window2Triangle->setBgColor(1.0f, 0, 0.5f);
 
-  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window, 1, key_callback);
+  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
 
-  while(!glfwWindowShouldClose(window))
+  while(!glfwWindowShouldClose(window1) && !glfwWindowShouldClose(window2))
   {
     if(!window1Triangle->render())
       break;
 
-    // Render Step 5: Swap buffers - present back buffer, and prepare current
-    // surface for next frame
+    if(!window2Triangle->render())
+      break;
+
 //    glfwSwapBuffers(window);
 //    glfwPollEvents();
 
     emscripten_sleep(100);
   }
 
-  glfwDestroyWindow(window);
+  glfwDestroyWindow(window2);
+  glfwDestroyWindow(window1);
 
   glfwTerminate();
 }

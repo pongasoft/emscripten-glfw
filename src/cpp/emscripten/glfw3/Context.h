@@ -36,6 +36,7 @@ public:
 public:
   void defaultWindowHints() { fConfig = {}; }
   void windowHint(int iHint, int iValue);
+  void windowHint(int iHint, char const *iValue);
 
   GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
   void destroyWindow(GLFWwindow *iWindow);
