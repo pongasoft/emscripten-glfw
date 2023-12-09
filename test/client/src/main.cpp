@@ -17,8 +17,9 @@
  */
 
 #include <GLFW/glfw3.h>
-#include <stdio.h>
+#include <cstdio>
 #include <emscripten/html5.h>
+#include "Triangle.h"
 
 static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 {
@@ -77,7 +78,7 @@ int main()
 
   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
-  GLFWwindow *window = glfwCreateWindow(600, 500, "hello world", NULL, NULL);
+  auto window = glfwCreateWindow(600, 500, "hello world", nullptr, nullptr);
   if(!window)
   {
     glfwTerminate();
@@ -88,13 +89,29 @@ int main()
   glfwSetWindowSizeCallback(window, onWindowSizeChange);
   glfwSetFramebufferSizeCallback(window, onFramebufferSizeChange);
 
+  auto window1Triangle = Triangle::init(window);
+  if(!window1Triangle)
+  {
+    glfwTerminate();
+    return -1;
+  }
+
+  window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
+
   glfwMakeContextCurrent(window);
 
   emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window, 1, key_callback);
 
   while(!glfwWindowShouldClose(window))
   {
-    glClear(GL_COLOR_BUFFER_BIT);
+    if(!window1Triangle->render())
+      break;
+
+    // Render Step 5: Swap buffers - present back buffer, and prepare current
+    // surface for next frame
+//    glfwSwapBuffers(window);
+//    glfwPollEvents();
+
     emscripten_sleep(100);
   }
 
