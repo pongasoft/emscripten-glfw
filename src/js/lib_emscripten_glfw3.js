@@ -59,15 +59,13 @@ let impl = {
 
   emscripten_glfw3_context_window_set_size: (canvasId, width, height, fbWidth, fbHeight) => {
     const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+
     if(canvas.width !== fbWidth) canvas.width = fbWidth;
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
-    if (fbWidth !== width || fbHeight !== height) {
-      canvas.style.setProperty( "width", width + "px", "important");
-      canvas.style.setProperty("height", height + "px", "important");
-    } else {
-      canvas.style.removeProperty( "width");
-      canvas.style.removeProperty("height");
-    }
+
+    // this will (on purpose) override any css setting
+    canvas.style.setProperty( "width", width + "px", "important");
+    canvas.style.setProperty("height", height + "px", "important");
   },
 
   emscripten_glfw3_context_gl_init: (canvasId) => {
