@@ -231,9 +231,7 @@ GLFWwindowcontentscalefun Context::setWindowContentScaleCallback(GLFWwindow *iWi
 {
   auto window = getWindow(iWindow);
   if(window)
-  {
     return window->setContentScaleCallback(iCallback);
-  }
   else
     return nullptr;
 }
@@ -289,6 +287,30 @@ void Context::getFramebufferSize(GLFWwindow *iWindow, int *iWidth, int *iHeight)
     *iWidth = window->getFramebufferWidth();
     *iHeight = window->getFramebufferHeight();
   }
+}
+
+//------------------------------------------------------------------------
+// Context::setWindowSizeCallback
+//------------------------------------------------------------------------
+GLFWwindowsizefun Context::setWindowSizeCallback(GLFWwindow *iWindow, GLFWwindowsizefun iCallback)
+{
+  auto window = getWindow(iWindow);
+  if(window)
+    return window->setSizeCallback(iCallback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// Context::setFramebufferSizeCallback
+//------------------------------------------------------------------------
+GLFWframebuffersizefun Context::setFramebufferSizeCallback(GLFWwindow *iWindow, GLFWframebuffersizefun iCallback)
+{
+  auto window = getWindow(iWindow);
+  if(window)
+    return window->setFramebufferSizeCallback(iCallback);
+  else
+    return nullptr;
 }
 
 

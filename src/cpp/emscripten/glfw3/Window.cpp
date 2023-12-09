@@ -60,21 +60,31 @@ void Window::setScale(float iScale)
 //------------------------------------------------------------------------
 void Window::setSize(int iWidth, int iHeight)
 {
+  auto sizeChanged = fWidth != iWidth || fHeight != iHeight;
   fWidth = iWidth;
   fHeight = iHeight;
+
+  int fbWidth = iWidth;
+  int fbHeight = iHeight;
   
   if(isHiDPIAware())
   {
-    fFramebufferWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fScale));
-    fFramebufferHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fScale));
-  }
-  else
-  {
-    fFramebufferWidth = iWidth;
-    fFramebufferHeight = iHeight;
+    fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fScale));
+    fbHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fScale));
   }
 
+  auto framebufferSizeChanged = fFramebufferWidth != fbWidth || fFramebufferHeight != fbHeight;
+
+  fFramebufferWidth = fbWidth;
+  fFramebufferHeight = fbHeight;
+
   emscripten_glfw3_context_window_set_size(fId, fWidth, fHeight, fFramebufferWidth, fFramebufferHeight);
+
+  if(sizeChanged && fSizeCallback)
+    fSizeCallback(asGLFWwindow(), fWidth, fHeight);
+
+  if(framebufferSizeChanged && fFramebufferSizeCallback)
+    fFramebufferSizeCallback(asGLFWwindow(), fFramebufferWidth, fFramebufferHeight);
 }
 
 //------------------------------------------------------------------------

@@ -38,12 +38,12 @@ public:
   inline int getHeight() const { return fHeight; }
   inline int getFramebufferWidth() const {  return fFramebufferWidth; }
   inline int getFramebufferHeight() const { return fFramebufferHeight; }
+  inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
+  inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
 
   inline GLFWwindow *asGLFWwindow() { return reinterpret_cast<GLFWwindow *>(this); }
   void getContentScale(float* iXScale, float* iYScale) const;
-  inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) {
-    return std::exchange(fContentScaleCallback, iCallback);
-  }
+  inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
 
   void setScale(float iScale);
   void setSize(int iWidth, int iHeight);
@@ -64,6 +64,8 @@ private:
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
+  GLFWwindowsizefun fSizeCallback{};
+  GLFWframebuffersizefun fFramebufferSizeCallback{};
 };
 
 }

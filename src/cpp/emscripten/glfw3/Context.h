@@ -52,6 +52,8 @@ public:
   void setWindowSize(GLFWwindow* iWindow, int iWidth, int iHeight);
   void getWindowSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
   void getFramebufferSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
+  GLFWwindowsizefun setWindowSizeCallback(GLFWwindow *iWindow, GLFWwindowsizefun iCallback);
+  GLFWframebuffersizefun setFramebufferSizeCallback(GLFWwindow *iWindow, GLFWframebuffersizefun iCallback);
 
 public:
   void onScaleChange();

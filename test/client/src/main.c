@@ -26,14 +26,46 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 }
 
 EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *userData) {
-  printf("key_callback\n");
-  glfwSetWindowShouldClose((GLFWwindow *) userData, GLFW_TRUE);
+  printf("key_callback [%c]\n", e->keyCode);
+  GLFWwindow *window = (GLFWwindow *) userData;
+  switch(e->keyCode)
+  {
+    case ' ':
+      glfwSetWindowShouldClose(window, GLFW_TRUE);
+      break;
+    case 'S':
+    {
+      int w,h;
+      glfwGetWindowSize(window, &w, &h);
+      glfwSetWindowSize(window, w * 2, h * 2);
+      break;
+    }
+    case 's':
+    {
+      int w,h;
+      glfwGetWindowSize(window, &w, &h);
+      glfwSetWindowSize(window, w / 2, h / 2);
+      break;
+    }
+    default:
+      break;
+  }
   return GLFW_TRUE;
 }
 
 void onContentScaleChange(GLFWwindow *iWindow, float xScale, float yScale)
 {
   printf("onContentScaleChange: %fx%f\n", xScale, yScale);
+}
+
+void onWindowSizeChange(GLFWwindow* window, int width, int height)
+{
+  printf("onWindowSizeChange: %dx%d\n", width, height);
+}
+
+void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
+{
+  printf("onFramebufferSizeChange: %dx%d\n", width, height);
 }
 
 int main()
@@ -53,6 +85,8 @@ int main()
   }
 
   glfwSetWindowContentScaleCallback(window, onContentScaleChange);
+  glfwSetWindowSizeCallback(window, onWindowSizeChange);
+  glfwSetFramebufferSizeCallback(window, onFramebufferSizeChange);
 
   glfwMakeContextCurrent(window);
 
