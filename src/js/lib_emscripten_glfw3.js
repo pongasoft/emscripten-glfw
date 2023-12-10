@@ -41,10 +41,21 @@ let impl = {
 
   emscripten_glfw3_context_window_init: (canvasId, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
-    const canvas = document.querySelector(canvasSelector);
+
+    const canvas = canvasSelector !== "Module['canvas']" ?
+      document.querySelector(canvasSelector) : // use canvasSelector
+      Module['canvas']; // use emscripten "standard" way
+
     if(!canvas)
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
-    // TODO : check for duplicate canvas
+
+    // check for duplicate
+    for(let id in GLFW3.fCanvasContexts) {
+      if(GLFW3.fCanvasContexts[id].canvas === canvas) {
+        return {{{ cDefs.EMSCRIPTEN_RESULT_INVALID_TARGET }}};
+      }
+    }
+
     var canvasCtx = {};
     canvasCtx.id = canvasId;
     canvasCtx.selector = canvasSelector;
@@ -55,7 +66,7 @@ let impl = {
 
   emscripten_glfw3_context_window_destroy: (canvasId) => {
     if(GLFW3.fCanvasContexts)
-      GLFW3.fCanvasContexts[canvasId] = null;
+      delete GLFW3.fCanvasContexts[canvasId];
   },
 
   emscripten_glfw3_context_window_set_size: (canvasId, width, height, fbWidth, fbHeight) => {

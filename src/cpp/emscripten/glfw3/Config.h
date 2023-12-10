@@ -26,12 +26,14 @@ namespace emscripten::glfw3 {
 
 struct Config
 {
+  static constexpr char const *kDefaultCanvasSelector = "Module['canvas']";
+
   // GL Context
   int fClientAPI   {GLFW_OPENGL_API}; // GLFW_CLIENT_API
 
   // Window
   int fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
-  std::string fCanvasSelector{"#canvas"};
+  std::string fCanvasSelector{kDefaultCanvasSelector};
 
   // Framebuffer
   int fAlphaBits   {8};  // GLFW_ALPHA_BITS

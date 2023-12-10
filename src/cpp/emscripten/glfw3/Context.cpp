@@ -109,9 +109,13 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   auto const id = static_cast<int>(fWindows.size());
   auto const canvasSelector = fConfig.fCanvasSelector.data();
 
-  if(emscripten_glfw3_context_window_init(id, canvasSelector) != EMSCRIPTEN_RESULT_SUCCESS)
+  auto res = emscripten_glfw3_context_window_init(id, canvasSelector);
+  if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
-    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector);
+    if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector);
+    if(res == EMSCRIPTEN_RESULT_INVALID_TARGET)
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector);
     return nullptr;
   }
 
@@ -235,7 +239,7 @@ void Context::windowHint(int iHint, char const *iValue)
   {
     // Gl Context
     case GLFW_EMSCRIPTEN_CANVAS_SELECTOR:
-      fConfig.fCanvasSelector = iValue;
+      fConfig.fCanvasSelector = iValue ? iValue : Config::kDefaultCanvasSelector;
       break;
 
     default:
