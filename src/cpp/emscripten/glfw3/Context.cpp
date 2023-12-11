@@ -27,7 +27,7 @@ extern "C" {
 using ScaleChangeCallback = void (*)(void *);
 void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback iScaleChangeCallback, void *iUserData);
 void emscripten_glfw3_context_destroy();
-int emscripten_glfw3_context_window_init(int iCanvasId, char const *iCanvasSelector);
+int emscripten_glfw3_context_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 }
 
 namespace emscripten::glfw3 {
@@ -77,10 +77,9 @@ void Context::onScaleChange()
 {
   printf("Context::onScaleChange\n");
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  for(auto const &w: fWindows)
+  for(auto const &[k, w]: fWindows)
   {
-    if(w)
-      w->setScale(fScale);
+    w->setScale(fScale);
   }
 }
 
@@ -89,14 +88,14 @@ void Context::onScaleChange()
 //------------------------------------------------------------------------
 std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 {
-  // TODO I really dislike this as it is NOT safe
-  auto window = reinterpret_cast<Window *>(iWindow);
+  // shortcut for most frequent use-case
+  if(fCurrentWindowOpaquePtr == iWindow)
+    return fCurrentWindow;
 
-  if(window && window->getId() < fWindows.size())
+  auto iter = fWindows.find(iWindow);
+  if(iter != fWindows.end())
   {
-    auto sWindow = fWindows[window->getId()];
-    if(window == sWindow.get())
-      return sWindow;
+    return iter->second;
   }
   kErrorHandler.logError(GLFW_INVALID_VALUE, "window parameter invalid");
   return nullptr;
@@ -107,10 +106,11 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare)
 {
-  auto const id = static_cast<int>(fWindows.size());
+  auto window = std::make_shared<Window>(fConfig, fScale);
+
   auto const canvasSelector = fConfig.fCanvasSelector.data();
 
-  auto res = emscripten_glfw3_context_window_init(id, canvasSelector);
+  auto res = emscripten_glfw3_context_window_init(window->asOpaquePtr(), canvasSelector);
   if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
     if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
@@ -120,15 +120,14 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
     return nullptr;
   }
 
-  auto window = std::make_unique<Window>(id, fConfig, fScale);
-
   window->setSize(iWidth, iHeight);
 
   if(!window->createGLContext())
     return nullptr;
 
-  fWindows.emplace_back(std::move(window));
-  return fWindows[id]->asGLFWwindow();
+  fWindows[window->asOpaquePtr()] = window;
+
+  return window->asOpaquePtr();
 }
 
 //------------------------------------------------------------------------
@@ -140,8 +139,11 @@ void Context::destroyWindow(GLFWwindow *iWindow)
   if(window)
   {
     if(window == fCurrentWindow)
+    {
       fCurrentWindow = nullptr;
-    fWindows[window->getId()] = nullptr;
+      fCurrentWindowOpaquePtr = nullptr;
+    }
+    fWindows.erase(iWindow);
   }
 }
 
@@ -172,9 +174,13 @@ void Context::setWindowShouldClose(GLFWwindow *iWindow, int iValue)
 //------------------------------------------------------------------------
 void Context::makeContextCurrent(GLFWwindow *iWindow)
 {
-  fCurrentWindow = getWindow(iWindow);
-  if(fCurrentWindow)
+  auto window = getWindow(iWindow);
+  if(window)
+  {
+    fCurrentWindow = window;
+    fCurrentWindowOpaquePtr = iWindow;
     fCurrentWindow->makeGLContextCurrent();
+  }
 }
 
 //------------------------------------------------------------------------
@@ -183,7 +189,7 @@ void Context::makeContextCurrent(GLFWwindow *iWindow)
 GLFWwindow *Context::getCurrentContext() const
 {
   if(fCurrentWindow)
-    return reinterpret_cast<GLFWwindow *>(fCurrentWindow.get());
+    return fCurrentWindow->asOpaquePtr();
   else
     return nullptr;
 }
@@ -350,14 +356,11 @@ GLFWframebuffersizefun Context::setFramebufferSizeCallback(GLFWwindow *iWindow, 
 //------------------------------------------------------------------------
 Monitor *Context::getMonitor(GLFWmonitor *iMonitor) const
 {
-  // TODO fix this
-  auto monitor = reinterpret_cast<Monitor *>(iMonitor);
-  if(monitor != &fPrimaryMonitor)
-  {
-    kErrorHandler.logError(GLFW_INVALID_VALUE, "monitor parameter invalid");
-    return nullptr;
-  }
-  return monitor;
+  if(fCurrentMonitor->asOpaquePtr() == iMonitor)
+    return fCurrentMonitor.get();
+
+  kErrorHandler.logError(GLFW_INVALID_VALUE, "monitor parameter invalid");
+  return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -365,7 +368,7 @@ Monitor *Context::getMonitor(GLFWmonitor *iMonitor) const
 //------------------------------------------------------------------------
 GLFWmonitor **Context::getMonitors(int *oCount)
 {
-  static std::vector<GLFWmonitor *> kMonitors{fPrimaryMonitor.asGLFWmonitor()};
+  static std::vector<GLFWmonitor *> kMonitors{fCurrentMonitor->asOpaquePtr()};
   *oCount = static_cast<int>(kMonitors.size());
   return kMonitors.data();
 }
@@ -375,7 +378,7 @@ GLFWmonitor **Context::getMonitors(int *oCount)
 //------------------------------------------------------------------------
 GLFWmonitor *Context::getPrimaryMonitor()
 {
-  return fPrimaryMonitor.asGLFWmonitor();
+  return fCurrentMonitor->asOpaquePtr();
 }
 
 //------------------------------------------------------------------------

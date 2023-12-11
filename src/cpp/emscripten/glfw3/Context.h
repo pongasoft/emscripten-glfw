@@ -23,7 +23,7 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
-#include <vector>
+#include <map>
 #include <string>
 
 namespace emscripten::glfw3 {
@@ -63,7 +63,6 @@ public:
   void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos);
   void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight);
 
-
   // time
   double getTimeInSeconds() const;
 
@@ -77,9 +76,10 @@ private:
   static double getAbsoluteTimeInSeconds();
 
 private:
-  std::vector<std::shared_ptr<Window>> fWindows{};
+  std::map<Window::opaque_ptr_t, std::shared_ptr<Window>> fWindows;
+  GLFWwindow *fCurrentWindowOpaquePtr{};
   std::shared_ptr<Window> fCurrentWindow{};
-  Monitor fPrimaryMonitor{0};
+  std::shared_ptr<Monitor> fCurrentMonitor{new Monitor{}};
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};

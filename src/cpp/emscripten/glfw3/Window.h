@@ -20,15 +20,15 @@
 #define EMSCRIPTEN_GLFW_WINDOW_H
 
 #include <GLFW/glfw3.h>
+#include "Object.h"
 #include "Config.h"
 #include <utility>
 
 namespace emscripten::glfw3 {
 
-class Window
+class Window : public Object<GLFWwindow>
 {
 public:
-  inline int getId() const { return fId; }
   inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
   inline bool isHiDPIAware() const { return fConfig.fScaleToMonitor == GLFW_TRUE; }
   inline int getShouldClose() const { return fShouldClose; }
@@ -41,7 +41,6 @@ public:
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
 
-  inline GLFWwindow *asGLFWwindow() { return reinterpret_cast<GLFWwindow *>(this); }
   void getContentScale(float* iXScale, float* iYScale) const;
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
 
@@ -50,11 +49,10 @@ public:
   bool createGLContext();
   void makeGLContextCurrent();
 
-  Window(int id, Config iConfig, float iScale) : fId{id}, fConfig{std::move(iConfig)}, fScale{iScale} {}
-  ~Window();
+  Window(Config iConfig, float iScale) : fConfig{std::move(iConfig)}, fScale{iScale} {}
+  ~Window() override;
 
 private:
-  int fId;
   Config fConfig;
   float fScale;
   int fWidth{};

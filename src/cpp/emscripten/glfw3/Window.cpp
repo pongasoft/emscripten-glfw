@@ -22,12 +22,12 @@
 #include "ErrorHandler.h"
 
 extern "C" {
-void emscripten_glfw3_context_window_destroy(int iCanvasId);
-void emscripten_glfw3_context_window_set_size(int iCanvasId, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_context_gl_init(int iCanvasId);
-void emscripten_glfw3_context_gl_bool_attribute(int iCanvasId, char const *iAttributeName, bool iAttributeValue);
-int emscripten_glfw3_context_gl_create_context(int iCanvasId);
-int emscripten_glfw3_context_gl_make_context_current(int iCanvasId);
+void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
+void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
+void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
+int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
+int emscripten_glfw3_context_gl_make_context_current(GLFWwindow *iWindow);
 }
 
 namespace emscripten::glfw3 {
@@ -39,7 +39,7 @@ static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 //------------------------------------------------------------------------
 Window::~Window()
 {
-  emscripten_glfw3_context_window_destroy(fId);
+  emscripten_glfw3_context_window_destroy(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void Window::setScale(float iScale)
   {
     fScale = iScale;
     if(fContentScaleCallback)
-      fContentScaleCallback(asGLFWwindow(), fScale, fScale);
+      fContentScaleCallback(asOpaquePtr(), fScale, fScale);
   }
 }
 
@@ -78,13 +78,13 @@ void Window::setSize(int iWidth, int iHeight)
   fFramebufferWidth = fbWidth;
   fFramebufferHeight = fbHeight;
 
-  emscripten_glfw3_context_window_set_size(fId, fWidth, fHeight, fFramebufferWidth, fFramebufferHeight);
+  emscripten_glfw3_context_window_set_size(asOpaquePtr(), fWidth, fHeight, fFramebufferWidth, fFramebufferHeight);
 
   if(sizeChanged && fSizeCallback)
-    fSizeCallback(asGLFWwindow(), fWidth, fHeight);
+    fSizeCallback(asOpaquePtr(), fWidth, fHeight);
 
   if(framebufferSizeChanged && fFramebufferSizeCallback)
-    fFramebufferSizeCallback(asGLFWwindow(), fFramebufferWidth, fFramebufferHeight);
+    fFramebufferSizeCallback(asOpaquePtr(), fFramebufferWidth, fFramebufferHeight);
 }
 
 //------------------------------------------------------------------------
@@ -94,13 +94,14 @@ bool Window::createGLContext()
 {
   if(fConfig.fClientAPI != GLFW_NO_API)
   {
-    emscripten_glfw3_context_gl_init(fId);
-    emscripten_glfw3_context_gl_bool_attribute(fId, "antialias", fConfig.fSamples > 0);
-    emscripten_glfw3_context_gl_bool_attribute(fId, "depth", fConfig.fDepthBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(fId, "stencil", fConfig.fStencilBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(fId, "alpha", fConfig.fAlphaBits > 0);
+    auto id = asOpaquePtr();
+    emscripten_glfw3_context_gl_init(id);
+    emscripten_glfw3_context_gl_bool_attribute(id, "antialias", fConfig.fSamples > 0);
+    emscripten_glfw3_context_gl_bool_attribute(id, "depth", fConfig.fDepthBits > 0);
+    emscripten_glfw3_context_gl_bool_attribute(id, "stencil", fConfig.fStencilBits > 0);
+    emscripten_glfw3_context_gl_bool_attribute(id, "alpha", fConfig.fAlphaBits > 0);
 
-    if(emscripten_glfw3_context_gl_create_context(fId) != EMSCRIPTEN_RESULT_SUCCESS)
+    if(emscripten_glfw3_context_gl_create_context(id) != EMSCRIPTEN_RESULT_SUCCESS)
     {
       kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot create GL context for [%s]", getCanvasSelector());
       return false;
@@ -118,7 +119,7 @@ bool Window::createGLContext()
 void Window::makeGLContextCurrent()
 {
   if(fHasGLContext)
-    emscripten_glfw3_context_gl_make_context_current(fId);
+    emscripten_glfw3_context_gl_make_context_current(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------

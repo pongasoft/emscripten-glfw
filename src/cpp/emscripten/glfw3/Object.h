@@ -16,18 +16,21 @@
  * @author Yan Pujante
  */
 
-#ifndef EMSCRIPTEN_GLFW_MONITOR_H
-#define EMSCRIPTEN_GLFW_MONITOR_H
+#ifndef EMSCRIPTEN_GLFW_OBJECT_H
+#define EMSCRIPTEN_GLFW_OBJECT_H
 
-#include <GLFW/glfw3.h>
-#include "Object.h"
-
-namespace emscripten::glfw3 {
-
-struct Monitor : public Object<GLFWmonitor>
+template<typename G>
+class Object
 {
+public:
+  using opaque_ptr_t = G *;
+
+  virtual ~Object() = default;
+  inline G *asOpaquePtr() { return reinterpret_cast<G *>(&fOpaquePtr); }
+  inline G const *asOpaquePtr() const { return reinterpret_cast<G const *>(&fOpaquePtr); }
+private:
+  struct OpaquePtr {};
+  OpaquePtr fOpaquePtr{};
 };
 
-}
-
-#endif //EMSCRIPTEN_GLFW_MONITOR_H
+#endif //EMSCRIPTEN_GLFW_OBJECT_H
