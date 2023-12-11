@@ -89,6 +89,7 @@ void Context::onScaleChange()
 //------------------------------------------------------------------------
 std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 {
+  // TODO I really dislike this as it is NOT safe
   auto window = reinterpret_cast<Window *>(iWindow);
 
   if(window && window->getId() < fWindows.size())
@@ -195,7 +196,7 @@ void Context::windowHint(int iHint, int iValue)
   switch(iHint)
   {
     // Gl Context
-    case GLFW_OPENGL_API:
+    case GLFW_CLIENT_API:
       fConfig.fClientAPI = iValue;
       break;
 
@@ -264,17 +265,19 @@ GLFWwindowcontentscalefun Context::setWindowContentScaleCallback(GLFWwindow *iWi
 //------------------------------------------------------------------------
 // Context::getWindowContentScale
 //------------------------------------------------------------------------
-void Context::getWindowContentScale(GLFWwindow *iWindow, float *iXScale, float *iYScale)
+void Context::getWindowContentScale(GLFWwindow *iWindow, float *oXScale, float *oYScale)
 {
   auto window = getWindow(iWindow);
   if(window)
   {
-    window->getContentScale(iXScale, iYScale);
+    window->getContentScale(oXScale, oYScale);
   }
   else
   {
-    *iXScale = 1.0f;
-    *iYScale = 1.0f;
+    if(oXScale)
+      *oXScale = 1.0f;
+    if(oYScale)
+      *oYScale = 1.0f;
   }
 }
 
@@ -291,26 +294,30 @@ void Context::setWindowSize(GLFWwindow *iWindow, int iWidth, int iHeight)
 //------------------------------------------------------------------------
 // Context::getWindowSize
 //------------------------------------------------------------------------
-void Context::getWindowSize(GLFWwindow *iWindow, int *iWidth, int *iHeight)
+void Context::getWindowSize(GLFWwindow *iWindow, int *oWidth, int *oHeight)
 {
   auto window = getWindow(iWindow);
   if(window)
   {
-    *iWidth = window->getWidth();
-    *iHeight = window->getHeight();
+    if(oWidth)
+      *oWidth = window->getWidth();
+    if(oHeight)
+      *oHeight = window->getHeight();
   }
 }
 
 //------------------------------------------------------------------------
 // Context::getFramebufferSize
 //------------------------------------------------------------------------
-void Context::getFramebufferSize(GLFWwindow *iWindow, int *iWidth, int *iHeight)
+void Context::getFramebufferSize(GLFWwindow *iWindow, int *oWidth, int *oHeight)
 {
   auto window = getWindow(iWindow);
   if(window)
   {
-    *iWidth = window->getFramebufferWidth();
-    *iHeight = window->getFramebufferHeight();
+    if(oWidth)
+      *oWidth = window->getFramebufferWidth();
+    if(oHeight)
+      *oHeight = window->getFramebufferHeight();
   }
 }
 
@@ -337,6 +344,92 @@ GLFWframebuffersizefun Context::setFramebufferSizeCallback(GLFWwindow *iWindow, 
   else
     return nullptr;
 }
+
+//------------------------------------------------------------------------
+// Context::getMonitor
+//------------------------------------------------------------------------
+Monitor *Context::getMonitor(GLFWmonitor *iMonitor) const
+{
+  // TODO fix this
+  auto monitor = reinterpret_cast<Monitor *>(iMonitor);
+  if(monitor != &fPrimaryMonitor)
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "monitor parameter invalid");
+    return nullptr;
+  }
+  return monitor;
+}
+
+//------------------------------------------------------------------------
+// Context::getMonitors
+//------------------------------------------------------------------------
+GLFWmonitor **Context::getMonitors(int *oCount)
+{
+  static std::vector<GLFWmonitor *> kMonitors{fPrimaryMonitor.asGLFWmonitor()};
+  *oCount = static_cast<int>(kMonitors.size());
+  return kMonitors.data();
+}
+
+//------------------------------------------------------------------------
+// Context::getPrimaryMonitor
+//------------------------------------------------------------------------
+GLFWmonitor *Context::getPrimaryMonitor()
+{
+  return fPrimaryMonitor.asGLFWmonitor();
+}
+
+//------------------------------------------------------------------------
+// Context::getMonitorPos
+//------------------------------------------------------------------------
+void Context::getMonitorPos(GLFWmonitor *iMonitor, int *oXPos, int *oYPos)
+{
+  auto monitor = getMonitor(iMonitor);
+  if(monitor)
+  {
+    if(oXPos)
+      *oXPos = 0;
+    if(oYPos)
+      *oYPos = 0;
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::getMonitorWorkArea
+//------------------------------------------------------------------------
+void Context::getMonitorWorkArea(GLFWmonitor *iMonitor, int *oXPos, int *oYPos, int *oWidth, int *oHeight)
+{
+  auto monitor = getMonitor(iMonitor);
+  if(monitor)
+  {
+    if(oXPos)
+      *oXPos = 0;
+    if(oYPos)
+      *oYPos = 0;
+    int width, height;
+    emscripten_get_screen_size(&width, &height);
+    if(oWidth)
+      *oWidth = width;
+    if(oHeight)
+      *oHeight = height;
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::getTime
+//------------------------------------------------------------------------
+double Context::getAbsoluteTimeInSeconds()
+{
+  return emscripten_get_now() / 1000;
+}
+
+//------------------------------------------------------------------------
+// Context::getTimeInSeconds
+//------------------------------------------------------------------------
+double Context::getTimeInSeconds() const
+{
+  return getAbsoluteTimeInSeconds() - fInitialTimeInSeconds;
+}
+
 
 
 }

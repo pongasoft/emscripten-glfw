@@ -22,6 +22,7 @@
 #include <memory>
 #include <GLFW/glfw3.h>
 #include "Window.h"
+#include "Monitor.h"
 #include <vector>
 #include <string>
 
@@ -47,14 +48,24 @@ public:
   void makeContextCurrent(GLFWwindow* iWindow);
   GLFWwindow* getCurrentContext() const;
 
-  void getWindowContentScale(GLFWwindow* iWindow, float* iXScale, float* iYScale);
+  void getWindowContentScale(GLFWwindow* iWindow, float* oXScale, float* oYScale);
   GLFWwindowcontentscalefun setWindowContentScaleCallback(GLFWwindow* iWindow, GLFWwindowcontentscalefun iCallback);
 
   void setWindowSize(GLFWwindow* iWindow, int iWidth, int iHeight);
-  void getWindowSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
-  void getFramebufferSize(GLFWwindow* iWindow, int* iWidth, int* iHeight);
+  void getWindowSize(GLFWwindow* iWindow, int* oWidth, int* oHeight);
+  void getFramebufferSize(GLFWwindow* iWindow, int* oWidth, int* oHeight);
   GLFWwindowsizefun setWindowSizeCallback(GLFWwindow *iWindow, GLFWwindowsizefun iCallback);
   GLFWframebuffersizefun setFramebufferSizeCallback(GLFWwindow *iWindow, GLFWframebuffersizefun iCallback);
+
+  // monitor
+  GLFWmonitor** getMonitors(int* oCount);
+  GLFWmonitor* getPrimaryMonitor();
+  void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos);
+  void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight);
+
+
+  // time
+  double getTimeInSeconds() const;
 
 public:
   void onScaleChange();
@@ -62,12 +73,16 @@ public:
 private:
   Context();
   std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
+  Monitor *getMonitor(GLFWmonitor *iMonitor) const;
+  static double getAbsoluteTimeInSeconds();
 
 private:
   std::vector<std::shared_ptr<Window>> fWindows{};
   std::shared_ptr<Window> fCurrentWindow{};
+  Monitor fPrimaryMonitor{0};
   Config fConfig{};
   float fScale{1.0f};
+  double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
 };
 
 }

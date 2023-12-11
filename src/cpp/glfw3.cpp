@@ -44,7 +44,7 @@ GLFWAPI int glfwInit()
   printf("glfwInit()\n");
   if(kContext)
     return GLFW_TRUE;
-  kContext = std::move(emscripten::glfw3::Context::init());
+  kContext = emscripten::glfw3::Context::init();
   return GLFW_TRUE;
 }
 
@@ -273,26 +273,204 @@ GLFWAPI GLFWframebuffersizefun glfwSetFramebufferSizeCallback(GLFWwindow* window
 }
 
 //------------------------------------------------------------------------
+// glfwGetMonitors
+//------------------------------------------------------------------------
+GLFWAPI GLFWmonitor** glfwGetMonitors(int* count)
+{
+  auto context = getContext();
+  if(context)
+    return context->getMonitors(count);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetPrimaryMonitor
+//------------------------------------------------------------------------
+GLFWAPI GLFWmonitor* glfwGetPrimaryMonitor(void)
+{
+  auto context = getContext();
+  if(context)
+    return context->getPrimaryMonitor();
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetMonitorPos
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos)
+{
+  auto context = getContext();
+  if(context)
+    return context->getMonitorPos(monitor, xpos, ypos);
+}
+
+//------------------------------------------------------------------------
+// glfwGetMonitorWorkarea
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, int* width, int* height)
+{
+  auto context = getContext();
+  if(context)
+    return context->getMonitorWorkArea(monitor, xpos, ypos, width, height);
+}
+
+//------------------------------------------------------------------------
+// glfwGetTime
+//------------------------------------------------------------------------
+GLFWAPI double glfwGetTime(void)
+{
+  auto context = getContext();
+  if(context)
+    return context->getTimeInSeconds();
+  else
+    return 0;
+}
+
+//------------------------------------------------------------------------
+// TODO Implement
+//------------------------------------------------------------------------
+
+GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwindowfocusfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcursorenterfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWcharfun glfwSetCharCallback(GLFWwindow* window, GLFWcharfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
+{
+  // TODO implement
+  return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetCursorPos
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos)
+{
+  *xpos = 0;
+  *ypos = 0;
+}
+
+//------------------------------------------------------------------------
+// glfwGetWindowPos
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
+{
+  *xpos = 0;
+  *ypos = 0;
+}
+
+//------------------------------------------------------------------------
+// glfwGetInputMode
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode)
+{
+  // TODO fix mock implementation!
+  if(mode == GLFW_CURSOR)
+    return GLFW_CURSOR_NORMAL;
+  else
+    return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
+// glfwSetInputMode
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
+{
+
+}
+
+//------------------------------------------------------------------------
+// glfwSetCursor
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor)
+{
+  // TODO: use canvas.style.cursor = value ???
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickAxes
+//------------------------------------------------------------------------
+GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
+{
+  *count = 0;
+  return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickButtons
+//------------------------------------------------------------------------
+GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
+{
+  *count = 0;
+  return nullptr;
+}
+
+//------------------------------------------------------------------------
+// no implementation for the emscripten platform
+//------------------------------------------------------------------------
+GLFWAPI void glfwShowWindow(GLFWwindow* window) { }
+GLFWAPI void glfwHideWindow(GLFWwindow* window) { }
+GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape) { return nullptr; }
+GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
+{
+  *count = 0;
+  return nullptr;
+}
+GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor) { return nullptr; }
+GLFWAPI void glfwPollEvents(void){ }
+
+//------------------------------------------------------------------------
 // not_implemented
 //------------------------------------------------------------------------
-GLFWAPI GLFWmonitor** glfwGetMonitors(int* count){ not_implemented(); }
-GLFWAPI GLFWmonitor* glfwGetPrimaryMonitor(void){ not_implemented(); }
-GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos){ not_implemented(); }
-GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, int* width, int* height){ not_implemented(); }
 GLFWAPI void glfwGetMonitorPhysicalSize(GLFWmonitor* monitor, int* widthMM, int* heightMM){ not_implemented(); }
 GLFWAPI void glfwGetMonitorContentScale(GLFWmonitor* monitor, float* xscale, float* yscale){ not_implemented(); }
 GLFWAPI const char* glfwGetMonitorName(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetMonitorUserPointer(GLFWmonitor* monitor, void* pointer){ not_implemented(); }
 GLFWAPI void* glfwGetMonitorUserPointer(GLFWmonitor* monitor){ not_implemented(); }
-GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback){ not_implemented(); }
-GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count){ not_implemented(); }
-GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma){ not_implemented(); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ not_implemented(); }
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title){ not_implemented(); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images){ not_implemented(); }
-GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos){ not_implemented(); }
 GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos){ not_implemented(); }
 GLFWAPI void glfwSetWindowSizeLimits(GLFWwindow* window, int minwidth, int minheight, int maxwidth, int maxheight){ not_implemented(); }
 GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom){ not_implemented(); }
@@ -302,8 +480,6 @@ GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity){ not_implem
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwMaximizeWindow(GLFWwindow* window){ not_implemented(); }
-GLFWAPI void glfwShowWindow(GLFWwindow* window){ not_implemented(); }
-GLFWAPI void glfwHideWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwFocusWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRequestWindowAttention(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window){ not_implemented(); }
@@ -315,37 +491,22 @@ GLFWAPI void* glfwGetWindowUserPointer(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwindowclosefun callback){ not_implemented(); }
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback){ not_implemented(); }
-GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwindowfocusfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, GLFWwindowmaximizefun callback){ not_implemented(); }
-GLFWAPI void glfwPollEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }
 GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
-GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode){ not_implemented(); }
-GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value){ not_implemented(); }
 GLFWAPI int glfwRawMouseMotionSupported(void){ not_implemented(); }
 GLFWAPI const char* glfwGetKeyName(int key, int scancode){ not_implemented(); }
 GLFWAPI int glfwGetKeyScancode(int key){ not_implemented(); }
 GLFWAPI int glfwGetKey(GLFWwindow* window, int key){ not_implemented(); }
 GLFWAPI int glfwGetMouseButton(GLFWwindow* window, int button){ not_implemented(); }
-GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
 GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot){ not_implemented(); }
-GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape){ not_implemented(); }
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor){ not_implemented(); }
-GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor){ not_implemented(); }
-GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback){ not_implemented(); }
-GLFWAPI GLFWcharfun glfwSetCharCallback(GLFWwindow* window, GLFWcharfun callback){ not_implemented(); }
 GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmodsfun callback){ not_implemented(); }
-GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback){ not_implemented(); }
-GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback){ not_implemented(); }
-GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcursorenterfun callback){ not_implemented(); }
-GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun callback){ not_implemented(); }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback){ not_implemented(); }
 GLFWAPI int glfwJoystickPresent(int jid){ not_implemented(); }
-GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count){ not_implemented(); }
-GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count){ not_implemented(); }
 GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count){ not_implemented(); }
 GLFWAPI const char* glfwGetJoystickName(int jid){ not_implemented(); }
 GLFWAPI const char* glfwGetJoystickGUID(int jid){ not_implemented(); }
@@ -358,7 +519,6 @@ GLFWAPI const char* glfwGetGamepadName(int jid){ not_implemented(); }
 GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state){ not_implemented(); }
 GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string){ not_implemented(); }
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window){ not_implemented(); }
-GLFWAPI double glfwGetTime(void){ not_implemented(); }
 GLFWAPI void glfwSetTime(double time){ not_implemented(); }
 GLFWAPI uint64_t glfwGetTimerValue(void){ not_implemented(); }
 GLFWAPI uint64_t glfwGetTimerFrequency(void){ not_implemented(); }
