@@ -20,6 +20,7 @@
 #include <emscripten/em_types.h>
 #include <utility>
 #include "ErrorHandler.h"
+#include <functional>
 
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
@@ -35,23 +36,34 @@ namespace emscripten::glfw3 {
 static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 
 //------------------------------------------------------------------------
+// Window::Window
+//------------------------------------------------------------------------
+Window::Window(Config iConfig, float iMonitorScale) : fConfig{std::move(iConfig)}, fMonitorScale{iMonitorScale}
+{
+  createEventListeners();
+}
+
+//------------------------------------------------------------------------
 // Window::~Window
 //------------------------------------------------------------------------
 Window::~Window()
 {
+  addOrRemoveEventListeners(false);
   emscripten_glfw3_context_window_destroy(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
-// Window::setScale
+// Window::setMonitorScale
 //------------------------------------------------------------------------
-void Window::setScale(float iScale)
+void Window::setMonitorScale(float iScale)
 {
-  if(fScale != iScale)
+  if(fMonitorScale != iScale)
   {
-    fScale = iScale;
-    if(fContentScaleCallback)
-      fContentScaleCallback(asOpaquePtr(), fScale, fScale);
+    auto oldScale = getScale();
+    fMonitorScale = iScale;
+    auto newScale = getScale();
+    if(oldScale != newScale && fContentScaleCallback)
+      fContentScaleCallback(asOpaquePtr(), fMonitorScale, fMonitorScale);
   }
 }
 
@@ -69,8 +81,8 @@ void Window::setSize(int iWidth, int iHeight)
   
   if(isHiDPIAware())
   {
-    fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fScale));
-    fbHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fScale));
+    fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fMonitorScale));
+    fbHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fMonitorScale));
   }
 
   auto framebufferSizeChanged = fFramebufferWidth != fbWidth || fFramebufferHeight != fbHeight;
@@ -127,9 +139,76 @@ void Window::makeGLContextCurrent()
 //------------------------------------------------------------------------
 void Window::getContentScale(float *iXScale, float *iYScale) const
 {
-  auto scale = isHiDPIAware() ? fScale : 1.0f;
+  auto scale = getScale();
   *iXScale = scale;
   *iYScale = scale;
 }
+
+//------------------------------------------------------------------------
+// WindowCallback
+//------------------------------------------------------------------------
+template<typename E>
+EM_BOOL WindowCallback(int iEventType, E const *iEvent, void *iUserData)
+{
+  auto cb = reinterpret_cast<Window::EventListener<E> *>(iUserData);
+  if(std::invoke(*cb, iEventType, iEvent))
+    return EM_TRUE;
+  else
+    return EM_FALSE;
+}
+
+//------------------------------------------------------------------------
+// Window::createEventListeners
+//------------------------------------------------------------------------
+void Window::createEventListeners()
+{
+  fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+    // TODO: handle pointer lock (an emscripten feature, not a glfw3 feature...)
+
+    auto scale = getScale();
+    fCursorPosX = static_cast<double>(iMouseEvent->targetX) * scale;
+    fCursorPosY = static_cast<double>(iMouseEvent->targetY) * scale;
+    if(fCursorPosCallback)
+      fCursorPosCallback(asOpaquePtr(), fCursorPosX, fCursorPosY);
+    return true;
+  };
+}
+
+template<typename E>
+using EmscriptenEventCallback = EM_BOOL (*)(int, E const *, void *);
+
+template<typename E>
+using EmscriptenListenerFunction = EMSCRIPTEN_RESULT (*)(const char *, void *, EM_BOOL, EmscriptenEventCallback<E>, pthread_t);
+
+//------------------------------------------------------------------------
+// addOrRemoveListener
+//------------------------------------------------------------------------
+template<typename E>
+void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction, bool iAdd, char const *iTarget, void *iUserData, bool iUseCapture)
+{
+  auto error = iListenerFunction(iTarget,
+                                 iAdd ? iUserData : nullptr,
+                                 iUseCapture ? EM_TRUE : EM_FALSE,
+                                 iAdd ? WindowCallback<EmscriptenMouseEvent> : nullptr,
+                                 EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD);
+
+  if(error != EMSCRIPTEN_RESULT_SUCCESS)
+  {
+    kErrorHandler.logError(error, "Error while registering listener for [%s]", iTarget);
+  }
+}
+
+//------------------------------------------------------------------------
+// Window::addOrRemoveEventListeners
+//------------------------------------------------------------------------
+void Window::addOrRemoveEventListeners(bool iAdd)
+{
+  auto selector = getCanvasSelector();
+  printf("addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
+
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
+}
+
+
 
 }

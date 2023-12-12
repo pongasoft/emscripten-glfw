@@ -31,6 +31,18 @@ static inline emscripten::glfw3::Context *getContext() {
     emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
   return kContext.get();
 }
+static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* iWindow) {
+  if(!kContext)
+  {
+    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    return nullptr;
+  }
+  else
+  {
+    return kContext->getWindow(iWindow);
+  }
+
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -120,9 +132,9 @@ GLFWAPI void glfwDestroyWindow(GLFWwindow* window)
 //------------------------------------------------------------------------
 GLFWAPI int glfwWindowShouldClose(GLFWwindow* window)
 {
-  auto context = getContext();
-  if(context)
-    return context->windowShouldClose(window);
+  auto w = getWindow(window);
+  if(w)
+    return w->getShouldClose();
   else
     return GLFW_TRUE;
 }
@@ -132,9 +144,9 @@ GLFWAPI int glfwWindowShouldClose(GLFWwindow* window)
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* window, int value)
 {
-  auto context = getContext();
-  if(context)
-    return context->setWindowShouldClose(window, value);
+  auto w = getWindow(window);
+  if(w)
+    return w->setShouldClose(value);
 }
 
 //------------------------------------------------------------------------
@@ -199,9 +211,9 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value)
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetWindowContentScale(GLFWwindow* window, float* xscale, float* yscale)
 {
-  auto context = getContext();
-  if(context)
-    context->getWindowContentScale(window, xscale, yscale);
+  auto w = getWindow(window);
+  if(w)
+    w->getContentScale(xscale, yscale);
 }
 
 //------------------------------------------------------------------------
@@ -209,9 +221,9 @@ GLFWAPI void glfwGetWindowContentScale(GLFWwindow* window, float* xscale, float*
 //------------------------------------------------------------------------
 GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* window, GLFWwindowcontentscalefun callback)
 {
-  auto context = getContext();
-  if(context)
-    return context->setWindowContentScaleCallback(window, callback);
+  auto w = getWindow(window);
+  if(w)
+    return w->setContentScaleCallback(callback);
   else
     return nullptr;
 }
@@ -221,9 +233,9 @@ GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* 
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height)
 {
-  auto context = getContext();
-  if(context)
-    context->setWindowSize(window, width, height);
+  auto w = getWindow(window);
+  if(w)
+    w->setSize(width, height);
 }
 
 //------------------------------------------------------------------------
@@ -231,9 +243,9 @@ GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height)
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetWindowSize(GLFWwindow* window, int* width, int* height)
 {
-  auto context = getContext();
-  if(context)
-    context->getWindowSize(window, width, height);
+  auto w = getWindow(window);
+  if(w)
+    w->getSize(width, height);
 }
 
 //------------------------------------------------------------------------
@@ -241,10 +253,9 @@ GLFWAPI void glfwGetWindowSize(GLFWwindow* window, int* width, int* height)
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetFramebufferSize(GLFWwindow* window, int* width, int* height)
 {
-  auto context = getContext();
-  if(context)
-    context->getFramebufferSize(window, width, height);
-
+  auto w = getWindow(window);
+  if(w)
+    w->getFramebufferSize(width, height);
 }
 
 //------------------------------------------------------------------------
@@ -252,9 +263,9 @@ GLFWAPI void glfwGetFramebufferSize(GLFWwindow* window, int* width, int* height)
 //------------------------------------------------------------------------
 GLFWAPI GLFWwindowsizefun glfwSetWindowSizeCallback(GLFWwindow* window, GLFWwindowsizefun callback)
 {
-  auto context = getContext();
-  if(context)
-    return context->setWindowSizeCallback(window, callback);
+  auto w = getWindow(window);
+  if(w)
+    return w->setSizeCallback(callback);
   else
     return nullptr;
 
@@ -265,9 +276,31 @@ GLFWAPI GLFWwindowsizefun glfwSetWindowSizeCallback(GLFWwindow* window, GLFWwind
 //------------------------------------------------------------------------
 GLFWAPI GLFWframebuffersizefun glfwSetFramebufferSizeCallback(GLFWwindow* window, GLFWframebuffersizefun callback)
 {
-  auto context = getContext();
-  if(context)
-    return context->setFramebufferSizeCallback(window, callback);
+  auto w = getWindow(window);
+  if(w)
+    return w->setFramebufferSizeCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetCursorPos
+//------------------------------------------------------------------------
+GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->getCursorPos(xpos, ypos);
+}
+
+//------------------------------------------------------------------------
+// glfwSetCursorPosCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setCursorPosCallback(callback);
   else
     return nullptr;
 }
@@ -344,12 +377,6 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
   return nullptr;
 }
 
-GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
-
 GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback)
 {
   // TODO implement
@@ -378,15 +405,6 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
 {
   // TODO implement
   return nullptr;
-}
-
-//------------------------------------------------------------------------
-// glfwGetCursorPos
-//------------------------------------------------------------------------
-GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos)
-{
-  *xpos = 0;
-  *ypos = 0;
 }
 
 //------------------------------------------------------------------------

@@ -26,6 +26,7 @@ namespace emscripten::glfw3 {
 
 struct Config
 {
+  // For backward compatibility with emscripten, defaults to getting the canvas from Module
   static constexpr char const *kDefaultCanvasSelector = "Module['canvas']";
 
   // GL Context

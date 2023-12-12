@@ -41,21 +41,10 @@ public:
 
   GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
   void destroyWindow(GLFWwindow *iWindow);
-
-  int windowShouldClose(GLFWwindow* iWindow) const;
-  void setWindowShouldClose(GLFWwindow* iWindow, int iValue);
+  std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
 
   void makeContextCurrent(GLFWwindow* iWindow);
   GLFWwindow* getCurrentContext() const;
-
-  void getWindowContentScale(GLFWwindow* iWindow, float* oXScale, float* oYScale);
-  GLFWwindowcontentscalefun setWindowContentScaleCallback(GLFWwindow* iWindow, GLFWwindowcontentscalefun iCallback);
-
-  void setWindowSize(GLFWwindow* iWindow, int iWidth, int iHeight);
-  void getWindowSize(GLFWwindow* iWindow, int* oWidth, int* oHeight);
-  void getFramebufferSize(GLFWwindow* iWindow, int* oWidth, int* oHeight);
-  GLFWwindowsizefun setWindowSizeCallback(GLFWwindow *iWindow, GLFWwindowsizefun iCallback);
-  GLFWframebuffersizefun setFramebufferSizeCallback(GLFWwindow *iWindow, GLFWframebuffersizefun iCallback);
 
   // monitor
   GLFWmonitor** getMonitors(int* oCount);
@@ -71,7 +60,7 @@ public:
 
 private:
   Context();
-  std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
+  std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   Monitor *getMonitor(GLFWmonitor *iMonitor) const;
   static double getAbsoluteTimeInSeconds();
 

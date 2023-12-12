@@ -79,14 +79,14 @@ void Context::onScaleChange()
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
   for(auto const &[k, w]: fWindows)
   {
-    w->setScale(fScale);
+    w->setMonitorScale(fScale);
   }
 }
 
 //------------------------------------------------------------------------
-// Context::getWindow
+// Context::findWindow
 //------------------------------------------------------------------------
-std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
+std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
 {
   // shortcut for most frequent use-case
   if(fCurrentWindowOpaquePtr == iWindow)
@@ -97,9 +97,20 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
   {
     return iter->second;
   }
-  kErrorHandler.logError(GLFW_INVALID_VALUE, "window parameter invalid");
   return nullptr;
 }
+
+//------------------------------------------------------------------------
+// Context::getWindow
+//------------------------------------------------------------------------
+std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
+{
+  auto window = findWindow(iWindow);
+  if(!window)
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "window parameter invalid");
+  return window;
+}
+
 
 //------------------------------------------------------------------------
 // Context::createWindow
@@ -127,6 +138,8 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   fWindows[window->asOpaquePtr()] = window;
 
+  window->registerEventListeners();
+
   return window->asOpaquePtr();
 }
 
@@ -145,28 +158,6 @@ void Context::destroyWindow(GLFWwindow *iWindow)
     }
     fWindows.erase(iWindow);
   }
-}
-
-//------------------------------------------------------------------------
-// Context::windowShouldClose
-//------------------------------------------------------------------------
-int Context::windowShouldClose(GLFWwindow *iWindow) const
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    return window->getShouldClose();
-  else
-    return GLFW_TRUE;
-}
-
-//------------------------------------------------------------------------
-// Context::setWindowShouldClose
-//------------------------------------------------------------------------
-void Context::setWindowShouldClose(GLFWwindow *iWindow, int iValue)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    window->setShouldClose(iValue);
 }
 
 //------------------------------------------------------------------------
@@ -253,102 +244,6 @@ void Context::windowHint(int iHint, char const *iValue)
       kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
   }
 
-}
-
-//------------------------------------------------------------------------
-// Context::setWindowContentScaleCallback
-//------------------------------------------------------------------------
-GLFWwindowcontentscalefun Context::setWindowContentScaleCallback(GLFWwindow *iWindow,
-                                                                 GLFWwindowcontentscalefun iCallback)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    return window->setContentScaleCallback(iCallback);
-  else
-    return nullptr;
-}
-
-//------------------------------------------------------------------------
-// Context::getWindowContentScale
-//------------------------------------------------------------------------
-void Context::getWindowContentScale(GLFWwindow *iWindow, float *oXScale, float *oYScale)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-  {
-    window->getContentScale(oXScale, oYScale);
-  }
-  else
-  {
-    if(oXScale)
-      *oXScale = 1.0f;
-    if(oYScale)
-      *oYScale = 1.0f;
-  }
-}
-
-//------------------------------------------------------------------------
-// Context::setWindowSize
-//------------------------------------------------------------------------
-void Context::setWindowSize(GLFWwindow *iWindow, int iWidth, int iHeight)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    window->setSize(iWidth, iHeight);
-}
-
-//------------------------------------------------------------------------
-// Context::getWindowSize
-//------------------------------------------------------------------------
-void Context::getWindowSize(GLFWwindow *iWindow, int *oWidth, int *oHeight)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-  {
-    if(oWidth)
-      *oWidth = window->getWidth();
-    if(oHeight)
-      *oHeight = window->getHeight();
-  }
-}
-
-//------------------------------------------------------------------------
-// Context::getFramebufferSize
-//------------------------------------------------------------------------
-void Context::getFramebufferSize(GLFWwindow *iWindow, int *oWidth, int *oHeight)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-  {
-    if(oWidth)
-      *oWidth = window->getFramebufferWidth();
-    if(oHeight)
-      *oHeight = window->getFramebufferHeight();
-  }
-}
-
-//------------------------------------------------------------------------
-// Context::setWindowSizeCallback
-//------------------------------------------------------------------------
-GLFWwindowsizefun Context::setWindowSizeCallback(GLFWwindow *iWindow, GLFWwindowsizefun iCallback)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    return window->setSizeCallback(iCallback);
-  else
-    return nullptr;
-}
-
-//------------------------------------------------------------------------
-// Context::setFramebufferSizeCallback
-//------------------------------------------------------------------------
-GLFWframebuffersizefun Context::setFramebufferSizeCallback(GLFWwindow *iWindow, GLFWframebuffersizefun iCallback)
-{
-  auto window = getWindow(iWindow);
-  if(window)
-    return window->setFramebufferSizeCallback(iCallback);
-  else
-    return nullptr;
 }
 
 //------------------------------------------------------------------------

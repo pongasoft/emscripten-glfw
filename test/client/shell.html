@@ -22,6 +22,16 @@
 <body>
 <canvas class=emscripten id=canvas1 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 <canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+<p>
+<div id="#canvas-details">
+<ul>
+  <li>Mouse:
+    <span id="#canvas1-mouse-x">0.0</span>x<span id="#canvas1-mouse-y">0.0</span> |
+    <span id="#canvas2-mouse-x">0.0</span>x<span id="#canvas2-mouse-y">0.0</span>
+  </li>
+</ul>
+</div>
+</p>
 <script>
 
   var Module = {

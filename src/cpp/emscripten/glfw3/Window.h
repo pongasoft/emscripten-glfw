@@ -20,9 +20,11 @@
 #define EMSCRIPTEN_GLFW_WINDOW_H
 
 #include <GLFW/glfw3.h>
+#include <emscripten/html5.h>
 #include "Object.h"
 #include "Config.h"
 #include <utility>
+#include <functional>
 
 namespace emscripten::glfw3 {
 
@@ -36,34 +38,71 @@ public:
 
   inline int getWidth() const { return fWidth; }
   inline int getHeight() const { return fHeight; }
+  inline void getSize(int* oWidth, int* oHeight) const
+  {
+    if(oWidth) *oWidth = getWidth();
+    if(oHeight) *oHeight = getHeight();
+  }
   inline int getFramebufferWidth() const {  return fFramebufferWidth; }
   inline int getFramebufferHeight() const { return fFramebufferHeight; }
+  inline void getFramebufferSize(int* oWidth, int* oHeight) const
+  {
+    if(oWidth) *oWidth = getFramebufferWidth();
+    if(oHeight) *oHeight = getFramebufferHeight();
+  }
+
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
 
   void getContentScale(float* iXScale, float* iYScale) const;
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
 
-  void setScale(float iScale);
+  // events
+  inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
+
+  // mouse
+  inline void getCursorPos(double *oXPos, double *oYPos) {
+    if(oXPos) {*oXPos = fCursorPosX; }
+    if(oYPos) {*oYPos = fCursorPosY; }
+  }
+
+  void setMonitorScale(float iScale);
   void setSize(int iWidth, int iHeight);
   bool createGLContext();
   void makeGLContextCurrent();
 
-  Window(Config iConfig, float iScale) : fConfig{std::move(iConfig)}, fScale{iScale} {}
+  Window(Config iConfig, float iMonitorScale);
   ~Window() override;
+
+  void registerEventListeners() { addOrRemoveEventListeners(true); }
+
+public:
+  template<typename E>
+  using EventListener = std::function<bool(int iEventType, E const *iMouseEvent)>;
+
+private:
+  EventListener<EmscriptenMouseEvent> fOnMouseMove{};
+
+private:
+  void createEventListeners();
+  void addOrRemoveEventListeners(bool iAdd);
+  inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
 
 private:
   Config fConfig;
-  float fScale;
+  float fMonitorScale;
   int fWidth{};
   int fHeight{};
   int fFramebufferWidth{};
   int fFramebufferHeight{};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
+  double fCursorPosX{};
+  double fCursorPosY{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
   GLFWwindowsizefun fSizeCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};
+  GLFWcursorposfun fCursorPosCallback{};
 };
 
 }

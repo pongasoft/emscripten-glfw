@@ -16,8 +16,11 @@ let impl = {
     }
   },
 
+  emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
   emscripten_glfw3_context_init: (scale, scaleChangeCallback, scaleChangeCallbackUserData) => {
     console.log("emscripten_glfw3_context_init()");
+    // For backward compatibility with emscripten, defaults to getting the canvas from Module
+    specialHTMLTargets["Module['canvas']"] = Module.canvas;
     GLFW3.fCanvasContexts = {};
     GLFW3.fCurrentCanvasContext = null;
 
@@ -39,12 +42,11 @@ let impl = {
     GLFW3.fScaleChangeCallbackUserData = null;
   },
 
+  emscripten_glfw3_context_window_init__deps: ['$findEventTarget'],
   emscripten_glfw3_context_window_init: (canvasId, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
 
-    const canvas = canvasSelector !== "Module['canvas']" ?
-      document.querySelector(canvasSelector) : // use canvasSelector
-      Module['canvas']; // use emscripten "standard" way
+    const canvas =  findEventTarget(canvasSelector);
 
     if(!canvas)
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};

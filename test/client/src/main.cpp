@@ -131,6 +131,18 @@ int main()
 //    glfwSwapBuffers(window);
 //    glfwPollEvents();
 
+    double x,y;
+    glfwGetCursorPos(window1, &x, &y);
+    EM_ASM({
+             document.getElementById('#canvas1-mouse-x').innerHTML = $0.toString();
+             document.getElementById('#canvas1-mouse-y').innerHTML = $1.toString();
+           }, x, y);
+    glfwGetCursorPos(window2, &x, &y);
+    EM_ASM({
+             document.getElementById('#canvas2-mouse-x').innerHTML = $0.toString();
+             document.getElementById('#canvas2-mouse-y').innerHTML = $1.toString();
+           }, x, y);
+
     emscripten_sleep(100);
   }
 
