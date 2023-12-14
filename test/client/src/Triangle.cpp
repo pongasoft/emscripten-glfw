@@ -19,6 +19,7 @@
 #include "Triangle.h"
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
+#include <emscripten/html5.h>
 #include <iostream>
 
 // The code has been inspired by https://github.com/sessamekesh/webgl-tutorials-2023 (MIT License)
@@ -41,10 +42,12 @@ void main() {
   triangleColor = vec4(0.294, 0.0, 0.51, 1.0);
 })FST";
 
+std::map<GLFWwindow *, std::shared_ptr<Triangle>> Triangle::kTriangles{};
+
 //------------------------------------------------------------------------
 // Triangle::init
 //------------------------------------------------------------------------
-std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow)
+std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow, char const *iName)
 {
   glfwMakeContextCurrent(iWindow);
 
@@ -123,6 +126,7 @@ std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow)
   }
 
   return std::unique_ptr<Triangle>(new Triangle(iWindow,
+                                                iName,
                                                 helloTriangleProgram,
                                                 vertexPositionAttribLocation,
                                                 triangleGeoVAO));
@@ -195,3 +199,109 @@ void Triangle::setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat i
   fBgBlue = iBlue;
   fBgAlpha = iAlpha;
 }
+
+//------------------------------------------------------------------------
+// Triangle::shouldClose
+//------------------------------------------------------------------------
+bool Triangle::shouldClose() const
+{
+  return glfwWindowShouldClose(fWindow);
+}
+
+//------------------------------------------------------------------------
+// Triangle::~Triangle
+//------------------------------------------------------------------------
+Triangle::~Triangle()
+{
+  glfwDestroyWindow(fWindow);
+}
+
+//------------------------------------------------------------------------
+// fmt
+//------------------------------------------------------------------------
+template<std::size_t Size, typename... Args>
+std::string_view fmt(std::array<char, Size> &oBuffer, char const *iFormat, Args... args)
+{
+  static_assert(Size > 0);
+
+  auto size = std::snprintf(oBuffer.data(), oBuffer.size(), iFormat, args ...);
+  if(size > 0)
+  {
+    oBuffer[oBuffer.size() - 1] = '\0';
+    return {oBuffer.data(), static_cast<std::size_t>(size)};
+  }
+  else
+    return {};
+}
+
+//------------------------------------------------------------------------
+// setHtmlValue
+//------------------------------------------------------------------------
+void setHtmlValue(std::string_view iElementSelector, std::string_view iValue)
+{
+  EM_ASM({
+           const element = document.querySelector(UTF8ToString($0));
+           if(element)
+           element.innerHTML = UTF8ToString($1);
+
+         }, iElementSelector.data(), iValue.data());
+}
+
+//------------------------------------------------------------------------
+// setHtmlValue
+//------------------------------------------------------------------------
+template<typename... Args>
+void setHtmlValue(GLFWwindow *iWindow, char const *iFunctionName, char const *iFormat, Args... args)
+{
+  static std::array<char, 256> kSelector;
+  static std::array<char, 256> kValue;
+  auto triangle = Triangle::kTriangles[iWindow];
+  if(triangle)
+  {
+    auto selector = fmt(kSelector, ".%s .%s", iFunctionName, triangle->getName());
+    auto value = fmt(kValue, iFormat, std::forward<Args>(args)...);
+    setHtmlValue(selector, value);
+  }
+}
+
+void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
+{
+  setHtmlValue(window, "glfwSetWindowContentScaleCallback", "%.2fx%.2f", xScale, yScale);
+}
+void onWindowSizeChange(GLFWwindow* window, int width, int height)
+{
+  setHtmlValue(window, "glfwSetWindowSizeCallback", "%dx%d", width, height);
+}
+void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
+{
+  setHtmlValue(window, "glfwSetFramebufferSizeCallback", "%dx%d", width, height);
+}
+
+//------------------------------------------------------------------------
+// registerCallbacks
+//------------------------------------------------------------------------
+void Triangle::registerCallbacks()
+{
+  glfwSetWindowContentScaleCallback(fWindow, onContentScaleChange);
+  glfwSetWindowSizeCallback(fWindow, onWindowSizeChange);
+  glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
+}
+
+//------------------------------------------------------------------------
+// updateValues
+//------------------------------------------------------------------------
+void Triangle::updateValues()
+{
+  float xf, yf;
+  int xi, yi;
+
+  glfwGetWindowSize(fWindow, &xi, &yi);
+  setHtmlValue(fWindow, "glfwGetWindowSize", "%dx%d", xi, yi);
+
+  glfwGetFramebufferSize(fWindow, &xi, &yi);
+  setHtmlValue(fWindow, "glfwGetFramebufferSize", "%dx%d", xi, yi);
+
+  glfwGetWindowContentScale(fWindow, &xf, &yf);
+  setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);
+}
+

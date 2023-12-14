@@ -18,6 +18,7 @@
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <string>
 #include <emscripten/html5.h>
 #include "Triangle.h"
 
@@ -54,22 +55,22 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
   return GLFW_TRUE;
 }
 
-void onContentScaleChange(GLFWwindow *iWindow, float xScale, float yScale)
-{
-  printf("onContentScaleChange: %fx%f\n", xScale, yScale);
-}
-
-void onWindowSizeChange(GLFWwindow* window, int width, int height)
-{
-  printf("onWindowSizeChange: %dx%d\n", width, height);
-}
-
-void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
-{
-  printf("onFramebufferSizeChange: %dx%d\n", width, height);
-}
-
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
+
+template<typename... Args>
+std::string fmt(char const *iFormat, Args... args)
+{
+  if constexpr(sizeof...(args) > 0)
+  {
+    constexpr int kMessageSize = 1024;
+    char message[kMessageSize];
+    std::snprintf(message, sizeof(message), iFormat, args ...);
+    message[sizeof(message) - 1] = '\0';
+    return message;
+  }
+  else
+    return iFormat;
+}
 
 int main()
 {
@@ -97,57 +98,56 @@ int main()
     return -1;
   }
 
-
-  glfwSetWindowContentScaleCallback(window1, onContentScaleChange);
-  glfwSetWindowSizeCallback(window1, onWindowSizeChange);
-  glfwSetFramebufferSizeCallback(window1, onFramebufferSizeChange);
-
-  auto window1Triangle = Triangle::init(window1);
-  if(!window1Triangle)
   {
-    glfwTerminate();
-    return -1;
+    std::shared_ptr<Triangle> window1Triangle = Triangle::init(window1, "canvas1");
+    if(!window1Triangle)
+    {
+      glfwTerminate();
+      return -1;
+    }
+    window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
+    Triangle::kTriangles[window1] = window1Triangle;
   }
-  window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
 
-  auto window2Triangle = Triangle::init(window2);
-  if(!window2Triangle)
   {
-    glfwTerminate();
-    return -1;
+    std::shared_ptr<Triangle> window2Triangle = Triangle::init(window2, "canvas2");
+    if(!window2Triangle)
+    {
+      glfwTerminate();
+      return -1;
+    }
+    window2Triangle->setBgColor(1.0f, 0, 0.5f);
+    Triangle::kTriangles[window2] = window2Triangle;
   }
-  window2Triangle->setBgColor(1.0f, 0, 0.5f);
 
-  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
+  for(auto &[k, v]: Triangle::kTriangles)
+    v->registerCallbacks();
 
-  while(!glfwWindowShouldClose(window1) && !glfwWindowShouldClose(window2))
+    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
+
+  while(true)
   {
-    if(!window1Triangle->render())
+    bool exitWhile = false;
+    for(auto &[k, v]: Triangle::kTriangles)
+      exitWhile |= v->shouldClose();
+    if(exitWhile)
+      break;
+    for(auto &[k, v]: Triangle::kTriangles)
+      exitWhile |= !v->render();
+    if(exitWhile)
       break;
 
-    if(!window2Triangle->render())
-      break;
+    glfwPollEvents();
 
-//    glfwSwapBuffers(window);
-//    glfwPollEvents();
+    for(auto &[k, v]: Triangle::kTriangles)
+      v->updateValues();
 
-    double x,y;
-    glfwGetCursorPos(window1, &x, &y);
-    EM_ASM({
-             document.getElementById('#canvas1-mouse-x').innerHTML = $0.toString();
-             document.getElementById('#canvas1-mouse-y').innerHTML = $1.toString();
-           }, x, y);
-    glfwGetCursorPos(window2, &x, &y);
-    EM_ASM({
-             document.getElementById('#canvas2-mouse-x').innerHTML = $0.toString();
-             document.getElementById('#canvas2-mouse-y').innerHTML = $1.toString();
-           }, x, y);
-
-    emscripten_sleep(100);
+    emscripten_sleep(33); // ~30 fps
   }
 
-  glfwDestroyWindow(window2);
-  glfwDestroyWindow(window1);
+  Triangle::kTriangles.clear();
+
+  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, nullptr);
 
   glfwTerminate();
 }

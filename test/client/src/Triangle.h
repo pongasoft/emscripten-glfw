@@ -20,6 +20,7 @@
 #define EMSCRIPTEN_GLFW_HELLO_TRIANGLE_H
 
 #include <memory>
+#include <map>
 #include <GLES3/gl3.h>
 
 struct GLFWwindow;
@@ -27,15 +28,24 @@ struct GLFWwindow;
 class Triangle
 {
 public:
-  static std::unique_ptr<Triangle> init(GLFWwindow *iWindow);
+  static std::unique_ptr<Triangle> init(GLFWwindow *iWindow, char const *iName);
+  ~Triangle();
 
   bool render();
+  void updateValues();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
+  bool shouldClose() const;
+  constexpr char const *getName() const { return fName; };
+
+  void registerCallbacks();
+
+  static std::map<GLFWwindow *, std::shared_ptr<Triangle>> kTriangles;
 
 private:
-  Triangle(GLFWwindow *iWindow, GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO) :
+  Triangle(GLFWwindow *iWindow, char const *iName, GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO) :
     fWindow{iWindow},
+    fName{iName},
     fProgram{iProgram},
     fVertexPositionAttribLocation{iVertexPositionAttribLocation},
     fTriangleGeoVAO{iTriangleGeoVAO}
@@ -43,6 +53,7 @@ private:
 
 private:
   GLFWwindow *fWindow;
+  char const *fName;
   GLuint fProgram;
   GLint fVertexPositionAttribLocation;
   GLuint fTriangleGeoVAO;
