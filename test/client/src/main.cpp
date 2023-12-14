@@ -18,7 +18,6 @@
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
-#include <string>
 #include <emscripten/html5.h>
 #include "Triangle.h"
 
@@ -56,21 +55,6 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
 }
 
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
-
-template<typename... Args>
-std::string fmt(char const *iFormat, Args... args)
-{
-  if constexpr(sizeof...(args) > 0)
-  {
-    constexpr int kMessageSize = 1024;
-    char message[kMessageSize];
-    std::snprintf(message, sizeof(message), iFormat, args ...);
-    message[sizeof(message) - 1] = '\0';
-    return message;
-  }
-  else
-    return iFormat;
-}
 
 int main()
 {

@@ -17,8 +17,11 @@
       background-color: black;
       image-rendering: pixelated;
     }
+    div#canvas-details>table {
+      float: left;
+    }
 
-    #canvas-details {
+    .table-bordered {
       font-family: monospace;
       font-size: smaller;
     }
@@ -32,11 +35,11 @@
       border:1px solid #ddd
     }
 
-    #canvas-details th, #canvas-details tr, #canvas-details td {
+    .table-bordered th, .table-bordered tr, .table-bordered td {
       padding: 0 12px;
     }
 
-    #canvas-details tbody tr:nth-of-type(even) {
+    .table-bordered tbody tr:nth-of-type(even) {
       background-color: #f3f3f3;
     }
 
@@ -45,22 +48,30 @@
 <body>
 <canvas class=emscripten id=canvas1 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 <canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-<p>
-<table class="table-bordered" id="canvas-details">
-  <thead>
-  <tr><th>glfw</th><th>#1</th><th>#2</th></tr>
-  </thead>
-  <tbody>
-  <tr class="glfwGetCursorPos"><td>glfwGetCursorPos</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwSetCursorPosCallback"><td>glfwSetCursorPosCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwGetWindowSize"><td>glfwGetWindowSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwSetWindowSizeCallback"><td>glfwSetWindowSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwGetFramebufferSize"><td>glfwGetFramebufferSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwSetFramebufferSizeCallback"><td>glfwSetFramebufferSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwGetWindowContentScale"><td>glfwGetWindowContentScale</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  <tr class="glfwSetWindowContentScaleCallback"><td>glfwSetWindowContentScaleCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
-  </tbody>
-</table>
+<div id="canvas-details">
+  <table class="table-bordered">
+    <thead>
+    <tr><th>glfw (direct)</th><th>#1</th><th>#2</th></tr>
+    </thead>
+    <tbody>
+    <tr class="glfwGetCursorPos"><td>glfwGetCursorPos</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetWindowSize"><td>glfwGetWindowSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetFramebufferSize"><td>glfwGetFramebufferSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetWindowContentScale"><td>glfwGetWindowContentScale</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    </tbody>
+  </table>
+  <table class="table-bordered">
+    <thead>
+    <tr><th>glfw (callbacks)</th><th>#1</th><th>#2</th></tr>
+    </thead>
+    <tbody>
+    <tr class="glfwSetCursorPosCallback"><td>glfwSetCursorPosCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwSetWindowSizeCallback"><td>glfwSetWindowSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwSetFramebufferSizeCallback"><td>glfwSetFramebufferSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwSetWindowContentScaleCallback"><td>glfwSetWindowContentScaleCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    </tbody>
+  </table>
+</div>
 <script>
 
   var Module = {
