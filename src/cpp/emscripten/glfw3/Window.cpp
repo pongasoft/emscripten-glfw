@@ -20,7 +20,7 @@
 #include <emscripten/em_types.h>
 #include <utility>
 #include "ErrorHandler.h"
-#include <functional>
+#include <algorithm>
 
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
@@ -165,9 +165,8 @@ void Window::createEventListeners()
   fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     // TODO: handle pointer lock (an emscripten feature, not a glfw3 feature...)
 
-    auto scale = getScale();
-    fCursorPosX = static_cast<double>(iMouseEvent->targetX) * scale;
-    fCursorPosY = static_cast<double>(iMouseEvent->targetY) * scale;
+    fCursorPosX = std::clamp(static_cast<double>(iMouseEvent->targetX), 0.0, static_cast<double>(fWidth));
+    fCursorPosY = std::clamp(static_cast<double>(iMouseEvent->targetY), 0.0, static_cast<double>(fHeight));
     if(fCursorPosCallback)
       fCursorPosCallback(asOpaquePtr(), fCursorPosX, fCursorPosY);
     return true;

@@ -20,14 +20,20 @@
 
     #canvas-details {
       font-family: monospace;
+      font-size: smaller;
+    }
+
+    .table-bordered>tbody>tr>td,
+    .table-bordered>tbody>tr>th,
+    .table-bordered>tfoot>tr>td,
+    .table-bordered>tfoot>tr>th,
+    .table-bordered>thead>tr>td,
+    .table-bordered>thead>tr>th {
+      border:1px solid #ddd
     }
 
     #canvas-details th, #canvas-details tr, #canvas-details td {
       padding: 0 12px;
-    }
-
-    #canvas-details tbody td {
-      border-bottom: 1px solid #dddddd;
     }
 
     #canvas-details tbody tr:nth-of-type(even) {
@@ -40,12 +46,13 @@
 <canvas class=emscripten id=canvas1 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 <canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 <p>
-<table id="canvas-details">
+<table class="table-bordered" id="canvas-details">
   <thead>
   <tr><th>glfw</th><th>#1</th><th>#2</th></tr>
   </thead>
   <tbody>
   <tr class="glfwGetCursorPos"><td>glfwGetCursorPos</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+  <tr class="glfwSetCursorPosCallback"><td>glfwSetCursorPosCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
   <tr class="glfwGetWindowSize"><td>glfwGetWindowSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
   <tr class="glfwSetWindowSizeCallback"><td>glfwSetWindowSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
   <tr class="glfwGetFramebufferSize"><td>glfwGetFramebufferSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>

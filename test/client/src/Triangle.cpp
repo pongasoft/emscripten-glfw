@@ -242,7 +242,11 @@ void setHtmlValue(std::string_view iElementSelector, std::string_view iValue)
   EM_ASM({
            const element = document.querySelector(UTF8ToString($0));
            if(element)
-           element.innerHTML = UTF8ToString($1);
+           {
+             const value = UTF8ToString($1);
+             if(element.innerHTML !== value)
+               element.innerHTML = value;
+           }
 
          }, iElementSelector.data(), iValue.data());
 }
@@ -276,6 +280,10 @@ void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
 {
   setHtmlValue(window, "glfwSetFramebufferSizeCallback", "%dx%d", width, height);
 }
+void onCursorPosChange(GLFWwindow *window, double xScale, double yScale)
+{
+  setHtmlValue(window, "glfwSetCursorPosCallback", "%.2fx%.2f", xScale, yScale);
+}
 
 //------------------------------------------------------------------------
 // registerCallbacks
@@ -285,6 +293,7 @@ void Triangle::registerCallbacks()
   glfwSetWindowContentScaleCallback(fWindow, onContentScaleChange);
   glfwSetWindowSizeCallback(fWindow, onWindowSizeChange);
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
+  glfwSetCursorPosCallback(fWindow, onCursorPosChange);
 }
 
 //------------------------------------------------------------------------
@@ -292,14 +301,19 @@ void Triangle::registerCallbacks()
 //------------------------------------------------------------------------
 void Triangle::updateValues()
 {
+  double xd, yd;
   float xf, yf;
   int xi, yi;
+
 
   glfwGetWindowSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetWindowSize", "%dx%d", xi, yi);
 
   glfwGetFramebufferSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetFramebufferSize", "%dx%d", xi, yi);
+
+  glfwGetCursorPos(fWindow, &xd, &yd);
+  setHtmlValue(fWindow, "glfwGetCursorPos", "%.2fx%.2f", xd, yd);
 
   glfwGetWindowContentScale(fWindow, &xf, &yf);
   setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);
