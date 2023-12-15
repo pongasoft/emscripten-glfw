@@ -322,6 +322,11 @@ void Triangle::updateValues()
   glfwGetCursorPos(fWindow, &xd, &yd);
   setHtmlValue(fWindow, "glfwGetCursorPos", "%.2fx%.2f", xd, yd);
 
+  setHtmlValue(fWindow, "glfwGetMouseButton", "L:%s|M:%s|R:%s",
+               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS ? "P" : "R",
+               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS ? "P" : "R",
+               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS ? "P" : "R");
+
   glfwGetWindowContentScale(fWindow, &xf, &yf);
   setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);
 }

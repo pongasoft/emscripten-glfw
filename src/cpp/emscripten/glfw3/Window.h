@@ -51,6 +51,8 @@ public:
     if(oWidth) *oWidth = getFramebufferWidth();
     if(oHeight) *oHeight = getFramebufferHeight();
   }
+  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
+  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
 
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
@@ -60,13 +62,14 @@ public:
 
   // events
   inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
-  inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouseButtonCallback, iCallback); }
+  inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouse.fButtonCallback, iCallback); }
 
   // mouse
   inline void getCursorPos(double *oXPos, double *oYPos) const {
     if(oXPos) {*oXPos = fCursorPosX; }
     if(oYPos) {*oYPos = fCursorPosY; }
   }
+  int getMouseButton(int iButton);
 
   // user pointer
   inline void *getUserPointer() const { return fUserPointer; }
@@ -98,6 +101,14 @@ private:
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
 
 private:
+  struct Mouse
+  {
+    int fLastButtonAction{GLFW_RELEASE};
+    int fLastButton{-1};
+    std::array<int, GLFW_MOUSE_BUTTON_LAST + 1> fButtons{GLFW_RELEASE};
+    GLFWmousebuttonfun fButtonCallback{};
+  };
+private:
   Config fConfig;
   float fMonitorScale;
   int fWidth{};
@@ -108,14 +119,12 @@ private:
   bool fHasGLContext{};
   double fCursorPosX{};
   double fCursorPosY{};
-  int fLastMouseButtonAction{-1};
-  int fLastMouseButton{-1};
+  Mouse fMouse{};
   void *fUserPointer{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
   GLFWwindowsizefun fSizeCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};
   GLFWcursorposfun fCursorPosCallback{};
-  GLFWmousebuttonfun fMouseButtonCallback{};
 };
 
 }

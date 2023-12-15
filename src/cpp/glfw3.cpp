@@ -343,7 +343,11 @@ GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursor
 //------------------------------------------------------------------------
 GLFWAPI int glfwGetMouseButton(GLFWwindow* window, int button)
 {
-  not_implemented();
+  auto w = getWindow(window);
+  if(w)
+    return w->getMouseButton(button);
+  else
+    return GLFW_RELEASE;
 }
 
 //------------------------------------------------------------------------
