@@ -82,6 +82,12 @@ let impl = {
     canvas.style.setProperty("height", height + "px", "important");
   },
 
+  emscripten_glfw3_context_window_is_outside: (canvasId, screenX, screenY) => {
+    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+    const rect = canvas.getBoundingClientRect();
+    return screenX < rect.left || screenX > rect.right || screenY < rect.top || screenY > rect.bottom;
+  },
+
   emscripten_glfw3_context_gl_init: (canvasId) => {
     const canvasCtx = GLFW3.fCanvasContexts[canvasId];
     if(!canvasCtx)

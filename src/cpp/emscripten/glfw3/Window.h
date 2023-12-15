@@ -95,7 +95,8 @@ public:
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
-  EventListener<EmscriptenMouseEvent> fOnMouseButton{};
+  EventListener<EmscriptenMouseEvent> fOnMouseDownButton{};
+  EventListener<EmscriptenMouseEvent> fOnMouseUpButton{};
 
 private:
   void createEventListeners();
