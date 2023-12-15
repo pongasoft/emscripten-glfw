@@ -127,6 +127,29 @@ GLFWAPI void glfwDestroyWindow(GLFWwindow* window)
     context->destroyWindow(window);
 }
 
+
+//------------------------------------------------------------------------
+// glfwSetWindowUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowUserPointer(GLFWwindow* window, void* pointer)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setUserPointer(pointer);
+}
+
+//------------------------------------------------------------------------
+// glfwGetWindowUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void* glfwGetWindowUserPointer(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getUserPointer();
+  else
+    return nullptr;
+}
+
 //------------------------------------------------------------------------
 // glfwWindowShouldClose
 //------------------------------------------------------------------------
@@ -306,6 +329,26 @@ GLFWAPI GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursor
 }
 
 //------------------------------------------------------------------------
+// glfwGetMouseButton
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetMouseButton(GLFWwindow* window, int button)
+{
+  not_implemented();
+}
+
+//------------------------------------------------------------------------
+// glfwSetMouseButtonCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setMouseButtonCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwGetMonitors
 //------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count)
@@ -377,11 +420,6 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
   return nullptr;
 }
 
-GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
 
 GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun callback)
 {
@@ -407,11 +445,19 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
   return nullptr;
 }
 
+GLFWAPI int glfwGetKey(GLFWwindow* window, int key)
+{
+  // TODO implement
+  return GLFW_RELEASE;
+}
+
+
 //------------------------------------------------------------------------
 // glfwGetWindowPos
 //------------------------------------------------------------------------
 GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 {
+  // TODO implement
   *xpos = 0;
   *ypos = 0;
 }
@@ -433,6 +479,7 @@ GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode)
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
 {
+  // TODO implement
 
 }
 
@@ -504,8 +551,6 @@ GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window){ not_implemented()
 GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate){ not_implemented(); }
 GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib){ not_implemented(); }
 GLFWAPI void glfwSetWindowAttrib(GLFWwindow* window, int attrib, int value){ not_implemented(); }
-GLFWAPI void glfwSetWindowUserPointer(GLFWwindow* window, void* pointer){ not_implemented(); }
-GLFWAPI void* glfwGetWindowUserPointer(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwindowclosefun callback){ not_implemented(); }
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback){ not_implemented(); }
@@ -517,8 +562,6 @@ GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
 GLFWAPI int glfwRawMouseMotionSupported(void){ not_implemented(); }
 GLFWAPI const char* glfwGetKeyName(int key, int scancode){ not_implemented(); }
 GLFWAPI int glfwGetKeyScancode(int key){ not_implemented(); }
-GLFWAPI int glfwGetKey(GLFWwindow* window, int key){ not_implemented(); }
-GLFWAPI int glfwGetMouseButton(GLFWwindow* window, int button){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
 GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot){ not_implemented(); }
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor){ not_implemented(); }

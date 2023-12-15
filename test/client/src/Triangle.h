@@ -20,7 +20,6 @@
 #define EMSCRIPTEN_GLFW_HELLO_TRIANGLE_H
 
 #include <memory>
-#include <map>
 #include <GLES3/gl3.h>
 
 struct GLFWwindow;
@@ -39,8 +38,6 @@ public:
   constexpr char const *getName() const { return fName; };
 
   void registerCallbacks();
-
-  static std::map<GLFWwindow *, std::shared_ptr<Triangle>> kTriangles;
 
 private:
   Triangle(GLFWwindow *iWindow, char const *iName, GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO) :

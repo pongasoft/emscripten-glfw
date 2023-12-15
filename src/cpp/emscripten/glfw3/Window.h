@@ -43,6 +43,7 @@ public:
     if(oWidth) *oWidth = getWidth();
     if(oHeight) *oHeight = getHeight();
   }
+  void setSize(int iWidth, int iHeight);
   inline int getFramebufferWidth() const {  return fFramebufferWidth; }
   inline int getFramebufferHeight() const { return fFramebufferHeight; }
   inline void getFramebufferSize(int* oWidth, int* oHeight) const
@@ -59,15 +60,22 @@ public:
 
   // events
   inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
+  inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouseButtonCallback, iCallback); }
 
   // mouse
-  inline void getCursorPos(double *oXPos, double *oYPos) {
+  inline void getCursorPos(double *oXPos, double *oYPos) const {
     if(oXPos) {*oXPos = fCursorPosX; }
     if(oYPos) {*oYPos = fCursorPosY; }
   }
 
+  // user pointer
+  inline void *getUserPointer() const { return fUserPointer; }
+  inline void setUserPointer(void *iPointer) { fUserPointer = iPointer; }
+
+  // monitor scale
   void setMonitorScale(float iScale);
-  void setSize(int iWidth, int iHeight);
+
+  // OpenGL
   bool createGLContext();
   void makeGLContextCurrent();
 
@@ -82,6 +90,7 @@ public:
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
+  EventListener<EmscriptenMouseEvent> fOnMouseButton{};
 
 private:
   void createEventListeners();
@@ -99,10 +108,14 @@ private:
   bool fHasGLContext{};
   double fCursorPosX{};
   double fCursorPosY{};
+  int fLastMouseButtonAction{-1};
+  int fLastMouseButton{-1};
+  void *fUserPointer{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
   GLFWwindowsizefun fSizeCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};
   GLFWcursorposfun fCursorPosCallback{};
+  GLFWmousebuttonfun fMouseButtonCallback{};
 };
 
 }

@@ -162,8 +162,10 @@ EM_BOOL WindowCallback(int iEventType, E const *iEvent, void *iUserData)
 //------------------------------------------------------------------------
 void Window::createEventListeners()
 {
+  // fOnMouseMove
   fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     // TODO: handle pointer lock (an emscripten feature, not a glfw3 feature...)
+    // TODO: handle glfwSetInputMode (ex: GLFW_CURSOR_DISABLED is equivalent to emscripten pointer lock) (default = GLFW_CURSOR_NORMAL)
 
     fCursorPosX = std::clamp(static_cast<double>(iMouseEvent->targetX), 0.0, static_cast<double>(fWidth));
     fCursorPosY = std::clamp(static_cast<double>(iMouseEvent->targetY), 0.0, static_cast<double>(fHeight));
@@ -171,6 +173,35 @@ void Window::createEventListeners()
       fCursorPosCallback(asOpaquePtr(), fCursorPosX, fCursorPosY);
     return true;
   };
+
+  // fOnMouseButton
+  fOnMouseButton = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+    // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
+    switch(iMouseEvent->button)
+    {
+      case 0:
+        fLastMouseButton = GLFW_MOUSE_BUTTON_1;
+        break;
+      case 1:
+        fLastMouseButton = GLFW_MOUSE_BUTTON_2;
+        break;
+      case 2:
+        fLastMouseButton = GLFW_MOUSE_BUTTON_3;
+        break;
+      default:
+        fLastMouseButton = -1;
+        break;
+    }
+    if(fLastMouseButton >= 0)
+    {
+      fLastMouseButtonAction = iEventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? GLFW_PRESS : GLFW_RELEASE;
+      if(fMouseButtonCallback)
+        // TODO handle modBits / last parameter
+        fMouseButtonCallback(asOpaquePtr(), fLastMouseButton, fLastMouseButtonAction, 0);
+    }
+    return true;
+  };
+
 }
 
 template<typename E>
@@ -206,6 +237,8 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   printf("addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
 
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButton, false);
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseup_callback_on_thread, iAdd, selector, &fOnMouseButton, false);
 }
 
 

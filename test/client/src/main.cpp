@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <emscripten/html5.h>
 #include "Triangle.h"
+#include <map>
 
 static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 {
@@ -56,6 +57,8 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
 
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
 
+std::map<GLFWwindow *, std::shared_ptr<Triangle>> kTriangles{};
+
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
@@ -90,7 +93,7 @@ int main()
       return -1;
     }
     window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
-    Triangle::kTriangles[window1] = window1Triangle;
+    kTriangles[window1] = window1Triangle;
   }
 
   {
@@ -101,10 +104,10 @@ int main()
       return -1;
     }
     window2Triangle->setBgColor(1.0f, 0, 0.5f);
-    Triangle::kTriangles[window2] = window2Triangle;
+    kTriangles[window2] = window2Triangle;
   }
 
-  for(auto &[k, v]: Triangle::kTriangles)
+  for(auto &[k, v]: kTriangles)
     v->registerCallbacks();
 
     emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
@@ -112,24 +115,24 @@ int main()
   while(true)
   {
     bool exitWhile = false;
-    for(auto &[k, v]: Triangle::kTriangles)
+    for(auto &[k, v]: kTriangles)
       exitWhile |= v->shouldClose();
     if(exitWhile)
       break;
-    for(auto &[k, v]: Triangle::kTriangles)
+    for(auto &[k, v]: kTriangles)
       exitWhile |= !v->render();
     if(exitWhile)
       break;
 
     glfwPollEvents();
 
-    for(auto &[k, v]: Triangle::kTriangles)
+    for(auto &[k, v]: kTriangles)
       v->updateValues();
 
     emscripten_sleep(33); // ~30 fps
   }
 
-  Triangle::kTriangles.clear();
+  kTriangles.clear();
 
   emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, nullptr);
 

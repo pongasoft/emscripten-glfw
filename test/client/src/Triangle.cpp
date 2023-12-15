@@ -21,6 +21,7 @@
 #include <GLFW/glfw3.h>
 #include <emscripten/html5.h>
 #include <iostream>
+#include <array>
 
 // The code has been inspired by https://github.com/sessamekesh/webgl-tutorials-2023 (MIT License)
 
@@ -42,7 +43,6 @@ void main() {
   triangleColor = vec4(0.294, 0.0, 0.51, 1.0);
 })FST";
 
-std::map<GLFWwindow *, std::shared_ptr<Triangle>> Triangle::kTriangles{};
 
 //------------------------------------------------------------------------
 // Triangle::init
@@ -213,6 +213,7 @@ bool Triangle::shouldClose() const
 //------------------------------------------------------------------------
 Triangle::~Triangle()
 {
+  glfwSetWindowUserPointer(fWindow, nullptr);
   glfwDestroyWindow(fWindow);
 }
 
@@ -259,7 +260,7 @@ void setHtmlValue(GLFWwindow *iWindow, char const *iFunctionName, char const *iF
 {
   static std::array<char, 256> kSelector;
   static std::array<char, 256> kValue;
-  auto triangle = Triangle::kTriangles[iWindow];
+  auto triangle = reinterpret_cast<Triangle *>(glfwGetWindowUserPointer(iWindow));
   if(triangle)
   {
     auto selector = fmt(kSelector, ".%s .%s", iFunctionName, triangle->getName());
@@ -284,16 +285,22 @@ void onCursorPosChange(GLFWwindow *window, double xScale, double yScale)
 {
   setHtmlValue(window, "glfwSetCursorPosCallback", "%.2fx%.2f", xScale, yScale);
 }
+void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
+{
+  setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, action == GLFW_PRESS ? "P" : "R", mods);
+}
 
 //------------------------------------------------------------------------
 // registerCallbacks
 //------------------------------------------------------------------------
 void Triangle::registerCallbacks()
 {
+  glfwSetWindowUserPointer(fWindow, this);
   glfwSetWindowContentScaleCallback(fWindow, onContentScaleChange);
   glfwSetWindowSizeCallback(fWindow, onWindowSizeChange);
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
+  glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
 }
 
 //------------------------------------------------------------------------
