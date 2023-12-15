@@ -192,11 +192,11 @@ inline int emscriptenToGLFWButton(unsigned short iEmscriptenButton)
   switch(iEmscriptenButton)
   {
     case 0:
-      return GLFW_MOUSE_BUTTON_1;
+      return GLFW_MOUSE_BUTTON_LEFT;
     case 1:
-      return GLFW_MOUSE_BUTTON_2;
+      return GLFW_MOUSE_BUTTON_MIDDLE;
     case 2:
-      return GLFW_MOUSE_BUTTON_3;
+      return GLFW_MOUSE_BUTTON_RIGHT;
     default:
       return -1;
   }
