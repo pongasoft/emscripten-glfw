@@ -84,6 +84,8 @@ public:
 
   Window(Config iConfig, float iMonitorScale);
   ~Window() override;
+  void destroy();
+  constexpr bool isDestroyed() const { return fDestroyed; }
 
   void registerEventListeners() { addOrRemoveEventListeners(true); }
 
@@ -111,6 +113,7 @@ private:
 private:
   Config fConfig;
   float fMonitorScale;
+  bool fDestroyed{};
   int fWidth{};
   int fHeight{};
   int fFramebufferWidth{};

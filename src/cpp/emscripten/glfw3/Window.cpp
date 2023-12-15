@@ -40,6 +40,7 @@ static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 //------------------------------------------------------------------------
 Window::Window(Config iConfig, float iMonitorScale) : fConfig{std::move(iConfig)}, fMonitorScale{iMonitorScale}
 {
+  printf("Window(%p)\n", asOpaquePtr());
   createEventListeners();
 }
 
@@ -48,8 +49,21 @@ Window::Window(Config iConfig, float iMonitorScale) : fConfig{std::move(iConfig)
 //------------------------------------------------------------------------
 Window::~Window()
 {
-  addOrRemoveEventListeners(false);
-  emscripten_glfw3_context_window_destroy(asOpaquePtr());
+  printf("~Window(%p)\n", asOpaquePtr());
+  destroy();
+}
+
+//------------------------------------------------------------------------
+// Window::destroy
+//------------------------------------------------------------------------
+void Window::destroy()
+{
+  if(!isDestroyed())
+  {
+    addOrRemoveEventListeners(false);
+    emscripten_glfw3_context_window_destroy(asOpaquePtr());
+    fDestroyed = true;
+  }
 }
 
 //------------------------------------------------------------------------

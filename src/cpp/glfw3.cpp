@@ -31,6 +31,10 @@ static inline emscripten::glfw3::Context *getContext() {
     emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
   return kContext.get();
 }
+
+static GLFWwindow* fLastRequestedGLFWWindow{};
+static std::shared_ptr<emscripten::glfw3::Window> fLastRequestedWindow{};
+
 static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* iWindow) {
   if(!kContext)
   {
@@ -39,7 +43,22 @@ static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* i
   }
   else
   {
-    return kContext->getWindow(iWindow);
+    if(fLastRequestedGLFWWindow == iWindow && !fLastRequestedWindow->isDestroyed())
+      return fLastRequestedWindow;
+
+    auto window = kContext->getWindow(iWindow);
+    if(window)
+    {
+      fLastRequestedGLFWWindow = iWindow;
+      fLastRequestedWindow = window;
+    }
+    else
+    {
+      fLastRequestedGLFWWindow = nullptr;
+      fLastRequestedWindow = nullptr;
+    }
+
+    return window;
   }
 }
 static inline std::shared_ptr<emscripten::glfw3::Monitor> getMonitor(GLFWmonitor* iMonitor) {
@@ -76,6 +95,8 @@ GLFWAPI int glfwInit()
 GLFWAPI void glfwTerminate(void)
 {
   kContext = nullptr;
+  fLastRequestedGLFWWindow = nullptr;
+  fLastRequestedWindow = nullptr;
   printf("glfwTerminate()\n");
 }
 
@@ -132,6 +153,11 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, G
 //------------------------------------------------------------------------
 GLFWAPI void glfwDestroyWindow(GLFWwindow* window)
 {
+  if(fLastRequestedGLFWWindow == window)
+  {
+    fLastRequestedGLFWWindow = nullptr;
+    fLastRequestedWindow = nullptr;
+  }
   auto context = getContext();
   if(context)
     context->destroyWindow(window);

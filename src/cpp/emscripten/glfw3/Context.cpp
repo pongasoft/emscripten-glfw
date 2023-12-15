@@ -151,6 +151,7 @@ void Context::destroyWindow(GLFWwindow *iWindow)
   auto window = getWindow(iWindow);
   if(window)
   {
+    window->destroy();
     if(window == fCurrentWindow)
     {
       fCurrentWindow = nullptr;
