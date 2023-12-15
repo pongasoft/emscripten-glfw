@@ -24,8 +24,15 @@
 
 namespace emscripten::glfw3 {
 
-struct Monitor : public Object<GLFWmonitor>
+class Monitor : public Object<GLFWmonitor>
 {
+public:
+  // user pointer
+  inline void *getUserPointer() const { return fUserPointer; }
+  inline void setUserPointer(void *iPointer) { fUserPointer = iPointer; }
+
+private:
+  void *fUserPointer{};
 };
 
 }

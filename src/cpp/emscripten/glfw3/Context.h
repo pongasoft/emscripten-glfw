@@ -51,6 +51,7 @@ public:
   GLFWmonitor* getPrimaryMonitor();
   void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos);
   void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight);
+  std::shared_ptr<Monitor> getMonitor(GLFWmonitor *iMonitor) const;
 
   // time
   double getTimeInSeconds() const;
@@ -61,7 +62,7 @@ public:
 private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
-  Monitor *getMonitor(GLFWmonitor *iMonitor) const;
+  std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
   static double getAbsoluteTimeInSeconds();
 
 private:

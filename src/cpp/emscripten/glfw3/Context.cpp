@@ -249,12 +249,21 @@ void Context::windowHint(int iHint, char const *iValue)
 //------------------------------------------------------------------------
 // Context::getMonitor
 //------------------------------------------------------------------------
-Monitor *Context::getMonitor(GLFWmonitor *iMonitor) const
+std::shared_ptr<Monitor> Context::getMonitor(GLFWmonitor *iMonitor) const
+{
+  auto monitor = findMonitor(iMonitor);
+  if(!monitor)
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "monitor parameter invalid");
+  return monitor;
+}
+
+//------------------------------------------------------------------------
+// Context::findWindow
+//------------------------------------------------------------------------
+std::shared_ptr<Monitor> Context::findMonitor(GLFWmonitor *iMonitor) const
 {
   if(fCurrentMonitor->asOpaquePtr() == iMonitor)
-    return fCurrentMonitor.get();
-
-  kErrorHandler.logError(GLFW_INVALID_VALUE, "monitor parameter invalid");
+    return fCurrentMonitor;
   return nullptr;
 }
 

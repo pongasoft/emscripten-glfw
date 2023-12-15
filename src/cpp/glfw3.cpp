@@ -41,7 +41,17 @@ static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* i
   {
     return kContext->getWindow(iWindow);
   }
-
+}
+static inline std::shared_ptr<emscripten::glfw3::Monitor> getMonitor(GLFWmonitor* iMonitor) {
+  if(!kContext)
+  {
+    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    return nullptr;
+  }
+  else
+  {
+    return kContext->getMonitor(iMonitor);
+  }
 }
 
 #ifdef __cplusplus
@@ -393,6 +403,28 @@ GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, 
 }
 
 //------------------------------------------------------------------------
+// glfwSetMonitorUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetMonitorUserPointer(GLFWmonitor* monitor, void* pointer)
+{
+  auto m = getMonitor(monitor);
+  if(m)
+    m->setUserPointer(pointer);
+}
+
+//------------------------------------------------------------------------
+// glfwGetMonitorUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void* glfwGetMonitorUserPointer(GLFWmonitor* monitor)
+{
+  auto m = getMonitor(monitor);
+  if(m)
+    return m->getUserPointer();
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwGetTime
 //------------------------------------------------------------------------
 GLFWAPI double glfwGetTime(void)
@@ -529,8 +561,6 @@ GLFWAPI void glfwPollEvents(void){ }
 GLFWAPI void glfwGetMonitorPhysicalSize(GLFWmonitor* monitor, int* widthMM, int* heightMM){ not_implemented(); }
 GLFWAPI void glfwGetMonitorContentScale(GLFWmonitor* monitor, float* xscale, float* yscale){ not_implemented(); }
 GLFWAPI const char* glfwGetMonitorName(GLFWmonitor* monitor){ not_implemented(); }
-GLFWAPI void glfwSetMonitorUserPointer(GLFWmonitor* monitor, void* pointer){ not_implemented(); }
-GLFWAPI void* glfwGetMonitorUserPointer(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma){ not_implemented(); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor){ not_implemented(); }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ not_implemented(); }
