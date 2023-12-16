@@ -43,6 +43,11 @@
       background-color: #f3f3f3;
     }
 
+    #debug {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
   </style>
 </head>
 <body>
@@ -74,6 +79,10 @@
     </tbody>
   </table>
 </div>
+<table id="debug" class="table-bordered">
+  <tbody>
+  </tbody>
+</table>
 <script>
 
   var Module = {
@@ -93,6 +102,33 @@
                   return document.getElementById('canvas1');
               })()
           };
+
+  var debug = (key, message) => {
+    var elt = document.querySelector("#debug ." + key.toString());
+    if(!elt)
+    {
+      const row = document.createElement("tr");
+      const keyCell = document.createElement("td");
+      keyCell.innerHTML = key.toString();
+      row.appendChild(keyCell);
+      elt = document.createElement("td");
+      elt.className = key;
+      row.appendChild(elt);
+      document.querySelector("#debug tbody").appendChild(row);
+    }
+    elt.innerHTML = message.toString();
+  };
+
+  window.onresize = (event) => {
+    debug("window-onresize-innerWidth", window.innerWidth);
+    debug("window-onresize-innerHeight", window.innerHeight);
+  };
+
+  window.onscroll = (event) => {
+    debug("window-onscroll-scrollX", window.scrollX);
+    debug("window-onscroll-scrollY", window.scrollY);
+  }
+
 </script>
 {{{ SCRIPT }}}
 </body>
