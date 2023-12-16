@@ -57,9 +57,19 @@ void ContextScaleChangeCallback(void *iUserData)
 //------------------------------------------------------------------------
 Context::Context()
 {
+  printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
   emscripten_glfw3_context_init(fScale, ContextScaleChangeCallback, this);
-  printf("Context::Context %p\n", this);
+
+  // fOnMouseUpButton
+  fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+    bool handled = false;
+    for(auto &[_, v]: fWindows)
+      handled |= v->onMouseButtonUp(iEventType, iMouseEvent);
+    return handled;
+  };
+
+  addOrRemoveEventListeners(true);
 }
 
 //------------------------------------------------------------------------
@@ -67,7 +77,17 @@ Context::Context()
 //------------------------------------------------------------------------
 Context::~Context()
 {
+  addOrRemoveEventListeners(false);
   emscripten_glfw3_context_destroy();
+}
+
+//------------------------------------------------------------------------
+// Context::addOrRemoveEventListeners
+//------------------------------------------------------------------------
+void Context::addOrRemoveEventListeners(bool iAdd)
+{
+  printf("Context::addOrRemoveEventListeners(%s)\n", iAdd ? "true" : "false");
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnMouseButtonUp, false);
 }
 
 //------------------------------------------------------------------------

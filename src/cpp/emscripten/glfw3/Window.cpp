@@ -25,7 +25,6 @@
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-bool emscripten_glfw3_context_window_is_outside(GLFWwindow *iWindow, int iScreenX, int iScreenY);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -173,19 +172,6 @@ int Window::getMouseButton(int iButton)
 }
 
 //------------------------------------------------------------------------
-// WindowCallback
-//------------------------------------------------------------------------
-template<typename E>
-EM_BOOL WindowCallback(int iEventType, E const *iEvent, void *iUserData)
-{
-  auto cb = reinterpret_cast<Window::EventListener<E> *>(iUserData);
-  if(std::invoke(*cb, iEventType, iEvent))
-    return EM_TRUE;
-  else
-    return EM_FALSE;
-}
-
-//------------------------------------------------------------------------
 // emscriptenToGLFWButton
 //------------------------------------------------------------------------
 inline int emscriptenToGLFWButton(unsigned short iEmscriptenButton)
@@ -220,8 +206,8 @@ void Window::createEventListeners()
     return true;
   };
 
-  // fOnMouseDownButton
-  fOnMouseDownButton = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+  // fOnMouseButtonDown
+  fOnMouseButtonDown = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
     auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
     if(lastButton >= 0)
@@ -239,58 +225,35 @@ void Window::createEventListeners()
     }
     return true;
   };
+}
 
-  // fOnMouseUpButton
-  fOnMouseUpButton = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
-    // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
-    auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
-    if(lastButton >= 0)
+//------------------------------------------------------------------------
+// Window::onMouseButtonUp
+//------------------------------------------------------------------------
+bool Window::onMouseButtonUp(int iEventType, EmscriptenMouseEvent const *iMouseEvent)
+{
+  // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
+  auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
+  if(lastButton >= 0)
+  {
+    // up can happen even if mouse is outside the window
+    if(fMouse.fButtons[lastButton] == GLFW_PRESS)
     {
-      // up can happen even if mouse is outside the window
-      if(fMouse.fButtons[lastButton] == GLFW_PRESS)
-      {
-        fMouse.fLastButton = lastButton;
-        fMouse.fLastButtonAction = GLFW_RELEASE;
-        fMouse.fButtons[lastButton] = GLFW_RELEASE;
+      fMouse.fLastButton = lastButton;
+      fMouse.fLastButtonAction = GLFW_RELEASE;
+      fMouse.fButtons[lastButton] = GLFW_RELEASE;
 
-        if(fMouse.fButtonCallback)
-        {
-          // TODO handle modBits / last parameter
-          fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonAction, 0);
-        }
+      if(fMouse.fButtonCallback)
+      {
+        // TODO handle modBits / last parameter
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonAction, 0);
       }
     }
-
-    // This event is called for the "document" when mouse is up, so there might be cases when this callback is called but
-    // the mouse is not inside the window => we should not consume the event in this case
-    return !emscripten_glfw3_context_window_is_outside(asOpaquePtr(), iMouseEvent->targetX, iMouseEvent->targetY);
-  };
-
-}
-
-template<typename E>
-using EmscriptenEventCallback = EM_BOOL (*)(int, E const *, void *);
-
-template<typename E>
-using EmscriptenListenerFunction = EMSCRIPTEN_RESULT (*)(const char *, void *, EM_BOOL, EmscriptenEventCallback<E>, pthread_t);
-
-//------------------------------------------------------------------------
-// addOrRemoveListener
-//------------------------------------------------------------------------
-template<typename E>
-void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction, bool iAdd, char const *iTarget, void *iUserData, bool iUseCapture)
-{
-  auto error = iListenerFunction(iTarget,
-                                 iAdd ? iUserData : nullptr,
-                                 iUseCapture ? EM_TRUE : EM_FALSE,
-                                 iAdd ? WindowCallback<EmscriptenMouseEvent> : nullptr,
-                                 EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD);
-
-  if(error != EMSCRIPTEN_RESULT_SUCCESS)
-  {
-    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error [%d] while registering listener for [%s]", error, iTarget);
   }
+
+  return true;
 }
+
 
 //------------------------------------------------------------------------
 // Window::addOrRemoveEventListeners
@@ -298,11 +261,11 @@ void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction, bool i
 void Window::addOrRemoveEventListeners(bool iAdd)
 {
   auto selector = getCanvasSelector();
-  printf("addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
+  printf("Window::addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
 
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseDownButton, false);
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnMouseUpButton, false);
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButtonDown, false);
+  // note: mouseup_callback is registered with context because target is "document"
 }
 
 

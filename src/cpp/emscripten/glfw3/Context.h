@@ -64,6 +64,8 @@ private:
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
   static double getAbsoluteTimeInSeconds();
+  void registerEventListeners() { addOrRemoveEventListeners(true); }
+  void addOrRemoveEventListeners(bool iAdd);
 
 private:
   std::map<Window::opaque_ptr_t, std::shared_ptr<Window>> fWindows;
@@ -73,6 +75,8 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
+
+  EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
 };
 
 }

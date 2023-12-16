@@ -23,6 +23,7 @@
 #include <emscripten/html5.h>
 #include "Object.h"
 #include "Config.h"
+#include "Events.h"
 #include <utility>
 #include <functional>
 
@@ -84,19 +85,19 @@ public:
 
   Window(Config iConfig, float iMonitorScale);
   ~Window() override;
-  void destroy();
   constexpr bool isDestroyed() const { return fDestroyed; }
 
-  void registerEventListeners() { addOrRemoveEventListeners(true); }
 
-public:
-  template<typename E>
-  using EventListener = std::function<bool(int iEventType, E const *iMouseEvent)>;
+  friend class Context;
+
+protected:
+  void destroy();
+  void registerEventListeners() { addOrRemoveEventListeners(true); }
+  bool onMouseButtonUp(int iEventType, const EmscriptenMouseEvent *iMouseEvent);
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
-  EventListener<EmscriptenMouseEvent> fOnMouseDownButton{};
-  EventListener<EmscriptenMouseEvent> fOnMouseUpButton{};
+  EventListener<EmscriptenMouseEvent> fOnMouseButtonDown{};
 
 private:
   void createEventListeners();
