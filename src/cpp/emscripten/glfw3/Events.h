@@ -62,7 +62,7 @@ void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction,
   auto error = iListenerFunction(iTarget,
                                  iAdd ? iEventListener : nullptr,
                                  iUseCapture ? EM_TRUE : EM_FALSE,
-                                 iAdd ? EventListenerCallback<EmscriptenMouseEvent> : nullptr,
+                                 iAdd ? EventListenerCallback<E> : nullptr,
                                  iThread);
 
   if(error != EMSCRIPTEN_RESULT_SUCCESS)

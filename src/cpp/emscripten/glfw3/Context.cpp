@@ -20,7 +20,6 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
-#include <utility>
 #include "ErrorHandler.h"
 
 extern "C" {
@@ -65,7 +64,26 @@ Context::Context()
   fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     bool handled = false;
     for(auto &[_, v]: fWindows)
-      handled |= v->onMouseButtonUp(iEventType, iMouseEvent);
+      handled |= v->onMouseButtonUp(iMouseEvent);
+    return handled;
+  };
+
+  // fOnKeyDown
+  fOnKeyDown = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
+    bool handled = false;
+    for(auto &[_, v]: fWindows)
+    {
+      if(v->isFocused())
+        handled |= v->onKeyDown(iKeyboardEvent);
+    }
+    return handled;
+  };
+
+  // fOnKeyUp
+  fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
+    bool handled = false;
+    for(auto &[_, v]: fWindows)
+      handled |= v->onKeyUp(iKeyboardEvent);
     return handled;
   };
 
@@ -87,7 +105,12 @@ Context::~Context()
 void Context::addOrRemoveEventListeners(bool iAdd)
 {
   printf("Context::addOrRemoveEventListeners(%s)\n", iAdd ? "true" : "false");
+  // mouse
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnMouseButtonUp, false);
+
+  // keyboard
+  addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keydown_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyDown, false);
+  addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keyup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyUp, false);
 }
 
 //------------------------------------------------------------------------
@@ -159,6 +182,9 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   fWindows[window->asOpaquePtr()] = window;
 
   window->registerEventListeners();
+
+  if(fWindows.size() == 1)
+    window->focus();
 
   return window->asOpaquePtr();
 }

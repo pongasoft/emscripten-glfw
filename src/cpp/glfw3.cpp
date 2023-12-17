@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <memory>
 #include "emscripten/glfw3/ErrorHandler.h"
+#include "emscripten/glfw3/Keyboard.h"
 
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
@@ -31,14 +32,23 @@ static inline emscripten::glfw3::Context *getContext() {
     emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
   return kContext.get();
 }
+static inline bool checkContextInitialized()
+{
+  if(!kContext)
+  {
+    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    return false;
+  }
+  return true;
+}
 
 static GLFWwindow* fLastRequestedGLFWWindow{};
 static std::shared_ptr<emscripten::glfw3::Window> fLastRequestedWindow{};
 
-static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* iWindow) {
-  if(!kContext)
+static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* iWindow)
+{
+  if(!checkContextInitialized())
   {
-    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
     return nullptr;
   }
   else
@@ -371,7 +381,7 @@ GLFWAPI int glfwGetMouseButton(GLFWwindow* window, int button)
 {
   auto w = getWindow(window);
   if(w)
-    return w->getMouseButton(button);
+    return w->getMouseButtonState(button);
   else
     return GLFW_RELEASE;
 }
@@ -386,6 +396,62 @@ GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmo
     return w->setMouseButtonCallback(callback);
   else
     return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwSetKeyCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setKeyCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwSetCharCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWcharfun glfwSetCharCallback(GLFWwindow* window, GLFWcharfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setCharCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetKeyScancode
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetKeyScancode(int key)
+{
+  if(!checkContextInitialized())
+    return -1;
+  return emscripten::glfw3::Keyboard::getKeyScancode(key);
+}
+
+//------------------------------------------------------------------------
+// glfwGetKeyName
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetKeyName(int key, int scancode)
+{
+  if(!checkContextInitialized())
+    return nullptr;
+  return emscripten::glfw3::Keyboard::getKeyName(key, scancode);
+}
+
+//------------------------------------------------------------------------
+// glfwGetKey
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetKey(GLFWwindow* window, int key)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getKeyState(key);
+  else
+    return GLFW_RELEASE;
 }
 
 //------------------------------------------------------------------------
@@ -489,30 +555,11 @@ GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun ca
   return nullptr;
 }
 
-GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
-
-GLFWAPI GLFWcharfun glfwSetCharCallback(GLFWwindow* window, GLFWcharfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
-
 GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
 {
   // TODO implement
   return nullptr;
 }
-
-GLFWAPI int glfwGetKey(GLFWwindow* window, int key)
-{
-  // TODO implement
-  return GLFW_RELEASE;
-}
-
 
 //------------------------------------------------------------------------
 // glfwGetWindowPos
@@ -620,8 +667,6 @@ GLFWAPI void glfwWaitEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }
 GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
 GLFWAPI int glfwRawMouseMotionSupported(void){ not_implemented(); }
-GLFWAPI const char* glfwGetKeyName(int key, int scancode){ not_implemented(); }
-GLFWAPI int glfwGetKeyScancode(int key){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
 GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot){ not_implemented(); }
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor){ not_implemented(); }

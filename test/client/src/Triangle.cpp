@@ -269,6 +269,18 @@ void setHtmlValue(GLFWwindow *iWindow, char const *iFunctionName, char const *iF
   }
 }
 
+inline char const* actionToString(int action)
+{
+  char const *a;
+  switch(action)
+  {
+    case GLFW_PRESS: a = "P"; break;
+    case GLFW_RELEASE: a = "R"; break;
+    case GLFW_REPEAT: a = "H"; break;
+    default: a = "U"; break;
+  }
+  return a;
+}
 void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 {
   setHtmlValue(window, "glfwSetWindowContentScaleCallback", "%.2fx%.2f", xScale, yScale);
@@ -287,7 +299,11 @@ void onCursorPosChange(GLFWwindow *window, double xScale, double yScale)
 }
 void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 {
-  setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, action == GLFW_PRESS ? "P" : "R", mods);
+  setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, actionToString(action), mods);
+}
+void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  setHtmlValue(window, "glfwSetKeyCallback", "%d:%d:%s:%d", key, scancode, actionToString(action), mods);
 }
 
 //------------------------------------------------------------------------
@@ -301,6 +317,7 @@ void Triangle::registerCallbacks()
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
   glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
+  glfwSetKeyCallback(fWindow, onKeyChange);
 }
 
 //------------------------------------------------------------------------
@@ -323,9 +340,14 @@ void Triangle::updateValues()
   setHtmlValue(fWindow, "glfwGetCursorPos", "%.2fx%.2f", xd, yd);
 
   setHtmlValue(fWindow, "glfwGetMouseButton", "L:%s|M:%s|R:%s",
-               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS ? "P" : "R",
-               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS ? "P" : "R",
-               glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS ? "P" : "R");
+               actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT)),
+               actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_MIDDLE)),
+               actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_RIGHT)));
+
+  setHtmlValue(fWindow, "glfwGetKey", "A:%s|Q:%s|Z:%s",
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_A)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_Q)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_Z)));
 
   glfwGetWindowContentScale(fWindow, &xf, &yf);
   setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);

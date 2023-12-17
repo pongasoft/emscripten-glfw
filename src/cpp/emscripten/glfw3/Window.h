@@ -24,6 +24,8 @@
 #include "Object.h"
 #include "Config.h"
 #include "Events.h"
+#include "Mouse.h"
+#include "Keyboard.h"
 #include <utility>
 #include <functional>
 
@@ -52,8 +54,11 @@ public:
     if(oWidth) *oWidth = getFramebufferWidth();
     if(oHeight) *oHeight = getFramebufferHeight();
   }
-  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
-  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
+//  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
+//  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
+
+  constexpr bool isFocused() const { return fFocused; }
+  void focus();
 
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
@@ -64,13 +69,18 @@ public:
   // events
   inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
   inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouse.fButtonCallback, iCallback); }
+  inline GLFWkeyfun setKeyCallback(GLFWkeyfun iCallback) { return fKeyboard.setKeyCallback(iCallback); }
+  inline GLFWcharfun setCharCallback(GLFWcharfun iCallback) { return fKeyboard.setCharCallback(iCallback); }
 
   // mouse
   inline void getCursorPos(double *oXPos, double *oYPos) const {
     if(oXPos) {*oXPos = fCursorPosX; }
     if(oYPos) {*oYPos = fCursorPosY; }
   }
-  int getMouseButton(int iButton);
+  glfw_mouse_button_state_t getMouseButtonState(glfw_mouse_button_t iButton);
+
+  // keyboard
+  glfw_key_state_t getKeyState(glfw_key_t iKey) const { return fKeyboard.getKeyState(iKey); }
 
   // user pointer
   inline void *getUserPointer() const { return fUserPointer; }
@@ -87,17 +97,19 @@ public:
   ~Window() override;
   constexpr bool isDestroyed() const { return fDestroyed; }
 
-
   friend class Context;
 
 protected:
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
-  bool onMouseButtonUp(int iEventType, const EmscriptenMouseEvent *iMouseEvent);
+  bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
+  inline bool onKeyDown(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iKeyboardEvent); }
+  inline bool onKeyUp(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iKeyboardEvent); }
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonDown{};
+  EventListener<EmscriptenFocusEvent> fOnFocusChange{};
 
 private:
   void createEventListeners();
@@ -105,17 +117,10 @@ private:
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
 
 private:
-  struct Mouse
-  {
-    int fLastButtonAction{GLFW_RELEASE};
-    int fLastButton{-1};
-    std::array<int, GLFW_MOUSE_BUTTON_LAST + 1> fButtons{GLFW_RELEASE};
-    GLFWmousebuttonfun fButtonCallback{};
-  };
-private:
   Config fConfig;
   float fMonitorScale;
   bool fDestroyed{};
+  bool fFocused{};
   int fWidth{};
   int fHeight{};
   int fFramebufferWidth{};
@@ -125,6 +130,7 @@ private:
   double fCursorPosX{};
   double fCursorPosY{};
   Mouse fMouse{};
+  Keyboard fKeyboard{};
   void *fUserPointer{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
   GLFWwindowsizefun fSizeCallback{};

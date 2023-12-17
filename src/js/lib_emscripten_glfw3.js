@@ -7,17 +7,17 @@ let impl = {
     fCurrentCanvasContext: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
-    fScaleChangeCallbackUserData: null,
+    fContext: null,
 
     onScaleChange() {
       if(GLFW3.fScaleChangeCallback) {
-        {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fScaleChangeCallbackUserData);
+        {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fContext);
       }
-    }
+    },
   },
 
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (scale, scaleChangeCallback, scaleChangeCallbackUserData) => {
+  emscripten_glfw3_context_init: (scale, scaleChangeCallback, context) => {
     console.log("emscripten_glfw3_context_init()");
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
@@ -25,7 +25,7 @@ let impl = {
     GLFW3.fCurrentCanvasContext = null;
 
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
-    GLFW3.fScaleChangeCallbackUserData = scaleChangeCallbackUserData;
+    GLFW3.fContext = context;
     GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + scale + 'dppx)');
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
   },
@@ -39,7 +39,7 @@ let impl = {
     if(GLFW3.fScaleMQL) {
       GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
     }
-    GLFW3.fScaleChangeCallbackUserData = null;
+    GLFW3.fContext = null;
   },
 
   emscripten_glfw3_context_window_init__deps: ['$findEventTarget'],
@@ -69,6 +69,11 @@ let impl = {
   emscripten_glfw3_context_window_destroy: (canvasId) => {
     if(GLFW3.fCanvasContexts)
       delete GLFW3.fCanvasContexts[canvasId];
+  },
+
+  emscripten_glfw3_context_window_focus: (canvasId) => {
+    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+    canvas.focus();
   },
 
   emscripten_glfw3_context_window_set_size: (canvasId, width, height, fbWidth, fbHeight) => {

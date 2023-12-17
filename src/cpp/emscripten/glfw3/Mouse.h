@@ -16,25 +16,26 @@
  * @author Yan Pujante
  */
 
-#ifndef EMSCRIPTEN_GLFW_OBJECT_H
-#define EMSCRIPTEN_GLFW_OBJECT_H
+#ifndef EMSCRIPTEN_GLFW_MOUSE_H
+#define EMSCRIPTEN_GLFW_MOUSE_H
+
+#include <GLFW/glfw3.h>
+#include <array>
+
+using glfw_mouse_button_state_t = int; // ex: GLFW_RELEASE
+using glfw_mouse_button_t = int; // ex: GLFW_MOUSE_BUTTON_LEFT
 
 namespace emscripten::glfw3 {
 
-template<typename G>
-class Object
+class Mouse
 {
 public:
-  using opaque_ptr_t = G *;
-
-  virtual ~Object() = default;
-  inline G *asOpaquePtr() { return reinterpret_cast<G *>(&fOpaquePtr); }
-  inline G const *asOpaquePtr() const { return reinterpret_cast<G const *>(&fOpaquePtr); }
-private:
-  struct OpaquePtr {};
-  OpaquePtr fOpaquePtr{};
+  glfw_mouse_button_state_t fLastButtonState{GLFW_RELEASE};
+  glfw_mouse_button_t fLastButton{-1};
+  std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
+  GLFWmousebuttonfun fButtonCallback{};
 };
 
 }
 
-#endif //EMSCRIPTEN_GLFW_OBJECT_H
+#endif //EMSCRIPTEN_GLFW_MOUSE_H

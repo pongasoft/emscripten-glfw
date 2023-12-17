@@ -77,6 +77,8 @@ private:
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
 
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
+  EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
+  EventListener<EmscriptenKeyboardEvent> fOnKeyUp{};
 };
 
 }

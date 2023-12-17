@@ -11,7 +11,9 @@ set(glfw3_headers
     src/cpp/emscripten/glfw3/Context.h
     src/cpp/emscripten/glfw3/ErrorHandler.h
     src/cpp/emscripten/glfw3/Events.h
+    src/cpp/emscripten/glfw3/Keyboard.h
     src/cpp/emscripten/glfw3/Monitor.h
+    src/cpp/emscripten/glfw3/Mouse.h
     src/cpp/emscripten/glfw3/Object.h
     src/cpp/emscripten/glfw3/Window.h
     src/cpp/emscripten/glfw3/ErrorHandler.h
@@ -20,8 +22,9 @@ set(glfw3_headers
 set(glfw3_sources
     src/cpp/glfw3.cpp
     src/cpp/emscripten/glfw3/Context.cpp
-    src/cpp/emscripten/glfw3/Window.cpp
     src/cpp/emscripten/glfw3/ErrorHandler.cpp
+    src/cpp/emscripten/glfw3/Keyboard.cpp
+    src/cpp/emscripten/glfw3/Window.cpp
 )
 
 add_library(${target} ${glfw3_sources})

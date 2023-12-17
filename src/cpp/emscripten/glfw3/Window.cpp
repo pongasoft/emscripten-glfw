@@ -25,6 +25,7 @@
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -64,6 +65,14 @@ void Window::destroy()
     emscripten_glfw3_context_window_destroy(asOpaquePtr());
     fDestroyed = true;
   }
+}
+
+//------------------------------------------------------------------------
+// Window::focus
+//------------------------------------------------------------------------
+void Window::focus()
+{
+  emscripten_glfw3_context_window_focus(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
@@ -159,22 +168,22 @@ void Window::getContentScale(float *iXScale, float *iYScale) const
 }
 
 //------------------------------------------------------------------------
-// Window::getMouseButton
+// Window::getMouseButtonState
 //------------------------------------------------------------------------
-int Window::getMouseButton(int iButton)
+glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButton)
 {
   if(iButton < 0 || iButton > GLFW_MOUSE_BUTTON_LAST)
   {
     kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid button [%d]", iButton);
     return GLFW_RELEASE;
   }
-  return fMouse.fButtons[iButton];
+  return fMouse.fButtonStates[iButton];
 }
 
 //------------------------------------------------------------------------
 // emscriptenToGLFWButton
 //------------------------------------------------------------------------
-inline int emscriptenToGLFWButton(unsigned short iEmscriptenButton)
+inline glfw_mouse_button_t emscriptenToGLFWButton(unsigned short iEmscriptenButton)
 {
   switch(iEmscriptenButton)
   {
@@ -214,15 +223,24 @@ void Window::createEventListeners()
     {
       // down can only happen when inside the window
       fMouse.fLastButton = lastButton;
-      fMouse.fLastButtonAction = GLFW_PRESS;
-      fMouse.fButtons[lastButton] = GLFW_PRESS;
+      fMouse.fLastButtonState = GLFW_PRESS;
+      fMouse.fButtonStates[lastButton] = GLFW_PRESS;
 
       if(fMouse.fButtonCallback)
       {
         // TODO handle modBits / last parameter
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonAction, 0);
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, 0);
       }
     }
+    return true;
+  };
+
+  // fOnFocusChange
+  fOnFocusChange = [this](int eventType, const EmscriptenFocusEvent *iFocusEvent) {
+    fFocused = eventType == EMSCRIPTEN_EVENT_FOCUS;
+    printf("%s / focused=%s\n", getCanvasSelector(), fFocused ? "true" : "false");
+    if(!isFocused())
+      fKeyboard.resetAllKeys(asOpaquePtr());
     return true;
   };
 }
@@ -230,30 +248,32 @@ void Window::createEventListeners()
 //------------------------------------------------------------------------
 // Window::onMouseButtonUp
 //------------------------------------------------------------------------
-bool Window::onMouseButtonUp(int iEventType, EmscriptenMouseEvent const *iMouseEvent)
+bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
 {
   // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
   auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
   if(lastButton >= 0)
   {
     // up can happen even if mouse is outside the window
-    if(fMouse.fButtons[lastButton] == GLFW_PRESS)
+    if(fMouse.fButtonStates[lastButton] == GLFW_PRESS)
     {
       fMouse.fLastButton = lastButton;
-      fMouse.fLastButtonAction = GLFW_RELEASE;
-      fMouse.fButtons[lastButton] = GLFW_RELEASE;
+      fMouse.fLastButtonState = GLFW_RELEASE;
+      fMouse.fButtonStates[lastButton] = GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
       {
         // TODO handle modBits / last parameter
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonAction, 0);
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, 0);
       }
+
+      if(!isFocused())
+        focus();
     }
   }
 
   return true;
 }
-
 
 //------------------------------------------------------------------------
 // Window::addOrRemoveEventListeners
@@ -263,9 +283,17 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   auto selector = getCanvasSelector();
   printf("Window::addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
 
+  // mouse
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButtonDown, false);
   // note: mouseup_callback is registered with context because target is "document"
+
+  // keyboard
+  // note: keyboard events are handled in context because target is "window"
+
+  // focus
+  addOrRemoveListener<EmscriptenFocusEvent>(emscripten_set_focus_callback_on_thread, iAdd, selector, &fOnFocusChange, false);
+  addOrRemoveListener<EmscriptenFocusEvent>(emscripten_set_blur_callback_on_thread, iAdd, selector, &fOnFocusChange, false);
 }
 
 
