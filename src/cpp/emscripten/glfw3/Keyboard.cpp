@@ -31,6 +31,7 @@ int Keyboard::getKeyScancode(glfw_key_t iKey)
   {
     case GLFW_KEY_A: return DOM_PK_A;
     case GLFW_KEY_Q: return DOM_PK_Q;
+    case GLFW_KEY_TAB: return DOM_PK_TAB;
     default: return -1;
   }
 }
@@ -44,6 +45,7 @@ glfw_key_t Keyboard::getGLFWKey(int iScancode)
   {
     case DOM_PK_A: return GLFW_KEY_A;
     case DOM_PK_Q: return GLFW_KEY_Q;
+    case DOM_PK_TAB: return GLFW_KEY_TAB;
     default: return GLFW_KEY_UNKNOWN;
   }
 }

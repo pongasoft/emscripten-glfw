@@ -455,6 +455,28 @@ GLFWAPI int glfwGetKey(GLFWwindow* window, int key)
 }
 
 //------------------------------------------------------------------------
+// glfwSetWindowFocusCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwindowfocusfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setFocusCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwFocusWindow
+//------------------------------------------------------------------------
+GLFWAPI void glfwFocusWindow(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->focus();
+}
+
+//------------------------------------------------------------------------
 // glfwGetMonitors
 //------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count)
@@ -535,12 +557,6 @@ GLFWAPI double glfwGetTime(void)
 //------------------------------------------------------------------------
 // TODO Implement
 //------------------------------------------------------------------------
-
-GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwindowfocusfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
 
 GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcursorenterfun callback)
 {
@@ -652,7 +668,6 @@ GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity){ not_implem
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwMaximizeWindow(GLFWwindow* window){ not_implemented(); }
-GLFWAPI void glfwFocusWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRequestWindowAttention(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate){ not_implemented(); }

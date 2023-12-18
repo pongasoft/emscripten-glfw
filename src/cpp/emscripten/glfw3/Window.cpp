@@ -238,9 +238,10 @@ void Window::createEventListeners()
   // fOnFocusChange
   fOnFocusChange = [this](int eventType, const EmscriptenFocusEvent *iFocusEvent) {
     fFocused = eventType == EMSCRIPTEN_EVENT_FOCUS;
-    printf("%s / focused=%s\n", getCanvasSelector(), fFocused ? "true" : "false");
     if(!isFocused())
       fKeyboard.resetAllKeys(asOpaquePtr());
+    if(fFocusCallback)
+      fFocusCallback(asOpaquePtr(), isFocused() ? GLFW_TRUE : GLFW_FALSE);
     return true;
   };
 }

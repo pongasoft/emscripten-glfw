@@ -305,6 +305,11 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
 {
   setHtmlValue(window, "glfwSetKeyCallback", "%d:%d:%s:%d", key, scancode, actionToString(action), mods);
 }
+void onWindowFocusChange(GLFWwindow* window, int focused)
+{
+  setHtmlValue(window, "glfwSetWindowFocusCallback", "%s", focused == GLFW_TRUE ? "true" : "false");
+}
+
 
 //------------------------------------------------------------------------
 // registerCallbacks
@@ -318,6 +323,7 @@ void Triangle::registerCallbacks()
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
   glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
   glfwSetKeyCallback(fWindow, onKeyChange);
+  glfwSetWindowFocusCallback(fWindow, onWindowFocusChange);
 }
 
 //------------------------------------------------------------------------

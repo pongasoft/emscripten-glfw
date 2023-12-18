@@ -62,6 +62,7 @@ public:
 
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
+  inline GLFWwindowfocusfun setFocusCallback(GLFWwindowfocusfun iCallback) { return std::exchange(fFocusCallback, iCallback); }
 
   void getContentScale(float* iXScale, float* iYScale) const;
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
@@ -134,6 +135,7 @@ private:
   void *fUserPointer{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
   GLFWwindowsizefun fSizeCallback{};
+  GLFWwindowfocusfun fFocusCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};
   GLFWcursorposfun fCursorPosCallback{};
 };

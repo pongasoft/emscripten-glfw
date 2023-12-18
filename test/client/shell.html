@@ -17,8 +17,9 @@
       background-color: black;
       image-rendering: pixelated;
     }
-    div#canvas-details>table {
-      float: left;
+
+    #canvas-details {
+      display: flex;
     }
 
     .table-bordered {
@@ -77,6 +78,7 @@
     <tr class="glfwSetKeyCallback"><td>glfwSetKeyCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwSetWindowSizeCallback"><td>glfwSetWindowSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwSetFramebufferSizeCallback"><td>glfwSetFramebufferSizeCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwSetWindowFocusCallback"><td>glfwSetWindowFocusCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwSetWindowContentScaleCallback"><td>glfwSetWindowContentScaleCallback</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     </tbody>
   </table>
@@ -85,23 +87,13 @@
   <tbody>
   </tbody>
 </table>
-<label>Enter text here: <input type="text"></label>
+<p>
+  <label>Change focus: <input type="text"></label>
+</p>
 
 <script>
 
   var Module = {
-              print: (function() {
-                  var element = document.getElementById('output');
-                  if (element) element.value = ''; // clear browser cache
-                  return function(text) {
-                      if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                      console.log(text);
-                      if (element) {
-                        element.value += text + "\n";
-                        element.scrollTop = element.scrollHeight; // focus on bottom
-                      }
-                  };
-              })(),
               canvas: (function() {
                   return document.getElementById('canvas1');
               })()
