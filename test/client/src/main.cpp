@@ -66,25 +66,37 @@ int main()
   if(!glfwInit())
     return -1;
 
+  auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
+  auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
+
   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
   glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
 
-  auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-  if(!window1)
+  GLFWwindow *window1{};
+  if(canvas1Enabled)
   {
-    glfwTerminate();
-    return -1;
+    window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+    if(!window1)
+    {
+      glfwTerminate();
+      return -1;
+    }
   }
 
-  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
-  glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
-  auto window2 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-  if(!window2)
+  GLFWwindow *window2{};
+  if(canvas2Enabled)
   {
-    glfwTerminate();
-    return -1;
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
+    glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
+    window2 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+    if(!window2)
+    {
+      glfwTerminate();
+      return -1;
+    }
   }
 
+  if(window1)
   {
     std::shared_ptr<Triangle> window1Triangle = Triangle::init(window1, "canvas1");
     if(!window1Triangle)
@@ -96,6 +108,7 @@ int main()
     kTriangles[window1] = window1Triangle;
   }
 
+  if(window2)
   {
     std::shared_ptr<Triangle> window2Triangle = Triangle::init(window2, "canvas2");
     if(!window2Triangle)
@@ -110,7 +123,7 @@ int main()
   for(auto &[k, v]: kTriangles)
     v->registerCallbacks();
 
-    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
+//    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
 
   while(true)
   {

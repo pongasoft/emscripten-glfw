@@ -26,6 +26,7 @@ extern "C" {
 using ScaleChangeCallback = void (*)(void *);
 void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback iScaleChangeCallback, void *iUserData);
 void emscripten_glfw3_context_destroy();
+bool emscripten_glfw3_context_is_any_element_focused();
 int emscripten_glfw3_context_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 }
 
@@ -63,18 +64,28 @@ Context::Context()
   // fOnMouseUpButton
   fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     bool handled = false;
-    for(auto &[_, v]: fWindows)
-      handled |= v->onMouseButtonUp(iMouseEvent);
+    for(auto &[_, w]: fWindows)
+      handled |= w->onMouseButtonUp(iMouseEvent);
     return handled;
   };
 
   // fOnKeyDown
   fOnKeyDown = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
     bool handled = false;
-    for(auto &[_, v]: fWindows)
+    if(fWindows.size() == 1)
     {
-      if(v->isFocused())
-        handled |= v->onKeyDown(iKeyboardEvent);
+      auto &w = fWindows.begin()->second;
+      // in the event of only 1 window (most frequent use case), we also process the event if nothing else is focused
+      if(w->isFocused() || !emscripten_glfw3_context_is_any_element_focused())
+        handled |= w->onKeyDown(iKeyboardEvent);
+    }
+    else
+    {
+      for(auto &[_, w]: fWindows)
+      {
+        if(w->isFocused())
+          handled |= w->onKeyDown(iKeyboardEvent);
+      }
     }
     return handled;
   };
@@ -82,8 +93,8 @@ Context::Context()
   // fOnKeyUp
   fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
     bool handled = false;
-    for(auto &[_, v]: fWindows)
-      handled |= v->onKeyUp(iKeyboardEvent);
+    for(auto &[_, w]: fWindows)
+      handled |= w->onKeyUp(iKeyboardEvent);
     return handled;
   };
 

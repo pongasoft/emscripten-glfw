@@ -30,6 +30,10 @@ let impl = {
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
   },
 
+  emscripten_glfw3_context_is_any_element_focused: () => {
+    return document.activeElement !== document.body;
+  },
+
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");
 

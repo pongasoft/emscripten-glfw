@@ -57,7 +57,7 @@
 <div id="canvas-details">
   <table class="table-bordered">
     <thead>
-    <tr><th>glfw (direct)</th><th>#1</th><th>#2</th></tr>
+    <tr><th>glfw (direct)</th><th>#1 (<a id="canvas1-enable-action" href=""></a>)</th><th>#2 (<a id="canvas2-enable-action" href=""></a>)</th></tr>
     </thead>
     <tbody>
     <tr class="glfwGetCursorPos"><td>glfwGetCursorPos</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
@@ -93,11 +93,21 @@
 
 <script>
 
+  var isCanvasEnabled = (name) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.has(name))
+      return urlParams.get(name) !== "disabled";
+    else
+      return true;
+  }
+
   var Module = {
-              canvas: (function() {
-                  return document.getElementById('canvas1');
-              })()
-          };
+    canvas: (function() {
+      return document.getElementById('canvas1');
+    })(),
+    canvas1Enabled: isCanvasEnabled("canvas1"),
+    canvas2Enabled: isCanvasEnabled("canvas2")
+  };
 
   var debug = (key, message) => {
     var elt = document.querySelector("#debug ." + key.toString());
@@ -128,6 +138,16 @@
   document.onkeydown = (e) => {
     debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key);
   }
+
+  const c1EnableAction = document.getElementById('canvas1-enable-action');
+  c1EnableAction.href = (Module.canvas1Enabled ? "?canvas1=disabled" : "?canvas1=enabled")
+    + "&canvas2=" + (Module.canvas2Enabled ? "enabled" : "disabled");
+  c1EnableAction.innerHTML = Module.canvas1Enabled ? "disable" : "enable"
+
+  const c2EnableAction = document.getElementById('canvas2-enable-action');
+  c2EnableAction.href = (Module.canvas2Enabled ? "?canvas2=disabled" : "?canvas2=enabled")
+    + "&canvas1=" + (Module.canvas1Enabled ? "enabled" : "disabled");
+  c2EnableAction.innerHTML = Module.canvas2Enabled ? "disable" : "enable"
 
 </script>
 {{{ SCRIPT }}}
