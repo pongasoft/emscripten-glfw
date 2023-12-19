@@ -64,7 +64,7 @@ Context::Context()
   // fOnMouseUpButton
   fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
     bool handled = false;
-    for(auto &[_, w]: fWindows)
+    for(auto &w: fWindows)
       handled |= w->onMouseButtonUp(iMouseEvent);
     return handled;
   };
@@ -74,14 +74,14 @@ Context::Context()
     bool handled = false;
     if(fWindows.size() == 1)
     {
-      auto &w = fWindows.begin()->second;
+      auto &w = fWindows[0];
       // in the event of only 1 window (most frequent use case), we also process the event if nothing else is focused
       if(w->isFocused() || !emscripten_glfw3_context_is_any_element_focused())
         handled |= w->onKeyDown(iKeyboardEvent);
     }
     else
     {
-      for(auto &[_, w]: fWindows)
+      for(auto &w: fWindows)
       {
         if(w->isFocused())
           handled |= w->onKeyDown(iKeyboardEvent);
@@ -93,7 +93,7 @@ Context::Context()
   // fOnKeyUp
   fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
     bool handled = false;
-    for(auto &[_, w]: fWindows)
+    for(auto &w: fWindows)
       handled |= w->onKeyUp(iKeyboardEvent);
     return handled;
   };
@@ -131,7 +131,7 @@ void Context::onScaleChange()
 {
   printf("Context::onScaleChange\n");
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  for(auto const &[k, w]: fWindows)
+  for(auto &w: fWindows)
   {
     w->setMonitorScale(fScale);
   }
@@ -146,12 +146,11 @@ std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
   if(fCurrentWindowOpaquePtr == iWindow)
     return fCurrentWindow;
 
-  auto iter = fWindows.find(iWindow);
+  auto iter = std::find_if(fWindows.begin(), fWindows.end(), [iWindow](auto &w) { return w->asOpaquePtr() == iWindow; });
   if(iter != fWindows.end())
-  {
-    return iter->second;
-  }
-  return nullptr;
+    return *iter;
+  else
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -190,7 +189,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   if(!window->createGLContext())
     return nullptr;
 
-  fWindows[window->asOpaquePtr()] = window;
+  fWindows.emplace_back(window);
 
   window->registerEventListeners();
 
@@ -202,16 +201,17 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 //------------------------------------------------------------------------
 void Context::destroyWindow(GLFWwindow *iWindow)
 {
-  auto window = getWindow(iWindow);
-  if(window)
+  auto iter = std::find_if(fWindows.begin(), fWindows.end(), [iWindow](auto &w) { return w->asOpaquePtr() == iWindow; });
+  if(iter != fWindows.end())
   {
+    auto window = *iter;
     window->destroy();
     if(window == fCurrentWindow)
     {
       fCurrentWindow = nullptr;
       fCurrentWindowOpaquePtr = nullptr;
     }
-    fWindows.erase(iWindow);
+    fWindows.erase(iter);
   }
 }
 

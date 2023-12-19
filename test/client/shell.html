@@ -88,7 +88,10 @@
   </tbody>
 </table>
 <p>
-  <label>Change focus: <input type="text"></label>
+<ul>
+  <li><label>Change focus: <input type="text"></label></li>
+  <li><a id="exit" href="#">exit</a> </li>
+</ul>
 </p>
 
 <script>
@@ -106,7 +109,8 @@
       return document.getElementById('canvas1');
     })(),
     canvas1Enabled: isCanvasEnabled("canvas1"),
-    canvas2Enabled: isCanvasEnabled("canvas2")
+    canvas2Enabled: isCanvasEnabled("canvas2"),
+    terminated: false,
   };
 
   var debug = (key, message) => {
@@ -137,6 +141,11 @@
 
   document.onkeydown = (e) => {
     debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key);
+  }
+
+  document.getElementById('exit').onclick = (event) => {
+    event.preventDefault();
+    Module.terminated = true;
   }
 
   const c1EnableAction = document.getElementById('canvas1-enable-action');

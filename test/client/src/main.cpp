@@ -59,6 +59,8 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
 
 std::map<GLFWwindow *, std::shared_ptr<Triangle>> kTriangles{};
 
+bool terminated() { return static_cast<bool>(EM_ASM_INT( return Module.terminated; )); }
+
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
@@ -128,7 +130,7 @@ int main()
   if(window1 && window2)
     glfwFocusWindow(window1);
 
-  while(true)
+  while(!terminated())
   {
     bool exitWhile = false;
     for(auto &[k, v]: kTriangles)

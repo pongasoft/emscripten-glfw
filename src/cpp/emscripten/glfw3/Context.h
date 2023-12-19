@@ -23,7 +23,7 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
-#include <map>
+#include <vector>
 #include <string>
 
 namespace emscripten::glfw3 {
@@ -68,7 +68,7 @@ private:
   void addOrRemoveEventListeners(bool iAdd);
 
 private:
-  std::map<Window::opaque_ptr_t, std::shared_ptr<Window>> fWindows;
+  std::vector<std::shared_ptr<Window>> fWindows{};
   GLFWwindow *fCurrentWindowOpaquePtr{};
   std::shared_ptr<Window> fCurrentWindow{};
   std::shared_ptr<Monitor> fCurrentMonitor{new Monitor{}};
