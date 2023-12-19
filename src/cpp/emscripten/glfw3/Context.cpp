@@ -194,9 +194,6 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   window->registerEventListeners();
 
-  if(fWindows.size() == 1)
-    window->focus();
-
   return window->asOpaquePtr();
 }
 

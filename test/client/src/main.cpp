@@ -125,6 +125,9 @@ int main()
 
 //    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
 
+  if(window1 && window2)
+    glfwFocusWindow(window1);
+
   while(true)
   {
     bool exitWhile = false;

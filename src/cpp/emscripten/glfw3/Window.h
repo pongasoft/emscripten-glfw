@@ -122,6 +122,7 @@ private:
   float fMonitorScale;
   bool fDestroyed{};
   bool fFocused{};
+  bool fFocusOnMouse{true};
   int fWidth{};
   int fHeight{};
   int fFramebufferWidth{};

@@ -226,6 +226,9 @@ void Window::createEventListeners()
       fMouse.fLastButtonState = GLFW_PRESS;
       fMouse.fButtonStates[lastButton] = GLFW_PRESS;
 
+      if(fFocusOnMouse && !isFocused())
+        focus();
+
       if(fMouse.fButtonCallback)
       {
         // TODO handle modBits / last parameter
@@ -267,9 +270,6 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
         // TODO handle modBits / last parameter
         fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, 0);
       }
-
-      if(!isFocused())
-        focus();
     }
   }
 
