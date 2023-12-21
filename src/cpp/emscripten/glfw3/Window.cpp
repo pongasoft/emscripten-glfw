@@ -244,7 +244,7 @@ void Window::createEventListeners()
     if(!isFocused())
       fKeyboard.resetAllKeys(asOpaquePtr());
     if(fFocusCallback)
-      fFocusCallback(asOpaquePtr(), isFocused() ? GLFW_TRUE : GLFW_FALSE);
+      fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
     return true;
   };
 }

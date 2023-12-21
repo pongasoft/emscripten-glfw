@@ -24,6 +24,9 @@
 
 namespace emscripten::glfw3 {
 
+constexpr inline bool toCBool(int iGlfwBool) { return iGlfwBool != GLFW_FALSE; }
+constexpr inline int toGlfwBool(bool iCBool) { return iCBool ? GLFW_TRUE : GLFW_FALSE; }
+
 struct Config
 {
   // For backward compatibility with emscripten, defaults to getting the canvas from Module

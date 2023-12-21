@@ -24,28 +24,30 @@
 #include "emscripten/glfw3/ErrorHandler.h"
 #include "emscripten/glfw3/Keyboard.h"
 
+using namespace emscripten::glfw3;
+
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
-static std::unique_ptr<emscripten::glfw3::Context> kContext{};
-static inline emscripten::glfw3::Context *getContext() {
+static std::unique_ptr<Context> kContext{};
+static inline Context *getContext() {
   if(!kContext)
-    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
   return kContext.get();
 }
 static inline bool checkContextInitialized()
 {
   if(!kContext)
   {
-    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
     return false;
   }
   return true;
 }
 
 static GLFWwindow* fLastRequestedGLFWWindow{};
-static std::shared_ptr<emscripten::glfw3::Window> fLastRequestedWindow{};
+static std::shared_ptr<Window> fLastRequestedWindow{};
 
-static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* iWindow)
+static inline std::shared_ptr<Window> getWindow(GLFWwindow* iWindow)
 {
   if(!checkContextInitialized())
   {
@@ -71,10 +73,10 @@ static inline std::shared_ptr<emscripten::glfw3::Window> getWindow(GLFWwindow* i
     return window;
   }
 }
-static inline std::shared_ptr<emscripten::glfw3::Monitor> getMonitor(GLFWmonitor* iMonitor) {
+static inline std::shared_ptr<Monitor> getMonitor(GLFWmonitor* iMonitor) {
   if(!kContext)
   {
-    emscripten::glfw3::ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+    ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
     return nullptr;
   }
   else
@@ -95,8 +97,8 @@ GLFWAPI int glfwInit()
   printf("glfwInit()\n");
   if(kContext)
     return GLFW_TRUE;
-  kContext = emscripten::glfw3::Context::init();
-  return GLFW_TRUE;
+  kContext = Context::init();
+  return toGlfwBool((bool) kContext);
 }
 
 //------------------------------------------------------------------------
@@ -135,7 +137,7 @@ GLFWAPI const char* glfwGetVersionString(void)
 //------------------------------------------------------------------------
 GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
 {
-  return emscripten::glfw3::ErrorHandler::instance().setErrorCallback(callback);
+  return ErrorHandler::instance().setErrorCallback(callback);
 }
 
 //------------------------------------------------------------------------
@@ -143,7 +145,7 @@ GLFWAPI GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
 //------------------------------------------------------------------------
 GLFWAPI int glfwGetError(const char** description)
 {
-  return emscripten::glfw3::ErrorHandler::instance().popError(description);
+  return ErrorHandler::instance().popError(description);
 }
 
 //------------------------------------------------------------------------
@@ -429,7 +431,7 @@ GLFWAPI int glfwGetKeyScancode(int key)
 {
   if(!checkContextInitialized())
     return -1;
-  return emscripten::glfw3::Keyboard::getKeyScancode(key);
+  return Keyboard::getKeyScancode(key);
 }
 
 //------------------------------------------------------------------------
@@ -439,7 +441,7 @@ GLFWAPI const char* glfwGetKeyName(int key, int scancode)
 {
   if(!checkContextInitialized())
     return nullptr;
-  return emscripten::glfw3::Keyboard::getKeyName(key, scancode);
+  return Keyboard::getKeyName(key, scancode);
 }
 
 //------------------------------------------------------------------------

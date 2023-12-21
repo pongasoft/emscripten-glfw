@@ -88,6 +88,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
   fKeyStates[key] = state;
 
   if(fKeyCallback)
+    // TODO handle mods
     fKeyCallback(iWindow, key, scancode, state, 0);
 
   if(fCharCallback)
@@ -115,6 +116,7 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
     fKeyStates[key] = state;
 
     if(fKeyCallback)
+      // TODO handle mods
       fKeyCallback(iWindow, key, scancode, state, 0);
   }
 
