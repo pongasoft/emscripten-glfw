@@ -307,7 +307,7 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 void onCharChange(GLFWwindow* window, unsigned int codepoint)
 {
-  setHtmlValue(window, "glfwSetCharCallback", "%d => '%c'", codepoint, codepoint);
+  setHtmlValue(window, "glfwSetCharCallback", "%u", codepoint);
 }
 void onWindowFocusChange(GLFWwindow* window, int focused)
 {

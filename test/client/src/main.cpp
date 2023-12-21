@@ -52,7 +52,7 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
     default:
       break;
   }
-  return GLFW_TRUE;
+  return GLFW_FALSE;
 }
 
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001

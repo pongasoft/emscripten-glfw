@@ -16,6 +16,18 @@ let impl = {
     },
   },
 
+  // see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+  emscripten_glfw3_context_to_codepoint: (eventKey) => {
+    // TODO: the eventKey gets copied back and forth between C and javascript a few too many times IMO (try to fix)
+    eventKey = UTF8ToString(eventKey);
+    const codepoint = eventKey.charCodeAt(0);
+    if(codepoint < 0x7f && eventKey.length > 1)
+      // case when eventKey is something like "Tab" (eventKey.charCodeAt(0) would be "T")
+      return 0;
+    else
+      return codepoint;
+  },
+
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
   emscripten_glfw3_context_init: (scale, scaleChangeCallback, context) => {
     console.log("emscripten_glfw3_context_init()");

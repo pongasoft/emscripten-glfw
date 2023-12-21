@@ -19,6 +19,11 @@
 #include <emscripten/dom_pk_codes.h>
 #include "Keyboard.h"
 #include "ErrorHandler.h"
+#include <optional>
+
+extern "C" {
+int emscripten_glfw3_context_to_codepoint(char const *);
+}
 
 namespace emscripten::glfw3 {
 
@@ -80,20 +85,21 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
   auto scancode = emscripten_compute_dom_pk_code(iKeyboardEvent->code);
   glfw_key_t key = getGLFWKey(scancode);
 
-  if(key == GLFW_KEY_UNKNOWN)
-    return false;
+  if(key != GLFW_KEY_UNKNOWN)
+  {
+    glfw_key_state_t state = iKeyboardEvent->repeat == GLFW_TRUE ? GLFW_REPEAT : GLFW_PRESS;
 
-  glfw_key_state_t state = iKeyboardEvent->repeat == GLFW_TRUE ? GLFW_REPEAT : GLFW_PRESS;
+    fKeyStates[key] = state;
 
-  fKeyStates[key] = state;
+    if(fKeyCallback)
+      // TODO handle mods
+      fKeyCallback(iWindow, key, scancode, state, 0);
+  }
 
-  if(fKeyCallback)
-    // TODO handle mods
-    fKeyCallback(iWindow, key, scancode, state, 0);
-
-  if(fCharCallback)
-    // TODO charCode is deprecated and somehow need to use js String.fromCharCode(iKeyboardEvent->key)??? maybe???
-    fCharCallback(iWindow, iKeyboardEvent->charCode);
+  if(fCharCallback) {
+    if(auto codepoint = emscripten_glfw3_context_to_codepoint(iKeyboardEvent->key); codepoint > 0)
+      fCharCallback(iWindow, codepoint);
+  }
 
   return true;
 }

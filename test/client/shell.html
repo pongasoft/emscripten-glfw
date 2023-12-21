@@ -141,7 +141,7 @@
   }
 
   document.onkeydown = (e) => {
-    debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key);
+    debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0));
   }
 
   document.getElementById('exit').onclick = (event) => {
