@@ -62,16 +62,17 @@ let impl = {
       }
     }
 
-    // check for css override: if there is a css rule (ex: width: 100%), then clientWidth will not match width
-    canvas.width = 1;
-    canvas.height = 1;
-    const hasCSSOverride = Math.floor(canvas.clientWidth) !== 1 || Math.floor(canvas.clientHeight) !== 1;
-
     var canvasCtx = {};
     canvasCtx.id = canvasId;
     canvasCtx.selector = canvasSelector;
     canvasCtx.canvas = canvas;
-    canvasCtx.hasCSSOverride = hasCSSOverride;
+
+    // check for css override: if there is a css rule (ex: width: 100%), then clientWidth will not match width
+    canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
+    canvas.width = 1;
+    canvas.height = 1;
+    canvasCtx.hasCSSOverride = Math.floor(canvas.clientWidth) !== 1 || Math.floor(canvas.clientHeight) !== 1;
+
     GLFW3.fCanvasContexts[canvasCtx.id] = canvasCtx;
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
@@ -83,9 +84,12 @@ let impl = {
       const canvas = ctx.canvas;
 
       if(!ctx.hasCSSOverride) {
-        canvas.style.removeProperty( "width");
+        canvas.style.removeProperty("width");
         canvas.style.removeProperty("height");
       }
+
+      canvas.width = ctx.originalSize.width;
+      canvas.height = ctx.originalSize.height;
 
       delete GLFW3.fCanvasContexts[canvasId];
     }

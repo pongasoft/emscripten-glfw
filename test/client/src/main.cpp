@@ -57,7 +57,7 @@ EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *user
 
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
 
-std::map<GLFWwindow *, std::shared_ptr<Triangle>> kTriangles{};
+std::vector<std::shared_ptr<Triangle>> kTriangles{};
 
 bool terminated() { return static_cast<bool>(EM_ASM_INT( return Module.terminated; )); }
 
@@ -107,7 +107,7 @@ int main()
       return -1;
     }
     window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
-    kTriangles[window1] = window1Triangle;
+    kTriangles.emplace_back(window1Triangle);
   }
 
   if(window2)
@@ -119,13 +119,14 @@ int main()
       return -1;
     }
     window2Triangle->setBgColor(1.0f, 0, 0.5f);
-    kTriangles[window2] = window2Triangle;
+    kTriangles.emplace_back(window2Triangle);
   }
 
-  for(auto &[k, v]: kTriangles)
+  for(auto &v: kTriangles)
     v->registerCallbacks();
 
-//    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
+  if(window1)
+    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
 
   if(window1 && window2)
     glfwFocusWindow(window1);
@@ -133,18 +134,18 @@ int main()
   while(!terminated())
   {
     bool exitWhile = false;
-    for(auto &[k, v]: kTriangles)
+    for(auto &v: kTriangles)
       exitWhile |= v->shouldClose();
     if(exitWhile)
       break;
-    for(auto &[k, v]: kTriangles)
+    for(auto &v: kTriangles)
       exitWhile |= !v->render();
     if(exitWhile)
       break;
 
     glfwPollEvents();
 
-    for(auto &[k, v]: kTriangles)
+    for(auto &v: kTriangles)
       v->updateValues();
 
     emscripten_sleep(33); // ~30 fps
@@ -152,7 +153,8 @@ int main()
 
   kTriangles.clear();
 
-  emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, nullptr);
+  if(window1)
+    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, nullptr);
 
   glfwTerminate();
 }
