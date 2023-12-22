@@ -78,12 +78,9 @@ let impl = {
     canvasCtx.id = canvasId;
     canvasCtx.selector = canvasSelector;
     canvasCtx.canvas = canvas;
-
-    // check for css override: if there is a css rule (ex: width: 100%), then clientWidth will not match width
     canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
-    canvas.width = 1;
-    canvas.height = 1;
-    canvasCtx.hasCSSOverride = Math.floor(canvas.clientWidth) !== 1 || Math.floor(canvas.clientHeight) !== 1;
+    canvasCtx.originalCSSSize = { width: canvas.style.getPropertyValue("width"),
+                                  height: canvas.style.getPropertyValue("height") };
 
     GLFW3.fCanvasContexts[canvasCtx.id] = canvasCtx;
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
@@ -95,10 +92,15 @@ let impl = {
       const ctx = GLFW3.fCanvasContexts[canvasId];
       const canvas = ctx.canvas;
 
-      if(!ctx.hasCSSOverride) {
+      if(ctx.originalCSSSize.width)
+        canvas.style.setProperty("width", ctx.originalCSSSize.width);
+      else
         canvas.style.removeProperty("width");
+
+      if(ctx.originalCSSSize.height)
+        canvas.style.setProperty("height", ctx.originalCSSSize.height);
+      else
         canvas.style.removeProperty("height");
-      }
 
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
@@ -120,10 +122,8 @@ let impl = {
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
 
     // this will (on purpose) override any css setting
-    if(!ctx.hasCSSOverride) {
-      canvas.style.setProperty( "width", width + "px", "important");
-      canvas.style.setProperty("height", height + "px", "important");
-    }
+    canvas.style.setProperty( "width", width + "px", "important");
+    canvas.style.setProperty("height", height + "px", "important");
   },
 
   emscripten_glfw3_context_gl_init: (canvasId) => {
