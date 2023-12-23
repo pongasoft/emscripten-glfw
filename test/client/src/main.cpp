@@ -71,12 +71,11 @@ int main()
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
 
-  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-  glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
-
   GLFWwindow *window1{};
   if(canvas1Enabled)
   {
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+    glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
     window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
     if(!window1)
     {

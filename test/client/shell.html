@@ -143,7 +143,12 @@
   }
 
   document.onkeydown = (e) => {
-    debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0));
+    // computing scancode in javascript to see if that works
+    let scancode = 0;
+    for(let i = 0; i < e.code.length; i++) {
+      scancode = ((scancode ^ 0x7E057D79) << 3) ^ e.code.charCodeAt(i);
+    }
+    debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0) + "|" + (scancode >>> 0).toString(16).toUpperCase());
   }
 
   document.getElementById('exit').onclick = (event) => {

@@ -22,11 +22,11 @@
 #include <GLFW/glfw3.h>
 #include <array>
 #include <emscripten/html5.h>
+#include "KeyboardMapping.h"
 
 namespace emscripten::glfw3 {
 
 using glfw_key_state_t = int; // ex: GLFW_RELEASE
-using glfw_key_t = int; // ex: GLFW_KEY_A
 
 class Keyboard
 {
@@ -40,11 +40,12 @@ public:
   void resetAllKeys(GLFWwindow *iWindow);
 
 public:
-  static int getKeyScancode(glfw_key_t iKey);
-  static const char* getKeyName(glfw_key_t iKey, int iScancode);
+  static constexpr glfw_scancode_t getKeyScancode(glfw_key_t iKey) { return keyboard::keyCodeToScancode(iKey); }
+  static const char* getKeyName(glfw_key_t iKey, glfw_scancode_t iScancode);
 
 private:
-  static glfw_key_t getGLFWKey(int iScancode);
+  static constexpr glfw_key_t getGLFWKey(glfw_scancode_t iScancode) { return keyboard::scancodeToKeyCode(iScancode); }
+  static constexpr glfw_scancode_t getKeyScancode(char const *iKeyboardEventCode) { return keyboard::keyboardEventCodeToScancode(iKeyboardEventCode); }
 
 private:
   std::array<glfw_key_state_t, GLFW_KEY_LAST + 1> fKeyStates{GLFW_RELEASE};

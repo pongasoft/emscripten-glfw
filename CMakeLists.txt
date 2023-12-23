@@ -12,6 +12,7 @@ set(glfw3_headers
     src/cpp/emscripten/glfw3/ErrorHandler.h
     src/cpp/emscripten/glfw3/Events.h
     src/cpp/emscripten/glfw3/Keyboard.h
+    src/cpp/emscripten/glfw3/KeyboardMapping.h
     src/cpp/emscripten/glfw3/Monitor.h
     src/cpp/emscripten/glfw3/Mouse.h
     src/cpp/emscripten/glfw3/Object.h

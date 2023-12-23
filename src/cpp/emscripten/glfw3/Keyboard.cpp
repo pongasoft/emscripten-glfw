@@ -16,10 +16,8 @@
  * @author Yan Pujante
  */
 
-#include <emscripten/dom_pk_codes.h>
 #include "Keyboard.h"
 #include "ErrorHandler.h"
-#include <optional>
 
 extern "C" {
 int emscripten_glfw3_context_to_codepoint(char const *);
@@ -28,40 +26,12 @@ int emscripten_glfw3_context_to_codepoint(char const *);
 namespace emscripten::glfw3 {
 
 //------------------------------------------------------------------------
-// Keyboard::getKeyScancode
-//------------------------------------------------------------------------
-int Keyboard::getKeyScancode(glfw_key_t iKey)
-{
-  switch(iKey)
-  {
-    case GLFW_KEY_A: return DOM_PK_A;
-    case GLFW_KEY_Q: return DOM_PK_Q;
-    case GLFW_KEY_TAB: return DOM_PK_TAB;
-    default: return -1;
-  }
-}
-
-//------------------------------------------------------------------------
-// Keyboard::getGLFWKey
-//------------------------------------------------------------------------
-glfw_key_t Keyboard::getGLFWKey(int iScancode)
-{
-  switch(iScancode)
-  {
-    case DOM_PK_A: return GLFW_KEY_A;
-    case DOM_PK_Q: return GLFW_KEY_Q;
-    case DOM_PK_TAB: return GLFW_KEY_TAB;
-    default: return GLFW_KEY_UNKNOWN;
-  }
-}
-
-//------------------------------------------------------------------------
 // Keyboard::getKeyName
 //------------------------------------------------------------------------
-const char *Keyboard::getKeyName(glfw_key_t iKey, int iScancode)
+const char *Keyboard::getKeyName(glfw_key_t iKey, glfw_scancode_t iScancode)
 {
   auto scancode = iKey == GLFW_KEY_UNKNOWN ? iScancode : getKeyScancode(iKey);
-  return emscripten_dom_pk_code_to_string(scancode);
+  return keyboard::scancodeToString(scancode);
 }
 
 //------------------------------------------------------------------------
@@ -82,7 +52,7 @@ glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey) const
 //------------------------------------------------------------------------
 bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyboardEvent)
 {
-  auto scancode = emscripten_compute_dom_pk_code(iKeyboardEvent->code);
+  auto scancode = getKeyScancode(iKeyboardEvent->code);
   glfw_key_t key = getGLFWKey(scancode);
 
   if(key != GLFW_KEY_UNKNOWN)
@@ -109,7 +79,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
 //------------------------------------------------------------------------
 bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyboardEvent)
 {
-  auto scancode = emscripten_compute_dom_pk_code(iKeyboardEvent->code);
+  auto scancode = getKeyScancode(iKeyboardEvent->code);
   glfw_key_t key = getGLFWKey(scancode);
 
   if(key == GLFW_KEY_UNKNOWN)
