@@ -301,7 +301,7 @@ for s in input_strings:
         duplicates.add(s[2])
     mapping_file.write(comment + 'constexpr glfw_scancode_t ' + pad_to_length(s[2], longest_dom_pk_code_length) + ' = 0x%04X; /* "%s */' % (s[0], pad_to_length(s[1] + '"', longest_key_code_length + 1)) + '\n')
 
-
+# keyboardEventCodeToScancode
 mapping_file.write('''
 //------------------------------------------------------------------------
 // keyboardEventCodeToScancode: maps the code coming from keyboardEvent.code 
@@ -326,6 +326,10 @@ mapping_file.write('''    default: return DOM_PK_UNKNOWN;
   }
 }
 
+''')
+
+# scancodeToString
+mapping_file.write('''
 //------------------------------------------------------------------------
 // scancodeToString: maps glfw_scancode_t to string
 // returns nullptr when no mapping
@@ -345,10 +349,11 @@ for s in input_strings:
 mapping_file.write('''    default: return nullptr;
   }
 }
+
 ''')
 
+# scancodeToKeyCode
 mapping_file.write('''
-
 //------------------------------------------------------------------------
 // scancodeToKeyCode: maps glfw_scancode_t to the glfw key code
 // returns GLFW_KEY_UNKNOWN when not match
@@ -366,10 +371,11 @@ for s in input_strings:
 mapping_file.write('''    default: return GLFW_KEY_UNKNOWN;
   }
 }
+
 ''')
 
+# keyCodeToScancode
 mapping_file.write('''
-
 //------------------------------------------------------------------------
 // keyCodeToScancode: maps glfw key code to glfw_scancode_t
 // returns DOM_PK_UNKNOWN when not match
@@ -387,10 +393,10 @@ for s in input_strings:
 mapping_file.write('''    default: return DOM_PK_UNKNOWN;
   }
 }
+
 ''')
 
 mapping_file.write('''
-
 } // namespace keyboard
 } // namespace emscripten::glfw3
 

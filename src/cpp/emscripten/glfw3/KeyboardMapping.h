@@ -359,6 +359,7 @@ constexpr glfw_scancode_t keyboardEventCodeToScancode(char const *iCode)
   }
 }
 
+
 //------------------------------------------------------------------------
 // scancodeToString: maps glfw_scancode_t to string
 // returns nullptr when no mapping

@@ -17,6 +17,7 @@
  */
 
 #include "Keyboard.h"
+#include "Config.h"
 #include "ErrorHandler.h"
 
 extern "C" {
@@ -48,6 +49,32 @@ glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey) const
 }
 
 //------------------------------------------------------------------------
+// Window::computeCallbackModifierBits
+//------------------------------------------------------------------------
+int Keyboard::computeCallbackModifierBits(EmscriptenKeyboardEvent const *iKeyboardEvent) const
+{
+  int bits = 0;
+  if(iKeyboardEvent ? toCBool(iKeyboardEvent->shiftKey) : isShiftPressed())
+    bits |= GLFW_MOD_SHIFT;
+  if(iKeyboardEvent ? toCBool(iKeyboardEvent->ctrlKey) : isControlPressed())
+    bits |= GLFW_MOD_CONTROL;
+  if(iKeyboardEvent ? toCBool(iKeyboardEvent->altKey) : isAltPressed())
+    bits |= GLFW_MOD_ALT;
+  if(iKeyboardEvent ? toCBool(iKeyboardEvent->metaKey) : isSuperPressed())
+    bits |= GLFW_MOD_SUPER;
+
+  // TODO need to implement my own event callback... to call e.getModifierState("CapsLock") and e.getModifierState("NumLock")
+//  if(iKeyboardEvent && fInputModeLockKeyMods)
+//  {
+//    if(toCBool(iKeyboardEvent->capsLockKey))
+//      bits |= GLFW_MOD_CAPS_LOCK;
+//    if(toCBool(iKeyboardEvent->numLockKey))
+//      bits |= GLFW_MOD_NUM_LOCK;
+//  }
+  return bits;
+}
+
+//------------------------------------------------------------------------
 // Keyboard::onKeyDown
 //------------------------------------------------------------------------
 bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyboardEvent)
@@ -62,8 +89,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
     fKeyStates[key] = state;
 
     if(fKeyCallback)
-      // TODO handle mods
-      fKeyCallback(iWindow, key, scancode, state, 0);
+      fKeyCallback(iWindow, key, scancode, state, computeCallbackModifierBits(iKeyboardEvent));
   }
 
   if(fCharCallback) {
@@ -92,8 +118,7 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
     fKeyStates[key] = state;
 
     if(fKeyCallback)
-      // TODO handle mods
-      fKeyCallback(iWindow, key, scancode, state, 0);
+      fKeyCallback(iWindow, key, scancode, state, computeCallbackModifierBits(iKeyboardEvent));
   }
 
   return true;
@@ -104,6 +129,8 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
 //------------------------------------------------------------------------
 void Keyboard::resetAllKeys(GLFWwindow *iWindow)
 {
+  auto modifiedBits = computeCallbackModifierBits();
+
   for(auto key = 0; key < fKeyStates.size(); key++)
   {
     if(fKeyStates[key] != GLFW_RELEASE)
@@ -111,7 +138,7 @@ void Keyboard::resetAllKeys(GLFWwindow *iWindow)
       fKeyStates[key] = GLFW_RELEASE;
 
       if(fKeyCallback)
-        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, 0);
+        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifiedBits);
     }
   }
 }

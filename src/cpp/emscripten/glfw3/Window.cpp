@@ -181,6 +181,25 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
 }
 
 //------------------------------------------------------------------------
+// Window::setInputMode
+//------------------------------------------------------------------------
+void Window::setInputMode(int iMode, int iValue)
+{
+  switch(iMode)
+  {
+    // TODO: need to implement my own keyboard event to get this info
+//    case GLFW_LOCK_KEY_MODS:
+//      fKeyboard.setInputModeLockKeyMods(toCBool(iValue));
+//      break;
+
+    default:
+      kErrorHandler.logWarning("glfwSetInputMode: input mode [%d] not implemented yet", iMode);
+      break;
+  }
+}
+
+
+//------------------------------------------------------------------------
 // emscriptenToGLFWButton
 //------------------------------------------------------------------------
 inline glfw_mouse_button_t emscriptenToGLFWButton(unsigned short iEmscriptenButton)
@@ -230,10 +249,7 @@ void Window::createEventListeners()
         focus();
 
       if(fMouse.fButtonCallback)
-      {
-        // TODO handle modBits / last parameter
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, 0);
-      }
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeCallbackModifierBits());
     }
     return true;
   };
@@ -266,10 +282,7 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
       fMouse.fButtonStates[lastButton] = GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
-      {
-        // TODO handle modBits / last parameter
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, 0);
-      }
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState,fKeyboard.computeCallbackModifierBits());
     }
   }
 

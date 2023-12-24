@@ -479,6 +479,17 @@ GLFWAPI void glfwFocusWindow(GLFWwindow* window)
 }
 
 //------------------------------------------------------------------------
+// glfwSetInputMode
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setInputMode(mode, value);
+}
+
+
+//------------------------------------------------------------------------
 // glfwGetMonitors
 //------------------------------------------------------------------------
 GLFWAPI GLFWmonitor** glfwGetMonitors(int* count)
@@ -599,15 +610,6 @@ GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode)
     return GLFW_CURSOR_NORMAL;
   else
     return GLFW_FALSE;
-}
-
-//------------------------------------------------------------------------
-// glfwSetInputMode
-//------------------------------------------------------------------------
-GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
-{
-  // TODO implement
-
 }
 
 //------------------------------------------------------------------------

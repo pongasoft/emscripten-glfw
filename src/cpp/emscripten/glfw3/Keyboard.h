@@ -32,8 +32,17 @@ class Keyboard
 {
 public:
   glfw_key_state_t getKeyState(glfw_key_t iKey) const;
+//  bool isKeyPressed(glfw_key_t iKey) const { return getKeyState(iKey) != GLFW_RELEASE; }
+  constexpr bool isShiftPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_SHIFT) || isValidKeyPressed(GLFW_KEY_RIGHT_SHIFT); }
+  constexpr bool isControlPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_CONTROL) || isValidKeyPressed(GLFW_KEY_RIGHT_CONTROL); }
+  constexpr bool isAltPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_ALT) || isValidKeyPressed(GLFW_KEY_RIGHT_ALT); }
+  constexpr bool isSuperPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_SUPER) || isValidKeyPressed(GLFW_KEY_RIGHT_SUPER); }
+
   inline GLFWkeyfun setKeyCallback(GLFWkeyfun iCallback) { return std::exchange(fKeyCallback, iCallback); }
   inline GLFWcharfun setCharCallback(GLFWcharfun iCallback) { return std::exchange(fCharCallback, iCallback); }
+
+  void setInputModeLockKeyMods(bool iValue) { fInputModeLockKeyMods = iValue; }
+  int computeCallbackModifierBits(EmscriptenKeyboardEvent const *iKeyboardEvent = nullptr) const;
 
   bool onKeyDown(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
   bool onKeyUp(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
@@ -47,8 +56,13 @@ private:
   static constexpr glfw_key_t getGLFWKey(glfw_scancode_t iScancode) { return keyboard::scancodeToKeyCode(iScancode); }
   static constexpr glfw_scancode_t getKeyScancode(char const *iKeyboardEventCode) { return keyboard::keyboardEventCodeToScancode(iKeyboardEventCode); }
 
+  // constexpr when we know that the key is a valid key
+  constexpr glfw_key_state_t getValidKeyState(glfw_key_t iKey) const { return fKeyStates[iKey]; }
+  constexpr bool isValidKeyPressed(glfw_key_t iKey) const { return getValidKeyState(iKey) != GLFW_RELEASE; }
+
 private:
   std::array<glfw_key_state_t, GLFW_KEY_LAST + 1> fKeyStates{GLFW_RELEASE};
+  bool fInputModeLockKeyMods{};
   GLFWkeyfun fKeyCallback{};
   GLFWcharfun fCharCallback{};
 };

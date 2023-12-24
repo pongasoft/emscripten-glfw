@@ -87,6 +87,9 @@ public:
   inline void *getUserPointer() const { return fUserPointer; }
   inline void setUserPointer(void *iPointer) { fUserPointer = iPointer; }
 
+  // input mode
+  void setInputMode(int iMode, int iValue);
+
   // monitor scale
   void setMonitorScale(float iScale);
 
