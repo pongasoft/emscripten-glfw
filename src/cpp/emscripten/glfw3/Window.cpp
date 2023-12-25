@@ -310,6 +310,36 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   addOrRemoveListener<EmscriptenFocusEvent>(emscripten_set_blur_callback_on_thread, iAdd, selector, &fOnFocusChange, false);
 }
 
+//------------------------------------------------------------------------
+// Window::enterFullscreen
+//------------------------------------------------------------------------
+void Window::enterFullscreen(FullscreenRequest const &iFullscreenRequest, int iScreenWidth, int iScreenHeight)
+{
+  fFullscreen = true;
+  if(iFullscreenRequest.fResizeCanvas)
+  {
+    fWidthBeforeFullscreen = fWidth;
+    fHeightBeforeFullscreen = fHeight;
+    setSize(iScreenWidth, iScreenHeight);
+  }
+}
+
+//------------------------------------------------------------------------
+// Window::exitFullscreen
+//------------------------------------------------------------------------
+void Window::exitFullscreen()
+{
+  if(!fFullscreen)
+    return;
+
+  fFullscreen = false;
+
+  if((fWidthBeforeFullscreen && *fWidthBeforeFullscreen != fWidth) || (fHeightBeforeFullscreen && *fHeightBeforeFullscreen != fHeight))
+    setSize(*fWidthBeforeFullscreen, *fHeightBeforeFullscreen);
+
+  fWidthBeforeFullscreen = std::nullopt;
+  fHeightBeforeFullscreen = std::nullopt;
+}
 
 
 }

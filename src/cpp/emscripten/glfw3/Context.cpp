@@ -24,9 +24,11 @@
 
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
-void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback iScaleChangeCallback, void *iUserData);
+using RequestFullscreen = void (*)(void *, GLFWwindow *, bool, bool);
+void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, RequestFullscreen, void *iUserData);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
+GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 int emscripten_glfw3_context_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 }
 
@@ -53,49 +55,52 @@ void ContextScaleChangeCallback(void *iUserData)
 }
 
 //------------------------------------------------------------------------
+// ContextRequestFullscreen
+//------------------------------------------------------------------------
+void ContextRequestFullscreen(void *iUserData, GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
+{
+  printf("Detected fullscreen change! %p\n", iUserData);
+  auto context = reinterpret_cast<Context *>(iUserData);
+  context->requestFullscreen(iWindow, iLockPointer, iResizeCanvas);
+}
+
+//------------------------------------------------------------------------
 // Context::Context
 //------------------------------------------------------------------------
 Context::Context()
 {
   printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  emscripten_glfw3_context_init(fScale, ContextScaleChangeCallback, this);
+  emscripten_glfw3_context_init(fScale, ContextScaleChangeCallback, ContextRequestFullscreen, this);
 
   // fOnMouseUpButton
-  fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+  fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
     bool handled = false;
     for(auto &w: fWindows)
-      handled |= w->onMouseButtonUp(iMouseEvent);
+      handled |= w->onMouseButtonUp(iEvent);
     return handled;
   };
 
   // fOnKeyDown
-  fOnKeyDown = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
+  fOnKeyDown = [this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
     bool handled = false;
-    if(fWindows.size() == 1)
-    {
-      auto &w = fWindows[0];
-      // in the event of only 1 window (most frequent use case), we also process the event if nothing else is focused
-      if(w->isFocused() || !emscripten_glfw3_context_is_any_element_focused())
-        handled |= w->onKeyDown(iKeyboardEvent);
-    }
-    else
-    {
-      for(auto &w: fWindows)
-      {
-        if(w->isFocused())
-          handled |= w->onKeyDown(iKeyboardEvent);
-      }
-    }
+    auto w = findFocusedOrSingleWindow();
+    if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
+      handled |= w->onKeyDown(iEvent);
     return handled;
   };
 
   // fOnKeyUp
-  fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iKeyboardEvent) {
+  fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
     bool handled = false;
     for(auto &w: fWindows)
-      handled |= w->onKeyUp(iKeyboardEvent);
+      handled |= w->onKeyUp(iEvent);
     return handled;
+  };
+
+  // fOnFullscreenChange
+  fOnFullscreenChange = [this](int iEventType, EmscriptenFullscreenChangeEvent const *iEvent) {
+    return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
   };
 
   addOrRemoveEventListeners(true);
@@ -122,6 +127,9 @@ void Context::addOrRemoveEventListeners(bool iAdd)
   // keyboard
   addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keydown_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyDown, false);
   addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keyup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyUp, false);
+
+  // fullscreen
+  addOrRemoveListener<EmscriptenFullscreenChangeEvent>(emscripten_set_fullscreenchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnFullscreenChange, false);
 }
 
 //------------------------------------------------------------------------
@@ -138,6 +146,58 @@ void Context::onScaleChange()
 }
 
 //------------------------------------------------------------------------
+// Context::requestFullscreen
+//------------------------------------------------------------------------
+void Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
+{
+  auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
+
+  if(window)
+  {
+    fFullscreenRequest = {iWindow, iLockPointer, iResizeCanvas};
+    emscripten_request_fullscreen(window->getCanvasSelector(), false);
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::onEnterFullscreen
+//------------------------------------------------------------------------
+bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
+{
+  printf("onEnterFullscreen %s\n", iEvent->id);
+
+  auto fullscreenRequest = std::exchange(fFullscreenRequest, std::nullopt);
+
+  auto window = findWindow(emscripten_glfw3_context_get_fullscreen_window());
+  if(!window)
+    // fullscreen is not targeting a known window... don't do anything
+    return false;
+
+  if(!fullscreenRequest || fullscreenRequest->fWindow != window->asOpaquePtr())
+    fullscreenRequest = {window->asOpaquePtr(), false, false};
+
+  window->enterFullscreen(*fullscreenRequest, iEvent->screenWidth, iEvent->screenHeight);
+
+  return true;
+}
+
+//------------------------------------------------------------------------
+// Context::onExitFullscreen
+//------------------------------------------------------------------------
+bool Context::onExitFullscreen()
+{
+  auto iter = std::find_if(fWindows.begin(), fWindows.end(), [](auto &w) { return w->isFullscreen(); });
+  if(iter != fWindows.end())
+  {
+    (*iter)->exitFullscreen();
+    return true;
+  }
+  else
+    return false;
+
+}
+
+//------------------------------------------------------------------------
 // Context::findWindow
 //------------------------------------------------------------------------
 std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
@@ -151,6 +211,27 @@ std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
     return *iter;
   else
     return nullptr;
+}
+
+//------------------------------------------------------------------------
+// Context::findFocusedOrSingleWindow
+//------------------------------------------------------------------------
+std::shared_ptr<Window> Context::findFocusedOrSingleWindow() const
+{
+  if(fWindows.size() == 1)
+  {
+    return fWindows[0];
+  }
+  else
+  {
+    for(auto &w: fWindows)
+    {
+      if(w->isFocused())
+        return w;
+    }
+  }
+
+  return nullptr;
 }
 
 //------------------------------------------------------------------------

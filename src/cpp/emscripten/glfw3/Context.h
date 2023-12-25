@@ -25,6 +25,7 @@
 #include "Monitor.h"
 #include <vector>
 #include <string>
+#include <optional>
 
 namespace emscripten::glfw3 {
 
@@ -58,14 +59,17 @@ public:
 
 public:
   void onScaleChange();
+  void requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
 
 private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
   static double getAbsoluteTimeInSeconds();
-  void registerEventListeners() { addOrRemoveEventListeners(true); }
   void addOrRemoveEventListeners(bool iAdd);
+  bool onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent);
+  bool onExitFullscreen();
+  std::shared_ptr<Window> findFocusedOrSingleWindow() const;
 
 private:
   std::vector<std::shared_ptr<Window>> fWindows{};
@@ -75,10 +79,12 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
+  std::optional<Window::FullscreenRequest> fFullscreenRequest{};
 
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyUp{};
+  EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
 };
 
 }

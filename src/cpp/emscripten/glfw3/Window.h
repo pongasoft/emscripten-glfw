@@ -27,12 +27,21 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 #include <utility>
+#include <optional>
 #include <functional>
 
 namespace emscripten::glfw3 {
 
 class Window : public Object<GLFWwindow>
 {
+public:
+  struct FullscreenRequest
+  {
+    GLFWwindow *fWindow{};
+    bool fLockPointer{};
+    bool fResizeCanvas{};
+  };
+
 public:
   inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
   inline bool isHiDPIAware() const { return fConfig.fScaleToMonitor == GLFW_TRUE; }
@@ -59,6 +68,8 @@ public:
 
   constexpr bool isFocused() const { return fFocused; }
   void focus();
+
+  constexpr bool isFullscreen() const { return fFullscreen; }
 
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
@@ -93,6 +104,10 @@ public:
   // monitor scale
   void setMonitorScale(float iScale);
 
+  // fullscreen
+  void enterFullscreen(FullscreenRequest const &iFullscreenRequest, int iScreenWidth, int iScreenHeight);
+  void exitFullscreen();
+
   // OpenGL
   bool createGLContext();
   void makeGLContextCurrent();
@@ -125,11 +140,14 @@ private:
   float fMonitorScale;
   bool fDestroyed{};
   bool fFocused{};
+  bool fFullscreen{};
   bool fFocusOnMouse{true};
   int fWidth{};
   int fHeight{};
   int fFramebufferWidth{};
   int fFramebufferHeight{};
+  std::optional<int> fWidthBeforeFullscreen{};
+  std::optional<int> fHeightBeforeFullscreen{};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
   double fCursorPosX{};

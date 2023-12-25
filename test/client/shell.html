@@ -46,6 +46,10 @@
       background-color: #f3f3f3;
     }
 
+    #actions td[colspan="2"] {
+      text-align: center;
+    }
+
     #debug {
       position: absolute;
       top: 0;
@@ -59,7 +63,7 @@
 <div id="canvas-details">
   <table class="table-bordered">
     <thead>
-    <tr><th>glfw (direct)</th><th>#1 (<a id="canvas1-enable-action" href=""></a>)</th><th>#2 (<a id="canvas2-enable-action" href=""></a>)</th></tr>
+    <tr><th>glfw (direct)</th><th>#1</th><th>#2</th></tr>
     </thead>
     <tbody>
     <tr class="glfwGetCursorPos"><td>glfwGetCursorPos</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
@@ -86,16 +90,53 @@
     </tbody>
   </table>
 </div>
+<h3>Actions</h3>
+<div id="actions">
+  <table class="table-bordered">
+    <thead>
+    <tr><th>Action</th><th>#1</th><th>#2</th></tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td class="action">Enable/Disable</td>
+      <td><input id="canvas1-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(1);"></td>
+      <td><input id="canvas2-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(2);"></td>
+    </tr>
+    <tr>
+      <td class="action">Fullscreen</td>
+      <td>
+        <input type="button" value="Fullscreen"
+               onclick="Module.requestFullscreen(document.getElementById('pointerLock-canvas1').checked, document.getElementById('resizeCanvas-canvas1').checked, '#canvas1');">
+        <label for="resizeCanvas-canvas1">R</label><input type="checkbox" id="resizeCanvas-canvas1" checked>&nbsp;
+        <label for="pointerLock-canvas1">L</label><input type="checkbox" id="pointerLock-canvas1">
+      </td>
+      <td>
+        <input type="button" value="Fullscreen"
+               onclick="Module.requestFullscreen(document.getElementById('pointerLock-canvas2').checked, document.getElementById('resizeCanvas-canvas2').checked, '#canvas2');">
+        <label for="resizeCanvas-canvas2">R</label><input type="checkbox" id="resizeCanvas-canvas2" checked>&nbsp;
+        <label for="pointerLock-canvas2">L</label><input type="checkbox" id="pointerLock-canvas2">
+      </td>
+    </tr>
+    <tr>
+      <td class="action">Fullscreen (no target)</td>
+      <td colspan="2"><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(false, false);"></td>
+    </tr>
+    <tr>
+      <td class="action">Change focus</td>
+      <td colspan="2"><label>Text: <input type="text"></label></td>
+    </tr>
+    <tr>
+      <td class="action">Exit main loop</td>
+      <td colspan="2"><input type="button" value="Exit" onclick="Module.terminated = true;"></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
 <table id="debug" class="table-bordered">
   <tbody>
   </tbody>
 </table>
 <p>
-<ul>
-  <li><label>Change focus: <input type="text"></label></li>
-  <li><a id="exit" href="#">exit</a> </li>
-</ul>
-</p>
 
 <script>
 
@@ -151,20 +192,29 @@
     debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0) + "|" + (scancode >>> 0).toString(16).toUpperCase());
   }
 
-  document.getElementById('exit').onclick = (event) => {
-    event.preventDefault();
-    Module.terminated = true;
+  document.onfullscreenchange = (e) => {
+    debug("document-onfullscreenchange", document.fullscreenElement ? document.fullscreenElement.id : "none");
+  }
+
+  var toggleCanvasVisibility = (id) => {
+    if(id === 1)
+      Module.canvas1Enabled = !Module.canvas1Enabled;
+    if(id === 2)
+      Module.canvas2Enabled = !Module.canvas2Enabled;
+    let location = [];
+    if(!Module.canvas1Enabled)
+      location.push("canvas1=disabled");
+    if(!Module.canvas2Enabled)
+      location.push("canvas2=disabled");
+    console.log(location);
+    window.location.search = '?' + location.join('&');
   }
 
   const c1EnableAction = document.getElementById('canvas1-enable-action');
-  c1EnableAction.href = (Module.canvas1Enabled ? "?canvas1=disabled" : "?canvas1=enabled")
-    + "&canvas2=" + (Module.canvas2Enabled ? "enabled" : "disabled");
-  c1EnableAction.innerHTML = Module.canvas1Enabled ? "disable" : "enable"
+  c1EnableAction.value = Module.canvas1Enabled ? "Disable" : "Enable"
 
   const c2EnableAction = document.getElementById('canvas2-enable-action');
-  c2EnableAction.href = (Module.canvas2Enabled ? "?canvas2=disabled" : "?canvas2=enabled")
-    + "&canvas1=" + (Module.canvas1Enabled ? "enabled" : "disabled");
-  c2EnableAction.innerHTML = Module.canvas2Enabled ? "disable" : "enable"
+  c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable"
 
 </script>
 {{{ SCRIPT }}}

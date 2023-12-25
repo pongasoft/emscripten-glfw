@@ -2,11 +2,15 @@
 // implementation details and should NOT be used outside.
 let impl = {
   $GLFW3__deps: ['$GL'],
+  $GLFW3__postset: `
+    // exports
+    Module["requestFullscreen"] = GLFW3.requestFullscreen;`,
   $GLFW3: {
     fCanvasContexts: null,
     fCurrentCanvasContext: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
+    fRequestFullscreen: null,
     fContext: null,
 
     onScaleChange() {
@@ -14,6 +18,22 @@ let impl = {
         {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fContext);
       }
     },
+
+    findContext(canvas) {
+      for(let id in GLFW3.fCanvasContexts) {
+        if(GLFW3.fCanvasContexts[id].canvas === canvas) {
+          return GLFW3.fCanvasContexts[id];
+        }
+      }
+      return null;
+    },
+
+    requestFullscreen(lockPointer, resizeCanvas, target) {
+      if(GLFW3.fRequestFullscreen) {
+        const ctx = target ? GLFW3.findContext(findEventTarget(target)) : null;
+        {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.id : 0, lockPointer, resizeCanvas);
+      }
+    }
   },
 
   // see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
@@ -29,7 +49,7 @@ let impl = {
   },
 
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (scale, scaleChangeCallback, context) => {
+  emscripten_glfw3_context_init: (scale, scaleChangeCallback, requestFullscreen, context) => {
     console.log("emscripten_glfw3_context_init()");
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
@@ -37,6 +57,7 @@ let impl = {
     GLFW3.fCurrentCanvasContext = null;
 
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
+    GLFW3.fRequestFullscreen = requestFullscreen;
     GLFW3.fContext = context;
     GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + scale + 'dppx)');
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
@@ -44,6 +65,11 @@ let impl = {
 
   emscripten_glfw3_context_is_any_element_focused: () => {
     return document.activeElement !== document.body;
+  },
+
+  emscripten_glfw3_context_get_fullscreen_window: () => {
+    const ctx = GLFW3.findContext(document.fullscreenElement);
+    return ctx ? ctx.id : null;
   },
 
   emscripten_glfw3_context_destroy: () => {
@@ -68,10 +94,8 @@ let impl = {
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
 
     // check for duplicate
-    for(let id in GLFW3.fCanvasContexts) {
-      if(GLFW3.fCanvasContexts[id].canvas === canvas) {
-        return {{{ cDefs.EMSCRIPTEN_RESULT_INVALID_TARGET }}};
-      }
+    if(GLFW3.findContext(canvas)) {
+      return {{{ cDefs.EMSCRIPTEN_RESULT_INVALID_TARGET }}};
     }
 
     var canvasCtx = {};
