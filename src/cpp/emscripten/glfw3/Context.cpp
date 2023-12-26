@@ -231,7 +231,7 @@ std::shared_ptr<Window> Context::findFocusedOrSingleWindow() const
     }
   }
 
-  return nullptr;
+  return findWindow(fLastKnownFocusedWindow);
 }
 
 //------------------------------------------------------------------------
@@ -251,7 +251,7 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare)
 {
-  auto window = std::make_shared<Window>(fConfig, fScale);
+  auto window = std::make_shared<Window>(this, fConfig, fScale);
 
   auto const canvasSelector = fConfig.fCanvasSelector.data();
 
@@ -292,6 +292,8 @@ void Context::destroyWindow(GLFWwindow *iWindow)
       fCurrentWindow = nullptr;
       fCurrentWindowOpaquePtr = nullptr;
     }
+    if(fLastKnownFocusedWindow == iWindow)
+      fLastKnownFocusedWindow = nullptr;
     fWindows.erase(iter);
   }
 }

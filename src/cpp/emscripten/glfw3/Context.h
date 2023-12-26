@@ -60,6 +60,7 @@ public:
 public:
   void onScaleChange();
   void requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
+  void onFocus(GLFWwindow *iWindow) { fLastKnownFocusedWindow = iWindow; }
 
 private:
   Context();
@@ -76,6 +77,7 @@ private:
   GLFWwindow *fCurrentWindowOpaquePtr{};
   std::shared_ptr<Window> fCurrentWindow{};
   std::shared_ptr<Monitor> fCurrentMonitor{new Monitor{}};
+  GLFWwindow *fLastKnownFocusedWindow{};
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};

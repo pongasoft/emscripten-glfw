@@ -32,6 +32,8 @@
 
 namespace emscripten::glfw3 {
 
+class Context;
+
 class Window : public Object<GLFWwindow>
 {
 public:
@@ -112,7 +114,7 @@ public:
   bool createGLContext();
   void makeGLContextCurrent();
 
-  Window(Config iConfig, float iMonitorScale);
+  Window(Context *iContext, Config iConfig, float iMonitorScale);
   ~Window() override;
   constexpr bool isDestroyed() const { return fDestroyed; }
 
@@ -136,6 +138,7 @@ private:
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
 
 private:
+  Context *fContext;
   Config fConfig;
   float fMonitorScale;
   bool fDestroyed{};

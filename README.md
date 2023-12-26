@@ -43,7 +43,7 @@ need to use a "modern" browser to see it in action. Currently tested on Google C
 
 The [code](test/client/src) for the demo is included in this project.
 
-The demo shows 2 canvas each created via a `glfwCreateWindow` and shows how they respond to keyboard and mouse events
+The demo shows 2 canvases each created via a `glfwCreateWindow` and shows how they respond to keyboard and mouse events
 (using direct apis, like `glfwGetMouseButton` or callback apis like `glfwSetMouseButtonCallback`)
 
 - canvas1 is hi dpi aware (`glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)`)
@@ -51,7 +51,8 @@ The demo shows 2 canvas each created via a `glfwCreateWindow` and shows how they
 
 You can enable/disable each window/canvas independently:
 
-- When 2 canvas are present, only the canvas that has focus can receive keyboard events. Clicking with the left mouse 
+- When 2 (or more) canvases are present, the canvas that has focus can receive keyboard events. If no other element on 
+  the page has focus, then the last canvas that had the focus will receive these events. Clicking with the left mouse 
   button on a canvas gives it focus.
 - When there is only 1 canvas, the implementation try to be smart about it and will route keyboard (and other relevant) 
   events to the single canvas provided that nothing else has focus (the 'Change focus/Text' field is used to test 
@@ -64,7 +65,7 @@ Using
 
 Because it is currently a work in progress, the instructions to use will be minimal.
 
-In order to support multiple windows/canvas, the library need to know which canvas to use for which window. I decided
+In order to support multiple windows/canvases, the library need to know which canvas to use for which window. I decided
 to go with using a new window hint. Note that the constant I am using is not officially added to glfw3, but I am hoping
 it can be added in a future version when the project matures.
 
@@ -78,9 +79,12 @@ it can be added in a future version when the project matures.
 To be backward compatible with the current emscripten/glfw/javascript implementation, the default canvas selector is 
 set to `Module['canvas']` so you don't need to provide one.
 
-To trigger fullscreen, you use `Module.requestFullscreen` like in the emscripten/glfw/javascript implementation. But
-you can provide a third parameter which is the canvas (selector) the call should apply to. If there is only one
-canvas then it will be routed to the single canvas.
+To trigger fullscreen, you use `Module.requestFullscreen` like in the emscripten/glfw/javascript implementation, with
+an optional 3rd parameter:
+* If you provide a third parameter, it should be the canvas selector describing which canvas to use
+* If you don't provide a 3rd parameter, the library does its best to determine which canvas to select:
+  * if only 1 canvas, then it is used
+  * if 2 (or more) canvases, then the last one that had the focus is used
 
 Building
 --------

@@ -17,6 +17,7 @@
  */
 
 #include "Window.h"
+#include "Context.h"
 #include <emscripten/em_types.h>
 #include <utility>
 #include "ErrorHandler.h"
@@ -39,7 +40,10 @@ static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 //------------------------------------------------------------------------
 // Window::Window
 //------------------------------------------------------------------------
-Window::Window(Config iConfig, float iMonitorScale) : fConfig{std::move(iConfig)}, fMonitorScale{iMonitorScale}
+Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
+  fContext{iContext},
+  fConfig{std::move(iConfig)},
+  fMonitorScale{iMonitorScale}
 {
   printf("Window(%p)\n", asOpaquePtr());
   createEventListeners();
@@ -259,6 +263,8 @@ void Window::createEventListeners()
     fFocused = eventType == EMSCRIPTEN_EVENT_FOCUS;
     if(!isFocused())
       fKeyboard.resetAllKeys(asOpaquePtr());
+    else
+      fContext->onFocus(asOpaquePtr());
     if(fFocusCallback)
       fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
     return true;
@@ -322,6 +328,7 @@ void Window::enterFullscreen(FullscreenRequest const &iFullscreenRequest, int iS
     fHeightBeforeFullscreen = fHeight;
     setSize(iScreenWidth, iScreenHeight);
   }
+  focus();
 }
 
 //------------------------------------------------------------------------
