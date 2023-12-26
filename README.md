@@ -36,6 +36,8 @@ or functions that have an empty (implementation `TODO Implement` section).
 Demo
 ----
 
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.1.0/emscripten_glfw.png)
+
 Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
 
