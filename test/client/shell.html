@@ -119,7 +119,11 @@
     </tr>
     <tr>
       <td class="action">Fullscreen (no target)</td>
-      <td colspan="2"><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(false, false);"></td>
+      <td colspan="2">
+        <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock-any').checked, document.getElementById('resizeCanvas-any').checked);">
+        <label for="resizeCanvas-any">R</label><input type="checkbox" id="resizeCanvas-any" checked>&nbsp;
+        <label for="pointerLock-any">L</label><input type="checkbox" id="pointerLock-any">
+      </td>
     </tr>
     <tr>
       <td class="action">Change focus</td>

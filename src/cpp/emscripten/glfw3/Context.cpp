@@ -59,7 +59,7 @@ void ContextScaleChangeCallback(void *iUserData)
 //------------------------------------------------------------------------
 void ContextRequestFullscreen(void *iUserData, GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
 {
-  printf("Detected fullscreen change! %p\n", iUserData);
+  printf("ContextRequestFullscreen(%p, %s, %s)\n", iWindow, boolToString(iLockPointer), boolToString(iResizeCanvas));
   auto context = reinterpret_cast<Context *>(iUserData);
   context->requestFullscreen(iWindow, iLockPointer, iResizeCanvas);
 }
@@ -154,7 +154,7 @@ void Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iRe
 
   if(window)
   {
-    fFullscreenRequest = {iWindow, iLockPointer, iResizeCanvas};
+    fFullscreenRequest = {window->asOpaquePtr(), iLockPointer, iResizeCanvas};
     emscripten_request_fullscreen(window->getCanvasSelector(), false);
   }
 }

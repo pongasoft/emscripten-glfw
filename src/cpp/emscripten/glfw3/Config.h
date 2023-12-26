@@ -26,6 +26,7 @@ namespace emscripten::glfw3 {
 
 constexpr inline bool toCBool(int iGlfwBool) { return iGlfwBool != GLFW_FALSE; }
 constexpr inline int toGlfwBool(bool iCBool) { return iCBool ? GLFW_TRUE : GLFW_FALSE; }
+constexpr inline char const *boolToString(bool b) { return b ? "true" : "false"; }
 
 struct Config
 {
