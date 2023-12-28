@@ -36,7 +36,7 @@ or functions that have an empty (implementation `TODO Implement` section).
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.1.0/emscripten_glfw.png)
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.2.0/emscripten_glfw.png)
 
 Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
@@ -118,6 +118,13 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+
+#### wip-0.2.0 - 2023/12/28
+
+- remembers the last window that had focus so that some events can be sent to it even if no window has 
+  focus (ex: requesting fullscreen)
+- added support for mouse wheel (`glfwSetScrollCallback`)
+- added support for mouse enter/leave (`glfwSetCursorEnterCallback`)
 
 #### wip-0.1.0 - 2023/12/26
 
