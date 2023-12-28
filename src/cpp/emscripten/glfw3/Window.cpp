@@ -258,6 +258,16 @@ void Window::createEventListeners()
     return true;
   };
 
+  // fOnMouseEnterOrLeave
+  fOnMouseEnterOrLeave = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+    if(fMouse.fCursorEnterCallback)
+    {
+      fMouse.fCursorEnterCallback(asOpaquePtr(), toGlfwBool(iEventType == EMSCRIPTEN_EVENT_MOUSEENTER));
+      return true;
+    }
+    return false;
+  };
+
   // fOnMouseWheel
   fOnMouseWheel = [this](int iEventType, const EmscriptenWheelEvent *iEvent) {
     if(fMouse.fScrollCallback)
@@ -325,6 +335,8 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   // mouse
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButtonDown, false);
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseenter_callback_on_thread, iAdd, selector, &fOnMouseEnterOrLeave, false);
+  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseleave_callback_on_thread, iAdd, selector, &fOnMouseEnterOrLeave, false);
   addOrRemoveListener<EmscriptenWheelEvent>(emscripten_set_wheel_callback_on_thread, iAdd, selector, &fOnMouseWheel, false);
   // note: mouseup_callback is registered with context because target is "document"
 

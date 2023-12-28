@@ -308,6 +308,10 @@ void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 //  }
   setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, actionToString(action), mods);
 }
+void onCursorEnterChange(GLFWwindow* window, int entered)
+{
+  setHtmlValue(window, "glfwSetCursorEnterCallback", "%s", entered == GLFW_TRUE ? "true" : "false");
+}
 void onScrollChange(GLFWwindow* window, double xoffset, double yoffset)
 {
   setHtmlValue(window, "glfwSetScrollCallback", "%.3fx%.3f", xoffset, yoffset);
@@ -337,6 +341,7 @@ void Triangle::registerCallbacks()
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
   glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
+  glfwSetCursorEnterCallback(fWindow, onCursorEnterChange);
   glfwSetScrollCallback(fWindow, onScrollChange);
   glfwSetKeyCallback(fWindow, onKeyChange);
   glfwSetCharCallback(fWindow, onCharChange);

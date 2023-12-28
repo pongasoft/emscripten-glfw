@@ -35,6 +35,7 @@ public:
   std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
   GLFWmousebuttonfun fButtonCallback{};
   GLFWscrollfun fScrollCallback{};
+  GLFWcursorenterfun fCursorEnterCallback{};
 };
 
 }

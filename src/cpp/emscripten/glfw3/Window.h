@@ -84,6 +84,7 @@ public:
   inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
   inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouse.fButtonCallback, iCallback); }
   inline GLFWscrollfun setScrollCallback(GLFWscrollfun iCallback) { return std::exchange(fMouse.fScrollCallback, iCallback); }
+  inline GLFWcursorenterfun setCursorEnterCallback(GLFWcursorenterfun iCallback) { return std::exchange(fMouse.fCursorEnterCallback, iCallback); }
   inline GLFWkeyfun setKeyCallback(GLFWkeyfun iCallback) { return fKeyboard.setKeyCallback(iCallback); }
   inline GLFWcharfun setCharCallback(GLFWcharfun iCallback) { return fKeyboard.setCharCallback(iCallback); }
 
@@ -131,6 +132,7 @@ protected:
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonDown{};
+  EventListener<EmscriptenMouseEvent> fOnMouseEnterOrLeave{};
   EventListener<EmscriptenWheelEvent> fOnMouseWheel{};
   EventListener<EmscriptenFocusEvent> fOnFocusChange{};
 
