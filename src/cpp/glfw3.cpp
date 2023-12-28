@@ -401,6 +401,18 @@ GLFWAPI GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmo
 }
 
 //------------------------------------------------------------------------
+// glfwSetScrollCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setScrollCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwSetKeyCallback
 //------------------------------------------------------------------------
 GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback)
@@ -577,12 +589,6 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
   return nullptr;
 }
 
-
-GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
 
 GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
 {

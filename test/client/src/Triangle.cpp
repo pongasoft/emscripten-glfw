@@ -299,7 +299,18 @@ void onCursorPosChange(GLFWwindow *window, double xScale, double yScale)
 }
 void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 {
+//  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+//  {
+//    int wx, wy, fbx, fby;
+//    glfwGetWindowSize(window, &wx, &wy);
+//    glfwGetFramebufferSize(window, &fbx, &fby);
+//    printf("%dx%d | %dx%d\n", wx, wy, fbx, fby);
+//  }
   setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, actionToString(action), mods);
+}
+void onScrollChange(GLFWwindow* window, double xoffset, double yoffset)
+{
+  setHtmlValue(window, "glfwSetScrollCallback", "%.3fx%.3f", xoffset, yoffset);
 }
 void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -326,6 +337,7 @@ void Triangle::registerCallbacks()
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
   glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
+  glfwSetScrollCallback(fWindow, onScrollChange);
   glfwSetKeyCallback(fWindow, onKeyChange);
   glfwSetCharCallback(fWindow, onCharChange);
   glfwSetWindowFocusCallback(fWindow, onWindowFocusChange);

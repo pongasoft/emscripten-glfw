@@ -22,6 +22,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <cstdio>
+#include <set>
 
 namespace emscripten::glfw3 {
 
@@ -48,6 +49,7 @@ private:
   GLFWerrorfun fErrorCallback{};
   int fLastErrorCode{GLFW_NO_ERROR};
   std::string fLastErrorMessage{};
+  std::set<std::string> fWarningMessages{};
 };
 
 //------------------------------------------------------------------------

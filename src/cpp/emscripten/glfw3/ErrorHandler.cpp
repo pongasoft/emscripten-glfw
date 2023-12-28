@@ -72,7 +72,12 @@ void ErrorHandler::doLogWarning(char const *iWarningMessage)
   if(fErrorCallback)
   {
     std::string msg = "[Warning] " + std::string(iWarningMessage);
-    fErrorCallback(GLFW_NO_ERROR, msg.data());
+    if(std::find(fWarningMessages.begin(), fWarningMessages.end(), msg) == fWarningMessages.end())
+    {
+      // we want to avoid repeating the same warning message over and over
+      fErrorCallback(GLFW_NO_ERROR, msg.data());
+      fWarningMessages.emplace(std::move(msg));
+    }
   }
 }
 

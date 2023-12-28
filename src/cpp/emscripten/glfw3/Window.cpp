@@ -227,21 +227,21 @@ inline glfw_mouse_button_t emscriptenToGLFWButton(unsigned short iEmscriptenButt
 void Window::createEventListeners()
 {
   // fOnMouseMove
-  fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+  fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
     // TODO: handle pointer lock (an emscripten feature, not a glfw3 feature...)
     // TODO: handle glfwSetInputMode (ex: GLFW_CURSOR_DISABLED is equivalent to emscripten pointer lock) (default = GLFW_CURSOR_NORMAL)
 
-    fCursorPosX = std::clamp(static_cast<double>(iMouseEvent->targetX), 0.0, static_cast<double>(fWidth));
-    fCursorPosY = std::clamp(static_cast<double>(iMouseEvent->targetY), 0.0, static_cast<double>(fHeight));
+    fCursorPosX = std::clamp(static_cast<double>(iEvent->targetX), 0.0, static_cast<double>(fWidth));
+    fCursorPosY = std::clamp(static_cast<double>(iEvent->targetY), 0.0, static_cast<double>(fHeight));
     if(fCursorPosCallback)
       fCursorPosCallback(asOpaquePtr(), fCursorPosX, fCursorPosY);
     return true;
   };
 
   // fOnMouseButtonDown
-  fOnMouseButtonDown = [this](int iEventType, const EmscriptenMouseEvent *iMouseEvent) {
+  fOnMouseButtonDown = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
     // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
-    auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
+    auto lastButton = emscriptenToGLFWButton(iEvent->button);
     if(lastButton >= 0)
     {
       // down can only happen when inside the window
@@ -258,8 +258,27 @@ void Window::createEventListeners()
     return true;
   };
 
+  // fOnMouseWheel
+  fOnMouseWheel = [this](int iEventType, const EmscriptenWheelEvent *iEvent) {
+    if(fMouse.fScrollCallback)
+    {
+      // Note: this code is copied/inspired by SDL implementation
+      double multiplier;
+      switch(iEvent->deltaMode)
+      {
+        case DOM_DELTA_PIXEL: multiplier = 1.0 / 100.0; break; // 100 pixels make up a step.
+        case DOM_DELTA_LINE:  multiplier = 1.0 / 3.0;   break; // 3 lines make up a step.
+        case DOM_DELTA_PAGE:  multiplier = 80.0;        break; // A page makes up 80 steps.
+        default: return false; // should not happen
+      }
+      fMouse.fScrollCallback(asOpaquePtr(), iEvent->deltaX * -multiplier, iEvent->deltaY * -multiplier);
+      return true;
+    }
+    return false;
+  };
+
   // fOnFocusChange
-  fOnFocusChange = [this](int eventType, const EmscriptenFocusEvent *iFocusEvent) {
+  fOnFocusChange = [this](int eventType, const EmscriptenFocusEvent *iEvent) {
     fFocused = eventType == EMSCRIPTEN_EVENT_FOCUS;
     if(!isFocused())
       fKeyboard.resetAllKeys(asOpaquePtr());
@@ -306,6 +325,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   // mouse
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
   addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButtonDown, false);
+  addOrRemoveListener<EmscriptenWheelEvent>(emscripten_set_wheel_callback_on_thread, iAdd, selector, &fOnMouseWheel, false);
   // note: mouseup_callback is registered with context because target is "document"
 
   // keyboard
