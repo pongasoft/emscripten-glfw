@@ -72,6 +72,11 @@ let impl = {
     return ctx ? ctx.id : null;
   },
 
+  emscripten_glfw3_context_get_pointer_lock_window: () => {
+    const ctx = GLFW3.findContext(document.pointerLockElement);
+    return ctx ? ctx.id : null;
+  },
+
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");
 
@@ -146,8 +151,16 @@ let impl = {
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
 
     // this will (on purpose) override any css setting
-    canvas.style.setProperty( "width", width + "px", "important");
+    canvas.style.setProperty("width",   width + "px", "important");
     canvas.style.setProperty("height", height + "px", "important");
+  },
+
+  emscripten_glfw3_context_window_set_cursor: (canvasId, cursor) => {
+    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+    if(cursor)
+      canvas.style.setProperty("cursor", UTF8ToString(cursor));
+    else
+      canvas.style.removeProperty("cursor");
   },
 
   emscripten_glfw3_context_gl_init: (canvasId) => {

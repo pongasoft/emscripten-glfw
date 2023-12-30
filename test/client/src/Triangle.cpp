@@ -281,6 +281,20 @@ inline char const* actionToString(int action)
   }
   return a;
 }
+
+inline char const *cursorModeToString(int iCursorMode)
+{
+  char const *a;
+  switch(iCursorMode)
+  {
+    case GLFW_CURSOR_NORMAL: a = "Normal"; break;
+    case GLFW_CURSOR_HIDDEN: a = "Hidden"; break;
+    case GLFW_CURSOR_DISABLED: a = "Locked"; break;
+    default: a = "U"; break;
+  }
+  return a;
+}
+
 void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 {
   setHtmlValue(window, "glfwSetWindowContentScaleCallback", "%.2fx%.2f", xScale, yScale);
@@ -318,7 +332,54 @@ void onScrollChange(GLFWwindow* window, double xoffset, double yoffset)
 }
 void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+  static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
+
   setHtmlValue(window, "glfwSetKeyCallback", "%d:%d:%s:%d", key, scancode, actionToString(action), mods);
+  if(action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+  {
+    switch(key)
+    {
+      case GLFW_KEY_H:
+      {
+        auto mode = glfwGetInputMode(window, GLFW_CURSOR);
+        if(mode == GLFW_CURSOR_NORMAL)
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        if(mode == GLFW_CURSOR_HIDDEN)
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        break;
+      }
+      case GLFW_KEY_L:
+      {
+        auto mode = glfwGetInputMode(window, GLFW_CURSOR);
+        if(mode == GLFW_CURSOR_DISABLED)
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        break;
+      }
+      case GLFW_KEY_MINUS: // zoom out (-10%)
+      {
+        int w,h;
+        glfwGetWindowSize(window, &w, &h);
+        glfwSetWindowSize(window, adjust(w, 0.9), adjust(h, 0.9));
+        break;
+      }
+      case GLFW_KEY_EQUAL: // zoom in (+10%)
+      {
+        int w,h;
+        glfwGetWindowSize(window, &w, &h);
+        glfwSetWindowSize(window, adjust(w, 1.1), adjust(h, 1.1));
+        break;
+      }
+      case GLFW_KEY_Q: // close window
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        break;
+
+      default:
+        // ignore
+        break;
+    }
+  }
 }
 void onCharChange(GLFWwindow* window, unsigned int codepoint)
 {
@@ -366,6 +427,8 @@ void Triangle::updateValues()
 
   glfwGetCursorPos(fWindow, &xd, &yd);
   setHtmlValue(fWindow, "glfwGetCursorPos", "%.2fx%.2f", xd, yd);
+
+  setHtmlValue(fWindow, "glfwGetInputMode_GLFW_CURSOR", "%s", cursorModeToString(glfwGetInputMode(fWindow, GLFW_CURSOR)));
 
   setHtmlValue(fWindow, "glfwGetMouseButton", "L:%s|M:%s|R:%s",
                actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT)),

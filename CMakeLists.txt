@@ -16,8 +16,8 @@ set(glfw3_headers
     src/cpp/emscripten/glfw3/Monitor.h
     src/cpp/emscripten/glfw3/Mouse.h
     src/cpp/emscripten/glfw3/Object.h
+    src/cpp/emscripten/glfw3/Types.h
     src/cpp/emscripten/glfw3/Window.h
-    src/cpp/emscripten/glfw3/ErrorHandler.h
 )
 
 set(glfw3_sources

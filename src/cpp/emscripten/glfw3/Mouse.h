@@ -21,21 +21,33 @@
 
 #include <GLFW/glfw3.h>
 #include <array>
+#include "Types.h"
 
 using glfw_mouse_button_state_t = int; // ex: GLFW_RELEASE
 using glfw_mouse_button_t = int; // ex: GLFW_MOUSE_BUTTON_LEFT
+using glfw_cursor_mode_t = int; // ex: GLFW_CURSOR_NORMAL
 
 namespace emscripten::glfw3 {
 
 class Mouse
 {
 public:
+  constexpr bool isPointerLock() const { return fCursorMode == GLFW_CURSOR_DISABLED; }
+
+public:
   glfw_mouse_button_state_t fLastButtonState{GLFW_RELEASE};
   glfw_mouse_button_t fLastButton{-1};
   std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
+  glfw_cursor_mode_t fCursorMode{GLFW_CURSOR_NORMAL};
+
+  Vec2<double> fCursorPos{};
+  Vec2<double> fCursorPosBeforePointerLock{};
+  Vec2<double> fCursorLockResidual{};
+
   GLFWmousebuttonfun fButtonCallback{};
   GLFWscrollfun fScrollCallback{};
   GLFWcursorenterfun fCursorEnterCallback{};
+  GLFWcursorposfun fCursorPosCallback{};
 };
 
 }

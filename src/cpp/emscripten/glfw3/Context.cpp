@@ -29,6 +29,7 @@ void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, RequestFul
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
+GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_context_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 }
 
@@ -103,6 +104,23 @@ Context::Context()
     return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
   };
 
+  // fOnPointerLockChange
+  fOnPointerLockChange = [this](int iEventType, EmscriptenPointerlockChangeEvent const *iEvent) {
+    return toCBool(iEvent->isActive) ? onPointerLock(iEvent) : onPointerUnlock();
+  };
+
+  // fOnPointerLockError
+  fOnPointerLockError = [this](int iEventType, void const *iEvent) {
+    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
+    fPointerLockRequest = std::nullopt;
+    return true;
+  };
+
+  // fOnFullscreenChange
+  fOnFullscreenChange = [this](int iEventType, EmscriptenFullscreenChangeEvent const *iEvent) {
+    return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
+  };
+
   addOrRemoveEventListeners(true);
 }
 
@@ -130,6 +148,10 @@ void Context::addOrRemoveEventListeners(bool iAdd)
 
   // fullscreen
   addOrRemoveListener<EmscriptenFullscreenChangeEvent>(emscripten_set_fullscreenchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnFullscreenChange, false);
+
+  // pointerLock
+  addOrRemoveListener<EmscriptenPointerlockChangeEvent>(emscripten_set_pointerlockchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockChange, false);
+  addOrRemoveListener<void>(emscripten_set_pointerlockerror_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockError, false);
 }
 
 //------------------------------------------------------------------------
@@ -150,12 +172,57 @@ void Context::onScaleChange()
 //------------------------------------------------------------------------
 void Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
 {
+  // Per spec: If calling requestPointerLock() with requestFullscreen(), the requestPointerLock() must be
+  // called first, because the requestFullscreen() will consume the state of transient activation.
+  if(iLockPointer)
+    requestPointerLock(iWindow);
+
   auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
 
   if(window)
   {
-    fFullscreenRequest = {window->asOpaquePtr(), iLockPointer, iResizeCanvas};
-    emscripten_request_fullscreen(window->getCanvasSelector(), false);
+    fFullscreenRequest = {window->asOpaquePtr(), iResizeCanvas};
+    if(emscripten_request_fullscreen(window->getCanvasSelector(), false) != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting fullscreen (make sure you call this API from a user initiated event, like a mouse click)");
+      fFullscreenRequest = std::nullopt;
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::requestPointerLock
+//------------------------------------------------------------------------
+void Context::requestPointerLock(GLFWwindow *iWindow)
+{
+  auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
+
+  if(window)
+  {
+    fPointerLockRequest = {iWindow};
+    if(emscripten_request_pointerlock(window->getCanvasSelector(), false) != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
+      fPointerLockRequest = std::nullopt;
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::requestPointerUnlock
+//------------------------------------------------------------------------
+void Context::requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode)
+{
+  auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
+
+  if(window)
+  {
+    fPointerUnlockRequest = {iWindow, iCursorMode};
+    if(emscripten_exit_pointerlock() != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while exiting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
+      fPointerUnlockRequest = std::nullopt;
+    }
   }
 }
 
@@ -168,17 +235,23 @@ bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
 
   auto fullscreenRequest = std::exchange(fFullscreenRequest, std::nullopt);
 
-  auto window = findWindow(emscripten_glfw3_context_get_fullscreen_window());
-  if(!window)
-    // fullscreen is not targeting a known window... don't do anything
-    return false;
+  // which window is being targeted
+  if(auto window = findWindow(emscripten_glfw3_context_get_fullscreen_window()); window)
+  {
+    if(!fullscreenRequest || fullscreenRequest->fWindow != window->asOpaquePtr())
+    {
+      // due to the asynchronous nature of this callback, this could technically happen so handling it to be on
+      // the safe side
+      kErrorHandler.logWarning("Out of order fullscreen request");
+      fullscreenRequest = {window->asOpaquePtr(), true};
+    }
+    window->onEnterFullscreen(fullscreenRequest->fResizeCanvas ?
+                              std::optional<Vec2<int>>{{iEvent->screenWidth, iEvent->screenHeight}} :
+                              std::nullopt);
+    return true;
+  }
 
-  if(!fullscreenRequest || fullscreenRequest->fWindow != window->asOpaquePtr())
-    fullscreenRequest = {window->asOpaquePtr(), false, false};
-
-  window->enterFullscreen(*fullscreenRequest, iEvent->screenWidth, iEvent->screenHeight);
-
-  return true;
+  return false;
 }
 
 //------------------------------------------------------------------------
@@ -186,15 +259,64 @@ bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
 //------------------------------------------------------------------------
 bool Context::onExitFullscreen()
 {
-  auto iter = std::find_if(fWindows.begin(), fWindows.end(), [](auto &w) { return w->isFullscreen(); });
-  if(iter != fWindows.end())
+  printf("onExitFullscreen\n");
+
+  bool res = false;
+
+  // only 1 window should be in fullscreen
+  for(auto &w: fWindows)
+    res |= w->onExitFullscreen();
+
+  return res;
+}
+
+//------------------------------------------------------------------------
+// Context::onPointerLock
+//------------------------------------------------------------------------
+bool Context::onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent)
+{
+  printf("onPointerLock %s\n", iEvent->id);
+
+  auto lockPointerRequest = std::exchange(fPointerLockRequest, std::nullopt);
+
+  if(auto window = findWindow(emscripten_glfw3_context_get_pointer_lock_window()); window)
   {
-    (*iter)->exitFullscreen();
+    if(!lockPointerRequest || lockPointerRequest->fWindow != window->asOpaquePtr())
+    {
+      // due to the asynchronous nature of this callback, this could technically happen so handling it to be on
+      // the safe side
+      kErrorHandler.logWarning("Out of order pointerLock request");
+    }
+    window->onPointerLock();
     return true;
   }
-  else
-    return false;
 
+  return false;
+}
+
+//------------------------------------------------------------------------
+// Context::onPointerUnlock
+//------------------------------------------------------------------------
+bool Context::onPointerUnlock()
+{
+  printf("onPointerUnlock\n");
+
+  // this async callback does not contain any information, so we assume it is the one coming from the request
+  if(auto unlockPointerRequest = std::exchange(fPointerUnlockRequest, std::nullopt); unlockPointerRequest)
+  {
+    if(auto window = findWindow(unlockPointerRequest->fWindow); window)
+    {
+      window->onPointerUnlock(unlockPointerRequest->fCursorMode);
+      return true;
+    }
+  }
+
+  // no request nor window matching the request => send to all windows
+  bool res = false;
+  for(auto &w: fWindows)
+    res |= w->onPointerUnlock(std::nullopt);
+
+  return res;
 }
 
 //------------------------------------------------------------------------

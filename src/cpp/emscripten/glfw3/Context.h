@@ -53,6 +53,7 @@ public:
   void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos);
   void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight);
   std::shared_ptr<Monitor> getMonitor(GLFWmonitor *iMonitor) const;
+  GLFWmonitorfun setMonitorCallback(GLFWmonitorfun iCallback) { return std::exchange(fMonitorCallback, iCallback); }
 
   // time
   double getTimeInSeconds() const;
@@ -60,6 +61,8 @@ public:
 public:
   void onScaleChange();
   void requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
+  void requestPointerLock(GLFWwindow *iWindow);
+  void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);
   void onFocus(GLFWwindow *iWindow) { fLastKnownFocusedWindow = iWindow; }
 
 private:
@@ -70,6 +73,8 @@ private:
   void addOrRemoveEventListeners(bool iAdd);
   bool onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent);
   bool onExitFullscreen();
+  bool onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent);
+  bool onPointerUnlock();
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
 
 private:
@@ -82,11 +87,17 @@ private:
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
+  std::optional<Window::PointerLockRequest> fPointerLockRequest{};
+  std::optional<Window::PointerUnlockRequest> fPointerUnlockRequest{};
+
+  GLFWmonitorfun fMonitorCallback{};
 
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyUp{};
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
+  EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
+  EventListener<void> fOnPointerLockError{};
 };
 
 }

@@ -27,34 +27,6 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
   printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);
 }
 
-EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *userData) {
-  printf("key_callback [%c]\n", e->keyCode);
-  GLFWwindow *window = (GLFWwindow *) userData;
-  switch(e->keyCode)
-  {
-    case ' ':
-      glfwSetWindowShouldClose(window, GLFW_TRUE);
-      break;
-    case 'S':
-    {
-      int w,h;
-      glfwGetWindowSize(window, &w, &h);
-      glfwSetWindowSize(window, w * 2, h * 2);
-      break;
-    }
-    case 's':
-    {
-      int w,h;
-      glfwGetWindowSize(window, &w, &h);
-      glfwSetWindowSize(window, w / 2, h / 2);
-      break;
-    }
-    default:
-      break;
-  }
-  return GLFW_FALSE;
-}
-
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
 
 std::vector<std::shared_ptr<Triangle>> kTriangles{};
@@ -124,19 +96,19 @@ int main()
   for(auto &v: kTriangles)
     v->registerCallbacks();
 
-  if(window1)
-    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, key_callback);
-
   if(window1 && window2)
     glfwFocusWindow(window1);
 
-  while(!terminated())
+  while(!kTriangles.empty() && !terminated())
   {
+    for(auto it = kTriangles.begin(); it != kTriangles.end();)
+    {
+      if((*it)->shouldClose())
+        it = kTriangles.erase(it);
+      else
+        ++it;
+    }
     bool exitWhile = false;
-    for(auto &v: kTriangles)
-      exitWhile |= v->shouldClose();
-    if(exitWhile)
-      break;
     for(auto &v: kTriangles)
       exitWhile |= !v->render();
     if(exitWhile)

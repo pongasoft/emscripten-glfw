@@ -424,8 +424,6 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
     return nullptr;
 }
 
-
-
 //------------------------------------------------------------------------
 // glfwSetKeyCallback
 //------------------------------------------------------------------------
@@ -505,6 +503,18 @@ GLFWAPI void glfwFocusWindow(GLFWwindow* window)
 }
 
 //------------------------------------------------------------------------
+// glfwGetInputMode
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getInputMode(mode);
+  else
+    return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
 // glfwSetInputMode
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
@@ -512,6 +522,14 @@ GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
   auto w = getWindow(window);
   if(w)
     w->setInputMode(mode, value);
+}
+
+//------------------------------------------------------------------------
+// glfwRawMouseMotionSupported
+//------------------------------------------------------------------------
+GLFWAPI int glfwRawMouseMotionSupported()
+{
+  return GLFW_FALSE;
 }
 
 
@@ -546,7 +564,7 @@ GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos)
 {
   auto context = getContext();
   if(context)
-    return context->getMonitorPos(monitor, xpos, ypos);
+    context->getMonitorPos(monitor, xpos, ypos);
 }
 
 //------------------------------------------------------------------------
@@ -556,7 +574,7 @@ GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, 
 {
   auto context = getContext();
   if(context)
-    return context->getMonitorWorkArea(monitor, xpos, ypos, width, height);
+    context->getMonitorWorkArea(monitor, xpos, ypos, width, height);
 }
 
 //------------------------------------------------------------------------
@@ -582,6 +600,18 @@ GLFWAPI void* glfwGetMonitorUserPointer(GLFWmonitor* monitor)
 }
 
 //------------------------------------------------------------------------
+// glfwGetMonitorUserPointer
+//------------------------------------------------------------------------
+GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
+{
+  auto context = getContext();
+  if(context)
+    return context->setMonitorCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwGetTime
 //------------------------------------------------------------------------
 GLFWAPI double glfwGetTime(void)
@@ -597,12 +627,6 @@ GLFWAPI double glfwGetTime(void)
 // TODO Implement
 //------------------------------------------------------------------------
 
-GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback)
-{
-  // TODO implement
-  return nullptr;
-}
-
 //------------------------------------------------------------------------
 // glfwGetWindowPos
 //------------------------------------------------------------------------
@@ -611,18 +635,6 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
   // TODO implement
   *xpos = 0;
   *ypos = 0;
-}
-
-//------------------------------------------------------------------------
-// glfwGetInputMode
-//------------------------------------------------------------------------
-GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode)
-{
-  // TODO fix mock implementation!
-  if(mode == GLFW_CURSOR)
-    return GLFW_CURSOR_NORMAL;
-  else
-    return GLFW_FALSE;
 }
 
 //------------------------------------------------------------------------
@@ -663,7 +675,12 @@ GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
   return nullptr;
 }
 GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor) { return nullptr; }
-GLFWAPI void glfwPollEvents(void){ }
+GLFWAPI void glfwPollEvents(){ }
+GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmodsfun callback)
+{
+  ErrorHandler::instance().logWarning("glfwSetCharModsCallback is deprecated.");
+  return nullptr;
+}
 
 //------------------------------------------------------------------------
 // not_implemented
@@ -698,11 +715,9 @@ GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, 
 GLFWAPI void glfwWaitEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }
 GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
-GLFWAPI int glfwRawMouseMotionSupported(void){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
 GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot){ not_implemented(); }
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor){ not_implemented(); }
-GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmodsfun callback){ not_implemented(); }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback){ not_implemented(); }
 GLFWAPI int glfwJoystickPresent(int jid){ not_implemented(); }
 GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count){ not_implemented(); }

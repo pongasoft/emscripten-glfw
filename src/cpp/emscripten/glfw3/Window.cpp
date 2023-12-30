@@ -27,6 +27,7 @@ extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
+void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -36,6 +37,9 @@ int emscripten_glfw3_context_gl_make_context_current(GLFWwindow *iWindow);
 namespace emscripten::glfw3 {
 
 static ErrorHandler &kErrorHandler = ErrorHandler::instance();
+
+constexpr char const *kCursorHidden = "none";
+constexpr char const *kCursorNormal = nullptr;
 
 //------------------------------------------------------------------------
 // Window::Window
@@ -119,11 +123,34 @@ void Window::setSize(int iWidth, int iHeight)
 
   emscripten_glfw3_context_window_set_size(asOpaquePtr(), fWidth, fHeight, fFramebufferWidth, fFramebufferHeight);
 
-  if(sizeChanged && fSizeCallback)
-    fSizeCallback(asOpaquePtr(), fWidth, fHeight);
+  if(sizeChanged)
+  {
+    // make sure that the cursor stays in the window
+    setCursorPos({fMouse.fCursorPos.x, fMouse.fCursorPos.y});
+
+    if(fSizeCallback)
+      fSizeCallback(asOpaquePtr(), fWidth, fHeight);
+  }
 
   if(framebufferSizeChanged && fFramebufferSizeCallback)
     fFramebufferSizeCallback(asOpaquePtr(), fFramebufferWidth, fFramebufferHeight);
+}
+
+//------------------------------------------------------------------------
+// Window::setCursorPos
+//------------------------------------------------------------------------
+void Window::setCursorPos(Vec2<double> const &iPos)
+{
+  // clamp to window when not in pointer lock mode
+  auto pos = isPointerLock() ? iPos : Vec2<double>{std::clamp(iPos.x, 0.0, static_cast<double>(fWidth)),
+                                                   std::clamp(iPos.y, 0.0, static_cast<double>(fHeight))};
+
+  if(fMouse.fCursorPos != pos)
+  {
+    fMouse.fCursorPos = pos;
+    if(fMouse.fCursorPosCallback)
+      fMouse.fCursorPosCallback(asOpaquePtr(), fMouse.fCursorPos.x, fMouse.fCursorPos.y);
+  }
 }
 
 //------------------------------------------------------------------------
@@ -185,23 +212,114 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
 }
 
 //------------------------------------------------------------------------
+// Window::getInputMode
+//------------------------------------------------------------------------
+int Window::getInputMode(int iMode) const
+{
+  switch(iMode)
+  {
+    case GLFW_CURSOR:
+      return fMouse.fCursorMode;
+
+    case GLFW_STICKY_KEYS:
+    case GLFW_STICKY_MOUSE_BUTTONS:
+    case GLFW_LOCK_KEY_MODS:
+      kErrorHandler.logWarning("glfwGetInputMode: input mode [%d] not implemented yet", iMode);
+      break;
+
+    case GLFW_RAW_MOUSE_MOTION:
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "glfwGetInputMode: input mode [GLFW_RAW_MOUSE_MOTION] not supported");
+      break;
+
+    default:
+      kErrorHandler.logError(GLFW_INVALID_ENUM, "glfwGetInputMode: Invalid mode [%d]", iMode);
+      break;
+  }
+  return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
 // Window::setInputMode
 //------------------------------------------------------------------------
 void Window::setInputMode(int iMode, int iValue)
 {
   switch(iMode)
   {
-    // TODO: need to implement my own keyboard event to get this info
-//    case GLFW_LOCK_KEY_MODS:
-//      fKeyboard.setInputModeLockKeyMods(toCBool(iValue));
-//      break;
+    case GLFW_CURSOR:
+      setCursorMode(iValue);
+      break;
+
+    case GLFW_STICKY_KEYS:
+    case GLFW_STICKY_MOUSE_BUTTONS:
+    case GLFW_LOCK_KEY_MODS: // TODO: need to implement my own keyboard event to get this info
+      kErrorHandler.logWarning("glfwSetInputMode: input mode [%d] not implemented yet", iMode);
+      break;
+
+    case GLFW_RAW_MOUSE_MOTION:
+      // TODO: this requires a pending spec canvas.requestPointerLock({unadjustedMovement: true});
+      //       Will implement when stable
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "glfwSetInputMode: input mode [GLFW_RAW_MOUSE_MOTION] not supported");
+      break;
 
     default:
-      kErrorHandler.logWarning("glfwSetInputMode: input mode [%d] not implemented yet", iMode);
+      kErrorHandler.logError(GLFW_INVALID_ENUM, "glfwSetInputMode: Invalid mode [%d]", iMode);
       break;
   }
 }
 
+
+//------------------------------------------------------------------------
+// Window::setCursorMode
+//------------------------------------------------------------------------
+void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
+{
+  if(fMouse.fCursorMode == iCursorMode)
+    return;
+
+  if(iCursorMode == GLFW_CURSOR_DISABLED)
+  {
+    // note that this is asynchronous, so we do NOT update fMouse.fCursorMode here
+    fContext->requestPointerLock(asOpaquePtr());
+  }
+  else
+  {
+    if(isPointerLock())
+      // note that this is asynchronous, so we do NOT update fMouse.fCursorMode here
+      fContext->requestPointerUnlock(asOpaquePtr(), iCursorMode);
+    else
+    {
+      fMouse.fCursorMode = iCursorMode;
+      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), iCursorMode == GLFW_CURSOR_HIDDEN ? kCursorHidden : kCursorNormal);
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// Window::onPointerLock
+//------------------------------------------------------------------------
+void Window::onPointerLock()
+{
+  fMouse.fCursorLockResidual= {};
+  fMouse.fCursorPosBeforePointerLock = fMouse.fCursorPos;
+  fMouse.fCursorMode = GLFW_CURSOR_DISABLED;
+  setCursorPos({});
+}
+
+//------------------------------------------------------------------------
+// Window::onPointerUnlock
+//------------------------------------------------------------------------
+bool Window::onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode)
+{
+  if(isPointerLock())
+  {
+    auto cursorMode = iCursorMode ? *iCursorMode : GLFW_CURSOR_NORMAL;
+    fMouse.fCursorMode = cursorMode;
+    emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursorMode == GLFW_CURSOR_HIDDEN ? kCursorHidden : kCursorNormal);
+    setCursorPos(fMouse.fCursorPosBeforePointerLock);
+    return true;
+  }
+  return false;
+}
 
 //------------------------------------------------------------------------
 // emscriptenToGLFWButton
@@ -228,13 +346,21 @@ void Window::createEventListeners()
 {
   // fOnMouseMove
   fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    // TODO: handle pointer lock (an emscripten feature, not a glfw3 feature...)
-    // TODO: handle glfwSetInputMode (ex: GLFW_CURSOR_DISABLED is equivalent to emscripten pointer lock) (default = GLFW_CURSOR_NORMAL)
-
-    fCursorPosX = std::clamp(static_cast<double>(iEvent->targetX), 0.0, static_cast<double>(fWidth));
-    fCursorPosY = std::clamp(static_cast<double>(iEvent->targetY), 0.0, static_cast<double>(fHeight));
-    if(fCursorPosCallback)
-      fCursorPosCallback(asOpaquePtr(), fCursorPosX, fCursorPosY);
+    Vec2<double> cursorPos{};
+    if(isPointerLock())
+    {
+      fMouse.fCursorLockResidual.x += iEvent->movementX;
+      fMouse.fCursorLockResidual.y += iEvent->movementY;
+      cursorPos = fMouse.fCursorLockResidual;
+      // following SDL implementation to not lose sub-pixel motion
+      fMouse.fCursorLockResidual.x -= cursorPos.x;
+      fMouse.fCursorLockResidual.y -= cursorPos.y;
+    }
+    else
+    {
+      cursorPos = {static_cast<double>(iEvent->targetX), static_cast<double>(iEvent->targetY)};
+    }
+    setCursorPos(cursorPos);
     return true;
   };
 
@@ -349,27 +475,27 @@ void Window::addOrRemoveEventListeners(bool iAdd)
 }
 
 //------------------------------------------------------------------------
-// Window::enterFullscreen
+// Window::onEnterFullscreen
 //------------------------------------------------------------------------
-void Window::enterFullscreen(FullscreenRequest const &iFullscreenRequest, int iScreenWidth, int iScreenHeight)
+void Window::onEnterFullscreen(std::optional<Vec2<int>> const &iScreenSize)
 {
   fFullscreen = true;
-  if(iFullscreenRequest.fResizeCanvas)
+  if(iScreenSize)
   {
     fWidthBeforeFullscreen = fWidth;
     fHeightBeforeFullscreen = fHeight;
-    setSize(iScreenWidth, iScreenHeight);
+    setSize(iScreenSize->width, iScreenSize->height);
   }
   focus();
 }
 
 //------------------------------------------------------------------------
-// Window::exitFullscreen
+// Window::onExitFullscreen
 //------------------------------------------------------------------------
-void Window::exitFullscreen()
+bool Window::onExitFullscreen()
 {
   if(!fFullscreen)
-    return;
+    return false;
 
   fFullscreen = false;
 
@@ -378,6 +504,9 @@ void Window::exitFullscreen()
 
   fWidthBeforeFullscreen = std::nullopt;
   fHeightBeforeFullscreen = std::nullopt;
+
+
+  return true;
 }
 
 

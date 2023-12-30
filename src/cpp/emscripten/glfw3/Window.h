@@ -26,6 +26,7 @@
 #include "Events.h"
 #include "Mouse.h"
 #include "Keyboard.h"
+#include "Types.h"
 #include <utility>
 #include <optional>
 #include <functional>
@@ -40,8 +41,18 @@ public:
   struct FullscreenRequest
   {
     GLFWwindow *fWindow{};
-    bool fLockPointer{};
     bool fResizeCanvas{};
+  };
+
+  struct PointerLockRequest
+  {
+    GLFWwindow *fWindow{};
+  };
+
+  struct PointerUnlockRequest
+  {
+    GLFWwindow *fWindow{};
+    glfw_cursor_mode_t fCursorMode;
   };
 
 public:
@@ -73,6 +84,8 @@ public:
 
   constexpr bool isFullscreen() const { return fFullscreen; }
 
+  constexpr bool isPointerLock() const { return fMouse.isPointerLock(); }
+
   inline GLFWwindowsizefun setSizeCallback(GLFWwindowsizefun iCallback) { return std::exchange(fSizeCallback, iCallback); }
   inline GLFWframebuffersizefun setFramebufferSizeCallback(GLFWframebuffersizefun iCallback) { return std::exchange(fFramebufferSizeCallback, iCallback); }
   inline GLFWwindowfocusfun setFocusCallback(GLFWwindowfocusfun iCallback) { return std::exchange(fFocusCallback, iCallback); }
@@ -81,7 +94,7 @@ public:
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
 
   // events
-  inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fCursorPosCallback, iCallback); }
+  inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fMouse.fCursorPosCallback, iCallback); }
   inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouse.fButtonCallback, iCallback); }
   inline GLFWscrollfun setScrollCallback(GLFWscrollfun iCallback) { return std::exchange(fMouse.fScrollCallback, iCallback); }
   inline GLFWcursorenterfun setCursorEnterCallback(GLFWcursorenterfun iCallback) { return std::exchange(fMouse.fCursorEnterCallback, iCallback); }
@@ -90,8 +103,8 @@ public:
 
   // mouse
   inline void getCursorPos(double *oXPos, double *oYPos) const {
-    if(oXPos) {*oXPos = fCursorPosX; }
-    if(oYPos) {*oYPos = fCursorPosY; }
+    if(oXPos) {*oXPos = fMouse.fCursorPos.x; }
+    if(oYPos) {*oYPos = fMouse.fCursorPos.y; }
   }
   glfw_mouse_button_state_t getMouseButtonState(glfw_mouse_button_t iButton);
 
@@ -104,13 +117,18 @@ public:
 
   // input mode
   void setInputMode(int iMode, int iValue);
+  int getInputMode(int iMode) const;
 
   // monitor scale
   void setMonitorScale(float iScale);
 
   // fullscreen
-  void enterFullscreen(FullscreenRequest const &iFullscreenRequest, int iScreenWidth, int iScreenHeight);
-  void exitFullscreen();
+  void onEnterFullscreen(std::optional<Vec2<int>> const &iScreenSize);
+  bool onExitFullscreen();
+
+  // pointerLock
+  void onPointerLock();
+  bool onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode);
 
   // OpenGL
   bool createGLContext();
@@ -128,6 +146,7 @@ protected:
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
   inline bool onKeyDown(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iKeyboardEvent); }
   inline bool onKeyUp(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iKeyboardEvent); }
+  void setCursorMode(glfw_cursor_mode_t iCursorMode);
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
@@ -140,6 +159,7 @@ private:
   void createEventListeners();
   void addOrRemoveEventListeners(bool iAdd);
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
+  void setCursorPos(Vec2<double> const &iPos);
 
 private:
   Context *fContext;
@@ -157,8 +177,6 @@ private:
   std::optional<int> fHeightBeforeFullscreen{};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
-  double fCursorPosX{};
-  double fCursorPosY{};
   Mouse fMouse{};
   Keyboard fKeyboard{};
   void *fUserPointer{};
@@ -166,7 +184,6 @@ private:
   GLFWwindowsizefun fSizeCallback{};
   GLFWwindowfocusfun fFocusCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};
-  GLFWcursorposfun fCursorPosCallback{};
 };
 
 }
