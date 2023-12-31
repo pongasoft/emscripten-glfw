@@ -48,6 +48,8 @@ public:
     return fCursor;
   }
 
+  inline bool isCursorHidden() const { return fCursor == Cursor::getHiddenCursor(); }
+
   friend class Window;
 
 public:

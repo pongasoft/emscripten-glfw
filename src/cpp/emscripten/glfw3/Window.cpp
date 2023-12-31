@@ -244,7 +244,7 @@ void Window::setCursor(GLFWcursor *iCursor)
   auto cursor = Cursor::findCursor(iCursor);
   if(cursor)
   {
-    if(isPointerLock())
+    if(isPointerLock() || fMouse.isCursorHidden())
       fMouse.fVisibleCursor = cursor;
     else
     {
