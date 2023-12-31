@@ -36,6 +36,7 @@ public:
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;
   constexpr char const *getName() const { return fName; };
+  void onKeyChange(int iKey, int scancode, int iAction, int iMods);
 
   void registerCallbacks();
 
@@ -58,6 +59,7 @@ private:
   GLfloat fBgGreen{0};
   GLfloat fBgBlue{0};
   GLfloat fBgAlpha{1.0f};
+  int fCursor{};
 };
 
 

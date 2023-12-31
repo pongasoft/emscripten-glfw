@@ -29,7 +29,8 @@ public:
 
   virtual ~Object() = default;
   inline G *asOpaquePtr() { return reinterpret_cast<G *>(&fOpaquePtr); }
-  inline G const *asOpaquePtr() const { return reinterpret_cast<G const *>(&fOpaquePtr); }
+  // because G is opaque it is fine to return non const (nothing can happen)
+  inline G *asOpaquePtr() const { return const_cast<G *>(reinterpret_cast<G const *>(&fOpaquePtr)); }
 private:
   struct OpaquePtr {};
   OpaquePtr fOpaquePtr{};

@@ -55,6 +55,9 @@ public:
   std::shared_ptr<Monitor> getMonitor(GLFWmonitor *iMonitor) const;
   GLFWmonitorfun setMonitorCallback(GLFWmonitorfun iCallback) { return std::exchange(fMonitorCallback, iCallback); }
 
+  // cursor
+  GLFWcursor *createStandardCursor(int iShape);
+
   // time
   double getTimeInSeconds() const;
 

@@ -27,6 +27,7 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Types.h"
+#include "Cursor.h"
 #include <utility>
 #include <optional>
 #include <functional>
@@ -107,6 +108,7 @@ public:
     if(oYPos) {*oYPos = fMouse.fCursorPos.y; }
   }
   glfw_mouse_button_state_t getMouseButtonState(glfw_mouse_button_t iButton);
+  void setCursor(GLFWcursor* iCursor);
 
   // keyboard
   glfw_key_state_t getKeyState(glfw_key_t iKey) const { return fKeyboard.getKeyState(iKey); }

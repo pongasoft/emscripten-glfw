@@ -21,6 +21,7 @@
 #include <emscripten/em_types.h>
 #include <utility>
 #include "ErrorHandler.h"
+#include "Cursor.h"
 #include <algorithm>
 
 extern "C" {
@@ -38,8 +39,22 @@ namespace emscripten::glfw3 {
 
 static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 
-constexpr char const *kCursorHidden = "none";
-constexpr char const *kCursorNormal = nullptr;
+//------------------------------------------------------------------------
+// Cursor::kCursors
+// The "default" css cursor is set to `nullptr` on purpose so that the
+// cursor property is removed, thus reverting to the "default" which can
+// be overriden in CSS
+//------------------------------------------------------------------------
+const std::array<Cursor, 6> Cursor::kCursors = {
+  Cursor{GLFW_ARROW_CURSOR, nullptr}, // default
+  Cursor{GLFW_IBEAM_CURSOR, "text"},
+  Cursor{GLFW_CROSSHAIR_CURSOR, "crosshair"},
+  Cursor{GLFW_HAND_CURSOR, "pointer"},
+  Cursor{GLFW_HRESIZE_CURSOR, "ns-resize"},
+  Cursor{GLFW_VRESIZE_CURSOR, "ew-resize"},
+};
+
+const Cursor Cursor::kCursorHidden{0, "none"};
 
 //------------------------------------------------------------------------
 // Window::Window
@@ -212,6 +227,26 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
 }
 
 //------------------------------------------------------------------------
+// Window::setCursor
+//------------------------------------------------------------------------
+void Window::setCursor(GLFWcursor *iCursor)
+{
+  auto cursor = Cursor::findCursor(iCursor);
+  if(cursor)
+  {
+    if(isPointerLock())
+      fMouse.fVisibleCursor = cursor;
+    else
+    {
+      fMouse.fCursor = cursor;
+      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+    }
+  }
+  else
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid cursor");
+}
+
+//------------------------------------------------------------------------
 // Window::getInputMode
 //------------------------------------------------------------------------
 int Window::getInputMode(int iMode) const
@@ -289,7 +324,8 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
     else
     {
       fMouse.fCursorMode = iCursorMode;
-      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), iCursorMode == GLFW_CURSOR_HIDDEN ? kCursorHidden : kCursorNormal);
+      auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
+      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
     }
   }
 }
@@ -299,6 +335,11 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
 //------------------------------------------------------------------------
 void Window::onPointerLock()
 {
+  if(isPointerLock())
+    return;
+
+  fMouse.hideCursor();
+
   fMouse.fCursorLockResidual= {};
   fMouse.fCursorPosBeforePointerLock = fMouse.fCursorPos;
   fMouse.fCursorMode = GLFW_CURSOR_DISABLED;
@@ -314,7 +355,8 @@ bool Window::onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode)
   {
     auto cursorMode = iCursorMode ? *iCursorMode : GLFW_CURSOR_NORMAL;
     fMouse.fCursorMode = cursorMode;
-    emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursorMode == GLFW_CURSOR_HIDDEN ? kCursorHidden : kCursorNormal);
+    auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
+    emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
     setCursorPos(fMouse.fCursorPosBeforePointerLock);
     return true;
   }

@@ -582,6 +582,20 @@ void Context::getMonitorWorkArea(GLFWmonitor *iMonitor, int *oXPos, int *oYPos, 
 }
 
 //------------------------------------------------------------------------
+// Context::createStandardCursor
+//------------------------------------------------------------------------
+GLFWcursor *Context::createStandardCursor(int iShape)
+{
+  auto const *cursor = Cursor::findCursor(iShape);
+  if(!cursor)
+  {
+    kErrorHandler.logError(GLFW_INVALID_ENUM, "Invalid cursor shape [%d]", iShape);
+    return nullptr;
+  }
+  return cursor->asOpaquePtr();
+}
+
+//------------------------------------------------------------------------
 // Context::getTime
 //------------------------------------------------------------------------
 double Context::getAbsoluteTimeInSeconds()

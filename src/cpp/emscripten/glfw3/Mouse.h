@@ -22,6 +22,7 @@
 #include <GLFW/glfw3.h>
 #include <array>
 #include "Types.h"
+#include "Cursor.h"
 
 using glfw_mouse_button_state_t = int; // ex: GLFW_RELEASE
 using glfw_mouse_button_t = int; // ex: GLFW_MOUSE_BUTTON_LEFT
@@ -29,15 +30,31 @@ using glfw_cursor_mode_t = int; // ex: GLFW_CURSOR_NORMAL
 
 namespace emscripten::glfw3 {
 
+class Window;
+
 class Mouse
 {
 public:
   constexpr bool isPointerLock() const { return fCursorMode == GLFW_CURSOR_DISABLED; }
 
+  inline Cursor const *hideCursor() {
+    fVisibleCursor = fCursor;
+    fCursor = Cursor::getHiddenCursor();
+    return fCursor;
+  }
+
+  inline Cursor const *showCursor() {
+    fCursor = fVisibleCursor;
+    return fCursor;
+  }
+
+  friend class Window;
+
 public:
   glfw_mouse_button_state_t fLastButtonState{GLFW_RELEASE};
   glfw_mouse_button_t fLastButton{-1};
   std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
+
   glfw_cursor_mode_t fCursorMode{GLFW_CURSOR_NORMAL};
 
   Vec2<double> fCursorPos{};
@@ -48,6 +65,10 @@ public:
   GLFWscrollfun fScrollCallback{};
   GLFWcursorenterfun fCursorEnterCallback{};
   GLFWcursorposfun fCursorPosCallback{};
+
+private:
+  Cursor const *fCursor{Cursor::getDefault()};
+  Cursor const *fVisibleCursor{fCursor};
 };
 
 }

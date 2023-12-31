@@ -28,6 +28,11 @@ using namespace emscripten::glfw3;
 
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
+static void logNotImplemented(char const *iFunction)
+{
+  ErrorHandler::instance().logWarning("%s is not implemented ont this platform\n", iFunction);
+}
+
 static std::unique_ptr<Context> kContext{};
 static inline Context *getContext() {
   if(!kContext)
@@ -425,6 +430,28 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
 }
 
 //------------------------------------------------------------------------
+// glfwCreateStandardCursor
+//------------------------------------------------------------------------
+GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape)
+{
+  auto context = getContext();
+  if(context)
+    return context->createStandardCursor(shape);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwSetCursor
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setCursor(cursor);
+}
+
+//------------------------------------------------------------------------
 // glfwSetKeyCallback
 //------------------------------------------------------------------------
 GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback)
@@ -532,7 +559,6 @@ GLFWAPI int glfwRawMouseMotionSupported()
   return GLFW_FALSE;
 }
 
-
 //------------------------------------------------------------------------
 // glfwGetMonitors
 //------------------------------------------------------------------------
@@ -638,14 +664,6 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 }
 
 //------------------------------------------------------------------------
-// glfwSetCursor
-//------------------------------------------------------------------------
-GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor)
-{
-  // TODO: use canvas.style.cursor = value ???
-}
-
-//------------------------------------------------------------------------
 // glfwGetJoystickAxes
 //------------------------------------------------------------------------
 GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
@@ -668,7 +686,6 @@ GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
 //------------------------------------------------------------------------
 GLFWAPI void glfwShowWindow(GLFWwindow* window) { }
 GLFWAPI void glfwHideWindow(GLFWwindow* window) { }
-GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape) { return nullptr; }
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
 {
   *count = 0;
@@ -681,6 +698,12 @@ GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmods
   ErrorHandler::instance().logWarning("glfwSetCharModsCallback is deprecated.");
   return nullptr;
 }
+GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
+{
+  logNotImplemented("glfwCreateCursor");
+  return nullptr;
+}
+GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor) { logNotImplemented("glfwDestroyCursor"); }
 
 //------------------------------------------------------------------------
 // not_implemented
@@ -716,8 +739,6 @@ GLFWAPI void glfwWaitEvents(void){ not_implemented(); }
 GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }
 GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
-GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot){ not_implemented(); }
-GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor){ not_implemented(); }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback){ not_implemented(); }
 GLFWAPI int glfwJoystickPresent(int jid){ not_implemented(); }
 GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count){ not_implemented(); }

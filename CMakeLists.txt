@@ -9,6 +9,7 @@ set(target "glfw3")
 set(glfw3_headers
     src/cpp/emscripten/glfw3/Config.h
     src/cpp/emscripten/glfw3/Context.h
+    src/cpp/emscripten/glfw3/Cursor.h
     src/cpp/emscripten/glfw3/ErrorHandler.h
     src/cpp/emscripten/glfw3/Events.h
     src/cpp/emscripten/glfw3/Keyboard.h
