@@ -29,6 +29,8 @@ Main supported features:
 * full keyboard support
 * fullscreen support
 * Hi DPI support 
+* support all glfw cursors
+* support window opacity
 
 You can check [glfw3.cpp](src/cpp/glfw3.cpp) for what is currently not implemented (throw `not_implemented` exception) 
 or functions that have an empty (implementation `TODO Implement` section).
@@ -36,7 +38,7 @@ or functions that have an empty (implementation `TODO Implement` section).
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.2.0/emscripten_glfw.png)
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.3.0/emscripten_glfw.png)
 
 Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
@@ -118,6 +120,12 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+
+#### wip-0.3.0 - 2023/12/31
+
+- Added support for input mode `GLFW_CURSOR` (handle all use cases: Normal / Hidden / Locked)
+- Added support for glfw defined cursors (implemented `glfwCreateStandardCursor` and `glfwSetCursor`)
+- Added support for window opacity (implemented `glfwGetWindowOpacity` and `glfwSetWindowOpacity`)
 
 #### wip-0.2.0 - 2023/12/28
 
