@@ -163,6 +163,14 @@ let impl = {
       canvas.style.removeProperty("cursor");
   },
 
+  emscripten_glfw3_context_window_set_opacity: (canvasId, opacity) => {
+    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+    if(opacity < 1.0)
+      canvas.style.setProperty("opacity", opacity);
+    else
+      canvas.style.removeProperty("opacity");
+  },
+
   emscripten_glfw3_context_gl_init: (canvasId) => {
     const canvasCtx = GLFW3.fCanvasContexts[canvasId];
     if(!canvasCtx)

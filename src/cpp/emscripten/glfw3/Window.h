@@ -132,6 +132,10 @@ public:
   void onPointerLock();
   bool onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode);
 
+  // opacity
+  float getOpacity() const { return fOpacity; }
+  void setOpacity(float iOpacity);
+
   // OpenGL
   bool createGLContext();
   void makeGLContextCurrent();
@@ -177,6 +181,7 @@ private:
   int fFramebufferHeight{};
   std::optional<int> fWidthBeforeFullscreen{};
   std::optional<int> fHeightBeforeFullscreen{};
+  float fOpacity{1.0f};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
   Mouse fMouse{};

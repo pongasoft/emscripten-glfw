@@ -460,6 +460,13 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
         glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
         break;
 
+      case GLFW_KEY_O: // switch opacity
+      {
+        auto opacity = glfwGetWindowOpacity(fWindow) != 1.0f ? 1.0f : 0.5f;
+        glfwSetWindowOpacity(fWindow, opacity);
+        break;
+      }
+
       case GLFW_KEY_Q: // close window
         glfwSetWindowShouldClose(fWindow, GLFW_TRUE);
         break;

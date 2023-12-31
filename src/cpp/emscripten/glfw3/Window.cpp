@@ -29,6 +29,7 @@ void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
+void emscripten_glfw3_context_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -166,6 +167,15 @@ void Window::setCursorPos(Vec2<double> const &iPos)
     if(fMouse.fCursorPosCallback)
       fMouse.fCursorPosCallback(asOpaquePtr(), fMouse.fCursorPos.x, fMouse.fCursorPos.y);
   }
+}
+
+//------------------------------------------------------------------------
+// Window::setOpacity
+//------------------------------------------------------------------------
+void Window::setOpacity(float iOpacity)
+{
+  fOpacity = std::clamp(iOpacity, 0.0f, 1.0f);
+  emscripten_glfw3_context_window_set_opacity(asOpaquePtr(), iOpacity);
 }
 
 //------------------------------------------------------------------------

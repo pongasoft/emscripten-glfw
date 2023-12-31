@@ -552,6 +552,28 @@ GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value)
 }
 
 //------------------------------------------------------------------------
+// glfwGetWindowOpacity
+//------------------------------------------------------------------------
+GLFWAPI float glfwGetWindowOpacity(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getOpacity();
+  else
+    return 1.0f;
+}
+
+//------------------------------------------------------------------------
+// glfwGetWindowOpacity
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setOpacity(opacity);
+}
+
+//------------------------------------------------------------------------
 // glfwRawMouseMotionSupported
 //------------------------------------------------------------------------
 GLFWAPI int glfwRawMouseMotionSupported()
@@ -720,8 +742,6 @@ GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos){ not_imple
 GLFWAPI void glfwSetWindowSizeLimits(GLFWwindow* window, int minwidth, int minheight, int maxwidth, int maxheight){ not_implemented(); }
 GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom){ not_implemented(); }
 GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int* right, int* bottom){ not_implemented(); }
-GLFWAPI float glfwGetWindowOpacity(GLFWwindow* window){ not_implemented(); }
-GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity){ not_implemented(); }
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwMaximizeWindow(GLFWwindow* window){ not_implemented(); }
