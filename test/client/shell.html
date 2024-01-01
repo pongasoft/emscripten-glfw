@@ -20,9 +20,16 @@
       image-rendering: pixelated;
     }
 
-    #canvas-details {
-      display: flex;
-      flex-wrap: wrap;
+    #canvas-details .table-bordered {
+      float: left;
+    }
+
+    .clear-float {
+      clear: both;
+    }
+
+    #actions .table-bordered {
+      float: left;
     }
 
     .table-bordered {
@@ -95,7 +102,7 @@
     </tbody>
   </table>
 </div>
-<h3>Actions</h3>
+<h3 class="clear-float">Actions</h3>
 <div id="actions">
   <table class="table-bordered">
     <thead>
@@ -130,13 +137,6 @@
         <label for="pointerLock-any">L</label><input type="checkbox" id="pointerLock-any">
       </td>
     </tr>
-    <tr><td class="action">Hide/Show Cursor</td><td colspan="2">CTRL + "H"</td></tr>
-    <tr><td class="action">Lock/Unlock Cursor</td><td colspan="2">CTRL + "L" (ESC will unlock as well)</td></tr>
-    <tr><td class="action">Cycle Cursor</td><td colspan="2">CTRL + "[" &amp; CTRL + "]"</td></tr>
-    <tr><td class="action">Zoom Out</td><td colspan="2">CTRL + "="</td></tr>
-    <tr><td class="action">Zoom In</td><td colspan="2">CTRL + "-"</td></tr>
-    <tr><td class="action">Toggle Half Opacity</td><td colspan="2">CTRL + "O"</td></tr>
-    <tr><td class="action">Destroy</td><td colspan="2">CTRL + "Q"</td></tr>
     <tr>
       <td class="action">Change focus</td>
       <td colspan="2"><label>Text: <input type="text"></label></td>
@@ -147,7 +147,21 @@
     </tr>
     </tbody>
   </table>
+  <table class="table-bordered">
+    <thead>
+    <tr><th>Action</th><th>Use CTRL + &lt;key&gt;</th></tr>
+    </thead>
+    <tbody>
+    <tr><td class="action">Hide/Show Cursor</td><td>"H"</td></tr>
+    <tr><td class="action">Lock/Unlock Cursor</td><td>"L" (ESC will unlock as well)</td></tr>
+    <tr><td class="action">Cycle Cursor</td><td>"[" &amp; "]"</td></tr>
+    <tr><td class="action">Zoom</td><td>"=" (out) &amp; "-" (in)</td></tr>
+    <tr><td class="action">Toggle Half Opacity</td><td>"O"</td></tr>
+    <tr><td class="action">Destroy</td><td>"Q"</td></tr>
+    </tbody>
+  </table>
 </div>
+<span class="clear-float"></span>
 <table id="debug" class="table-bordered">
   <tbody>
   </tbody>
