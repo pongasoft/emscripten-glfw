@@ -22,6 +22,7 @@
 #include <emscripten/html5.h>
 #include <iostream>
 #include <array>
+#include <vector>
 
 // The code has been inspired by https://github.com/sessamekesh/webgl-tutorials-2023 (MIT License)
 
@@ -260,10 +261,18 @@ void setHtmlValue(GLFWwindow *iWindow, char const *iFunctionName, char const *iF
 {
   static std::array<char, 256> kSelector;
   static std::array<char, 256> kValue;
-  auto triangle = reinterpret_cast<Triangle *>(glfwGetWindowUserPointer(iWindow));
-  if(triangle)
+  if(iWindow)
   {
-    auto selector = fmt(kSelector, ".%s .%s", iFunctionName, triangle->getName());
+    if(auto triangle = reinterpret_cast<Triangle *>(glfwGetWindowUserPointer(iWindow)); triangle)
+    {
+      auto selector = fmt(kSelector, ".%s .%s", iFunctionName, triangle->getName());
+      auto value = fmt(kValue, iFormat, std::forward<Args>(args)...);
+      setHtmlValue(selector, value);
+    }
+  }
+  else
+  {
+    auto selector = fmt(kSelector, ".%s .no-canvas", iFunctionName);
     auto value = fmt(kValue, iFormat, std::forward<Args>(args)...);
     setHtmlValue(selector, value);
   }
@@ -294,6 +303,13 @@ inline char const *cursorModeToString(int iCursorMode)
   }
   return a;
 }
+
+inline static char const *toNonNullString(char const *s)
+{
+  static char const *kNoValue = "-";
+  return s ? s : kNoValue;
+}
+
 
 void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 {
@@ -344,7 +360,10 @@ void onWindowFocusChange(GLFWwindow* window, int focused)
 {
   setHtmlValue(window, "glfwSetWindowFocusCallback", "%s", focused == GLFW_TRUE ? "true" : "false");
 }
-
+void onJoystickChange(int jid, int event)
+{
+  setHtmlValue(nullptr, "glfwSetJoystickCallback", "%d: %s", jid, event == GLFW_CONNECTED ? "connected" : "disconnected");
+}
 
 //------------------------------------------------------------------------
 // registerCallbacks
@@ -362,6 +381,137 @@ void Triangle::registerCallbacks()
   glfwSetKeyCallback(fWindow, ::onKeyChange);
   glfwSetCharCallback(fWindow, onCharChange);
   glfwSetWindowFocusCallback(fWindow, onWindowFocusChange);
+}
+
+//------------------------------------------------------------------------
+// registerNoWindowCallbacks
+//------------------------------------------------------------------------
+void Triangle::registerNoWindowCallbacks()
+{
+  glfwSetJoystickCallback(onJoystickChange);
+}
+
+//------------------------------------------------------------------------
+// updateNoWindowValues
+//------------------------------------------------------------------------
+void Triangle::updateNoWindowValues()
+{
+  static std::vector<int> jids{};
+
+  jids.clear();
+
+  for(auto jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
+  {
+    if(glfwJoystickPresent(jid) == GLFW_TRUE)
+    {
+      jids.emplace_back(jid);
+    }
+  }
+
+  setHtmlValue(nullptr, "glfwJoystickPresent", "%d present", jids.size());
+
+  if(!jids.empty())
+  {
+    auto jid = jids[0];
+    setHtmlValue(nullptr, "glfwGetJoystickName", "[%d] %s", jid, toNonNullString(glfwGetJoystickName(jid)));
+    setHtmlValue(nullptr, "glfwGetJoystickGUID", "[%d] %s", jid, toNonNullString(glfwGetJoystickGUID(jid)));
+    setHtmlValue(nullptr, "glfwJoystickIsGamepad", "[%d] %s", jid, glfwJoystickIsGamepad(jid) == GLFW_TRUE ? "true" : "false");
+
+    int count;
+    auto axes = glfwGetJoystickAxes(jid, &count);
+    if(axes && count > 0)
+    {
+      std::string s{};
+      for(int i = 0; i < count; i++)
+      {
+        if(i > 0)
+          s += "|";
+        s += std::to_string(i) + ":" + std::to_string(axes[i]);
+      }
+      setHtmlValue(nullptr, "glfwGetJoystickAxes", "[%d] %s", jid, s.c_str());
+    }
+    else
+      setHtmlValue(nullptr, "glfwGetJoystickAxes", "[%d] -", jid);
+
+    auto buttons = glfwGetJoystickButtons(jid, &count);
+    if(buttons && count > 0)
+    {
+      std::string s{};
+      for(int i = 0; i < count; i++)
+      {
+        if(i > 0)
+          s += "|";
+        s += std::to_string(i) + ":" + (buttons[i] > 0 ? "1" : "0");
+      }
+      setHtmlValue(nullptr, "glfwGetJoystickButtons", "[%d] %s", jid, s.c_str());
+    }
+    else
+      setHtmlValue(nullptr, "glfwGetJoystickButtons", "[%d] -", jid);
+
+    auto hats = glfwGetJoystickHats(jid, &count);
+    if(hats && count > 0)
+    {
+      std::string s{};
+      for(int i = 0; i < count; i++)
+      {
+        if(i > 0)
+          s += "|";
+        if(hats[i] == GLFW_HAT_CENTERED)
+          s += "C";
+        else
+        {
+          if(hats[i] & GLFW_HAT_UP)
+            s += "U";
+          if(hats[i] & GLFW_HAT_DOWN)
+            s += "D";
+          if(hats[i] & GLFW_HAT_LEFT)
+            s += "L";
+          if(hats[i] & GLFW_HAT_RIGHT)
+            s += "R";
+        }
+      }
+      setHtmlValue(nullptr, "glfwGetJoystickHats", "[%d] %s", jid, s.c_str());
+    }
+    else
+      setHtmlValue(nullptr, "glfwGetJoystickHats", "[%d] -", jid);
+
+    GLFWgamepadstate state;
+    if(glfwGetGamepadState(jid, &state) == GLFW_TRUE)
+    {
+      setHtmlValue(nullptr, "glfwGetGamepadState-axes", "[%d] LX:%.2f,LY:%.2f,RX:%.2f,RY:%.2f,LT:%.2f,RT:%.2f ",
+                   jid,
+                   state.axes[GLFW_GAMEPAD_AXIS_LEFT_X],
+                   state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y],
+                   state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X],
+                   state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y],
+                   state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER],
+                   state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER]
+      );
+      setHtmlValue(nullptr, "glfwGetGamepadState-buttons", "[%d] A:%d,B:%d,X:%d,Y:%d,LB:%d,RB:%d,Back:%d,Start:%d,Guide:%d,LT:%d,RT:%d,U:%d,R:%d,D:%d,L:%d",
+                   jid,
+                   state.buttons[GLFW_GAMEPAD_BUTTON_A],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_B],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_X],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_Y],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_BACK],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_START],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_GUIDE],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_THUMB],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_THUMB],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN],
+                   state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]
+      );
+    }
+    else
+    {
+      setHtmlValue(nullptr, "glfwGetGamepadState-axes", "[%d] -", jid);
+      setHtmlValue(nullptr, "glfwGetGamepadState-buttons", "[%d] -", jid);
+    }
+  }
 }
 
 //------------------------------------------------------------------------

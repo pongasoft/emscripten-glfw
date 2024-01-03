@@ -40,6 +40,9 @@ public:
 
   void registerCallbacks();
 
+  static void registerNoWindowCallbacks();
+  static void updateNoWindowValues();
+
 private:
   Triangle(GLFWwindow *iWindow, char const *iName, GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO) :
     fWindow{iWindow},

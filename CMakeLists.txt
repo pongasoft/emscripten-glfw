@@ -12,6 +12,7 @@ set(glfw3_headers
     src/cpp/emscripten/glfw3/Cursor.h
     src/cpp/emscripten/glfw3/ErrorHandler.h
     src/cpp/emscripten/glfw3/Events.h
+    src/cpp/emscripten/glfw3/Joystick.h
     src/cpp/emscripten/glfw3/Keyboard.h
     src/cpp/emscripten/glfw3/KeyboardMapping.h
     src/cpp/emscripten/glfw3/Monitor.h
@@ -25,6 +26,7 @@ set(glfw3_sources
     src/cpp/glfw3.cpp
     src/cpp/emscripten/glfw3/Context.cpp
     src/cpp/emscripten/glfw3/ErrorHandler.cpp
+    src/cpp/emscripten/glfw3/Joystick.cpp
     src/cpp/emscripten/glfw3/Keyboard.cpp
     src/cpp/emscripten/glfw3/Window.cpp
 )

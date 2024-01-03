@@ -99,6 +99,8 @@ int main()
   if(window1 && window2)
     glfwFocusWindow(window1);
 
+  Triangle::registerNoWindowCallbacks();
+
   while(!kTriangles.empty() && !terminated())
   {
     for(auto it = kTriangles.begin(); it != kTriangles.end();)
@@ -119,7 +121,10 @@ int main()
     for(auto &v: kTriangles)
       v->updateValues();
 
+    Triangle::updateNoWindowValues();
+
     emscripten_sleep(33); // ~30 fps
+    glfwPollEvents();
   }
 
   kTriangles.clear();

@@ -37,6 +37,10 @@ using EmscriptenEventCallback = EM_BOOL (*)(int, E const *, void *);
 template<typename E>
 using EmscriptenListenerFunction = EMSCRIPTEN_RESULT (*)(const char *, void *, EM_BOOL, EmscriptenEventCallback<E>, pthread_t);
 
+//! EmscriptenListenerFunction2 (implicit target)
+template<typename E>
+using EmscriptenListenerFunction2 = EMSCRIPTEN_RESULT (*)(void *, EM_BOOL, EmscriptenEventCallback<E>, pthread_t);
+
 //------------------------------------------------------------------------
 // EventListenerCallback
 // - generic callback which extracts EventListener<E> from iUserData and invoke it
@@ -70,6 +74,27 @@ void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction,
     ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while registering listener for [%s]",
                                       error,
                                       iTarget);
+  }
+}
+
+//------------------------------------------------------------------------
+// addOrRemoveListener
+//------------------------------------------------------------------------
+template<typename E>
+void addOrRemoveListener2(EmscriptenListenerFunction2<E> iListenerFunction,
+                          bool iAdd,
+                          EventListener<E> *iEventListener,
+                          bool iUseCapture,
+                          pthread_t iThread = EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD)
+{
+  auto error = iListenerFunction(iAdd ? iEventListener : nullptr,
+                                 iUseCapture ? EM_TRUE : EM_FALSE,
+                                 iAdd ? EventListenerCallback<E> : nullptr,
+                                 iThread);
+
+  if(error != EMSCRIPTEN_RESULT_SUCCESS)
+  {
+    ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while registering listener", error);
   }
 }
 

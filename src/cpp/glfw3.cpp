@@ -26,19 +26,19 @@
 
 using namespace emscripten::glfw3;
 
+//! not_implemented
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
+//! logNotImplemented
 static void logNotImplemented(char const *iFunction)
 {
   ErrorHandler::instance().logWarning("%s is not implemented ont this platform\n", iFunction);
 }
 
+//! Unique context
 static std::unique_ptr<Context> kContext{};
-static inline Context *getContext() {
-  if(!kContext)
-    ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
-  return kContext.get();
-}
+
+//! checkContextInitialized
 static inline bool checkContextInitialized()
 {
   if(!kContext)
@@ -49,9 +49,20 @@ static inline bool checkContextInitialized()
   return true;
 }
 
-static GLFWwindow* fLastRequestedGLFWWindow{};
-static std::shared_ptr<Window> fLastRequestedWindow{};
+//! getContext
+static inline Context *getContext() {
+  if(!checkContextInitialized())
+    return nullptr;
+  else
+    return kContext.get();
+}
 
+//! kLastRequestedGLFWWindow
+static GLFWwindow* kLastRequestedGLFWWindow{};
+//! kLastRequestedWindow
+static std::shared_ptr<Window> kLastRequestedWindow{};
+
+//! getWindow
 static inline std::shared_ptr<Window> getWindow(GLFWwindow* iWindow)
 {
   if(!checkContextInitialized())
@@ -60,34 +71,40 @@ static inline std::shared_ptr<Window> getWindow(GLFWwindow* iWindow)
   }
   else
   {
-    if(fLastRequestedGLFWWindow == iWindow && !fLastRequestedWindow->isDestroyed())
-      return fLastRequestedWindow;
+    if(kLastRequestedGLFWWindow == iWindow && !kLastRequestedWindow->isDestroyed())
+      return kLastRequestedWindow;
 
     auto window = kContext->getWindow(iWindow);
     if(window)
     {
-      fLastRequestedGLFWWindow = iWindow;
-      fLastRequestedWindow = window;
+      kLastRequestedGLFWWindow = iWindow;
+      kLastRequestedWindow = window;
     }
     else
     {
-      fLastRequestedGLFWWindow = nullptr;
-      fLastRequestedWindow = nullptr;
+      kLastRequestedGLFWWindow = nullptr;
+      kLastRequestedWindow = nullptr;
     }
 
     return window;
   }
 }
+
+//! getMonitor
 static inline std::shared_ptr<Monitor> getMonitor(GLFWmonitor* iMonitor) {
-  if(!kContext)
-  {
-    ErrorHandler::instance().logError(GLFW_NOT_INITIALIZED, "GLFW has not been initialized");
+  if(!checkContextInitialized())
     return nullptr;
-  }
   else
-  {
     return kContext->getMonitor(iMonitor);
-  }
+}
+
+//! getJoystick
+static inline Joystick *getJoystick(glfw_joystick_id_t id)
+{
+  if(!checkContextInitialized())
+    return nullptr;
+  else
+    return Joystick::findJoystick(id);
 }
 
 #ifdef __cplusplus
@@ -112,8 +129,8 @@ GLFWAPI int glfwInit()
 GLFWAPI void glfwTerminate(void)
 {
   kContext = nullptr;
-  fLastRequestedGLFWWindow = nullptr;
-  fLastRequestedWindow = nullptr;
+  kLastRequestedGLFWWindow = nullptr;
+  kLastRequestedWindow = nullptr;
   printf("glfwTerminate()\n");
 }
 
@@ -170,10 +187,10 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, G
 //------------------------------------------------------------------------
 GLFWAPI void glfwDestroyWindow(GLFWwindow* window)
 {
-  if(fLastRequestedGLFWWindow == window)
+  if(kLastRequestedGLFWWindow == window)
   {
-    fLastRequestedGLFWWindow = nullptr;
-    fLastRequestedWindow = nullptr;
+    kLastRequestedGLFWWindow = nullptr;
+    kLastRequestedWindow = nullptr;
   }
   auto context = getContext();
   if(context)
@@ -672,6 +689,175 @@ GLFWAPI double glfwGetTime(void)
 }
 
 //------------------------------------------------------------------------
+// glfwPollEvents
+//------------------------------------------------------------------------
+GLFWAPI void glfwPollEvents()
+{
+  auto context = getContext();
+  if(context)
+    context->pollEvents();
+}
+
+//------------------------------------------------------------------------
+// glfwSetJoystickUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetJoystickUserPointer(int jid, void* pointer)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    joystick->setUserPointer(pointer);
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickUserPointer
+//------------------------------------------------------------------------
+GLFWAPI void* glfwGetJoystickUserPointer(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getUserPointer();
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwJoystickPresent
+//------------------------------------------------------------------------
+GLFWAPI int glfwJoystickPresent(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->isPresent();
+  else
+    return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickName
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetJoystickName(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getName();
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickGUID
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetJoystickGUID(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getMapping();
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwSetJoystickCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun callback)
+{
+  auto context = getContext();
+  if(context)
+    return context->setJoystickCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickAxes
+//------------------------------------------------------------------------
+GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getAxes(count);
+  else
+  {
+    *count = 0;
+    return nullptr;
+  }
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickButtons
+//------------------------------------------------------------------------
+GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getDigitalButtons(count);
+  else
+  {
+    *count = 0;
+    return nullptr;
+  }
+}
+
+//------------------------------------------------------------------------
+// glfwGetJoystickHats
+//------------------------------------------------------------------------
+GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getHats(count);
+  else
+  {
+    *count = 0;
+    return nullptr;
+  }
+}
+
+//------------------------------------------------------------------------
+// glfwJoystickIsGamepad
+//------------------------------------------------------------------------
+GLFWAPI int glfwJoystickIsGamepad(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->isGamepad();
+  else
+    return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
+// glfwUpdateGamepadMappings
+//------------------------------------------------------------------------
+GLFWAPI int glfwUpdateGamepadMappings(const char* string)
+{
+  logNotImplemented("glfwUpdateGamepadMappings");
+  return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
+// glfwGetGamepadName
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetGamepadName(int jid)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick && joystick->isGamepad())
+    return joystick->getName();
+  return nullptr;
+}
+
+//------------------------------------------------------------------------
+// glfwGetGamepadState
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state)
+{
+  auto joystick = getJoystick(jid);
+  if(joystick)
+    return joystick->getGamepadState(state);
+  else
+    return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
 // TODO Implement
 //------------------------------------------------------------------------
 
@@ -685,23 +871,6 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
   *ypos = 0;
 }
 
-//------------------------------------------------------------------------
-// glfwGetJoystickAxes
-//------------------------------------------------------------------------
-GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
-{
-  *count = 0;
-  return nullptr;
-}
-
-//------------------------------------------------------------------------
-// glfwGetJoystickButtons
-//------------------------------------------------------------------------
-GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
-{
-  *count = 0;
-  return nullptr;
-}
 
 //------------------------------------------------------------------------
 // no implementation for the emscripten platform
@@ -714,7 +883,6 @@ GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
   return nullptr;
 }
 GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor) { return nullptr; }
-GLFWAPI void glfwPollEvents(){ }
 GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmodsfun callback)
 {
   ErrorHandler::instance().logWarning("glfwSetCharModsCallback is deprecated.");
@@ -760,17 +928,6 @@ GLFWAPI void glfwWaitEventsTimeout(double timeout){ not_implemented(); }
 GLFWAPI void glfwPostEmptyEvent(void){ not_implemented(); }
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos){ not_implemented(); }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback){ not_implemented(); }
-GLFWAPI int glfwJoystickPresent(int jid){ not_implemented(); }
-GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count){ not_implemented(); }
-GLFWAPI const char* glfwGetJoystickName(int jid){ not_implemented(); }
-GLFWAPI const char* glfwGetJoystickGUID(int jid){ not_implemented(); }
-GLFWAPI void glfwSetJoystickUserPointer(int jid, void* pointer){ not_implemented(); }
-GLFWAPI void* glfwGetJoystickUserPointer(int jid){ not_implemented(); }
-GLFWAPI int glfwJoystickIsGamepad(int jid){ not_implemented(); }
-GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun callback){ not_implemented(); }
-GLFWAPI int glfwUpdateGamepadMappings(const char* string){ not_implemented(); }
-GLFWAPI const char* glfwGetGamepadName(int jid){ not_implemented(); }
-GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state){ not_implemented(); }
 GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string){ not_implemented(); }
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetTime(double time){ not_implemented(); }

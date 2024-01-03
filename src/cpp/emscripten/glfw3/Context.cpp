@@ -21,6 +21,7 @@
 #include <emscripten/html5.h>
 
 #include "ErrorHandler.h"
+#include "Joystick.h"
 
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
@@ -121,6 +122,24 @@ Context::Context()
     return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
   };
 
+  // fOnGamepadConnectionChange
+  fOnGamepadConnectionChange = [this](int iEventType, EmscriptenGamepadEvent const *iEvent) {
+    auto joystick = Joystick::findJoystick(iEvent->index);
+    if(joystick)
+    {
+      if(iEvent->connected)
+        joystick->connect(iEvent);
+      else
+        joystick->disconnect(iEvent);
+      fPresentJoystickCount = Joystick::computePresentJoystickCount();
+      if(fJoystickCallback)
+        fJoystickCallback(joystick->fId, joystick->isPresent() ? GLFW_CONNECTED : GLFW_DISCONNECTED);
+      printf("fPresentJoystickCount = %d\n", fPresentJoystickCount);
+      return true;
+    }
+    return false;
+  };
+
   addOrRemoveEventListeners(true);
 }
 
@@ -152,6 +171,13 @@ void Context::addOrRemoveEventListeners(bool iAdd)
   // pointerLock
   addOrRemoveListener<EmscriptenPointerlockChangeEvent>(emscripten_set_pointerlockchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockChange, false);
   addOrRemoveListener<void>(emscripten_set_pointerlockerror_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockError, false);
+
+  // gamepad
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+  addOrRemoveListener2<EmscriptenGamepadEvent>(emscripten_set_gamepadconnected_callback_on_thread, iAdd, &fOnGamepadConnectionChange, false);
+  addOrRemoveListener2<EmscriptenGamepadEvent>(emscripten_set_gamepaddisconnected_callback_on_thread, iAdd, &fOnGamepadConnectionChange, false);
+#endif
+
 }
 
 //------------------------------------------------------------------------
@@ -611,6 +637,15 @@ double Context::getTimeInSeconds() const
   return getAbsoluteTimeInSeconds() - fInitialTimeInSeconds;
 }
 
-
+//------------------------------------------------------------------------
+// Context::pollEvents
+//------------------------------------------------------------------------
+void Context::pollEvents()
+{
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+  if(fPresentJoystickCount > 0)
+    fPresentJoystickCount = Joystick::pollJoysticks();
+#endif
+}
 
 }

@@ -23,6 +23,7 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
+#include "Joystick.h"
 #include <vector>
 #include <string>
 #include <optional>
@@ -58,8 +59,14 @@ public:
   // cursor
   GLFWcursor *createStandardCursor(int iShape);
 
+  // joystick
+  GLFWjoystickfun setJoystickCallback(GLFWjoystickfun iCallback) { return std::exchange(fJoystickCallback, iCallback); }
+
   // time
   double getTimeInSeconds() const;
+
+  // events
+  void pollEvents();
 
 public:
   void onScaleChange();
@@ -89,11 +96,14 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
+  int fPresentJoystickCount{};
+
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};
   std::optional<Window::PointerUnlockRequest> fPointerUnlockRequest{};
 
   GLFWmonitorfun fMonitorCallback{};
+  GLFWjoystickfun fJoystickCallback{};
 
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
@@ -101,6 +111,7 @@ private:
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
+  EventListener<EmscriptenGamepadEvent> fOnGamepadConnectionChange{};
 };
 
 }
