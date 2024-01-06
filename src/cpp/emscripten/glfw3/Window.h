@@ -141,7 +141,8 @@ public:
   void setVisibility(bool iVisible);
 
   // window attributes
-  int getAttrib(int attrib);
+  int getAttrib(int iAttrib);
+  void setAttrib(int iAttrib, int iValue);
 
   // OpenGL
   bool createGLContext();
@@ -161,6 +162,7 @@ protected:
   inline bool onKeyDown(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iKeyboardEvent); }
   inline bool onKeyUp(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iKeyboardEvent); }
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
+  bool maybeRescale(std::function<void()> const &iAction);
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};

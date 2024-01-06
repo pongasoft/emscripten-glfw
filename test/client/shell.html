@@ -111,6 +111,7 @@
     <tr class="glfwGetWindowContentScale"><td>glfwGetWindowContentScale</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetWindowOpacity"><td>glfwGetWindowOpacity</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetWindowAttrib-visible"><td>glfwGetWindowAttrib(GLFW_VISIBLE)</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetWindowAttrib-scale_to_monitor"><td>glfwGetWindowAttrib(GLFW_SCALE_TO_MONITOR)</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwJoystickPresent"><td>glfwJoystickPresent</td><td class="no-canvas" colspan="2">-</td></tr>
     </tbody>
     <tbody id="joystick">
@@ -133,17 +134,7 @@
     </thead>
     <tbody>
     <tr>
-      <td class="action">Enable/Disable</td>
-      <td><input id="canvas1-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(1);"></td>
-      <td><input id="canvas2-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(2);"></td>
-    </tr>
-    <tr class="glfwShowWindow">
-      <td class="action">Visibility</td>
-      <td><input class="canvas1" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas1')"></td>
-      <td><input class="canvas2" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas2')"></td>
-    </tr>
-    <tr>
-      <td class="action">Size (Zoom)</td>
+      <td class="action">glfwSetWindowSize</td>
       <td>
         <input type="button" value="+" onclick="Module.pushEvent('zoom_in', '#canvas1')">
         <input type="button" value="-" onclick="Module.pushEvent('zoom_out', '#canvas1')">
@@ -156,7 +147,7 @@
       </td>
     </tr>
     <tr>
-      <td class="action">Opacity</td>
+      <td class="action">glfwSetWindowOpacity</td>
       <td>
         <input type="button" value="30%" onclick="Module.pushEvent('opacity_30', '#canvas1')">
         <input type="button" value="60%" onclick="Module.pushEvent('opacity_60', '#canvas1')">
@@ -168,22 +159,37 @@
         <input type="button" value="100%" onclick="Module.pushEvent('opacity_100', '#canvas2')">
       </td>
     </tr>
+    <tr class="glfwShowWindow">
+      <td class="action">glfwShowWindow / glfwHideWindow</td>
+      <td><input class="canvas1" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas1')"></td>
+      <td><input class="canvas2" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas2')"></td>
+    </tr>
     <tr>
-      <td class="action">Close</td>
+      <td class="action">glfwSetWindowShouldClose</td>
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas1')"></td>
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas2')"></td>
+    </tr>
+    <tr class="glfwSetWindowAttrib-scale_to_monitor">
+      <td class="action">Hi DPI Aware</td>
+      <td><input class="canvas1" type="button" value="Enable" onclick="Module.pushEvent('toggle_hi_dpi_aware', '#canvas1')"></td>
+      <td><input class="canvas2" type="button" value="Disable" onclick="Module.pushEvent('toggle_hi_dpi_aware', '#canvas2')"></td>
+    </tr>
+    <tr>
+      <td class="action">Enable/Disable</td>
+      <td><input id="canvas1-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(1);"></td>
+      <td><input id="canvas2-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(2);"></td>
     </tr>
     <tr>
       <td class="action">Fullscreen</td>
       <td>
         <input type="button" value="Fullscreen"
-               onclick="Module.requestFullscreen(document.getElementById('pointerLock-canvas1').checked, document.getElementById('resizeCanvas-canvas1').checked, '#canvas1');">
+               onclick="Module.glfwRequestFullscreen('#canvas1', document.getElementById('pointerLock-canvas1').checked, document.getElementById('resizeCanvas-canvas1').checked);">
         <label for="resizeCanvas-canvas1">R</label><input type="checkbox" id="resizeCanvas-canvas1" checked>&nbsp;
         <label for="pointerLock-canvas1">L</label><input type="checkbox" id="pointerLock-canvas1">
       </td>
       <td>
         <input type="button" value="Fullscreen"
-               onclick="Module.requestFullscreen(document.getElementById('pointerLock-canvas2').checked, document.getElementById('resizeCanvas-canvas2').checked, '#canvas2');">
+               onclick="Module.glfwRequestFullscreen('#canvas2', document.getElementById('pointerLock-canvas2').checked, document.getElementById('resizeCanvas-canvas2').checked);">
         <label for="resizeCanvas-canvas2">R</label><input type="checkbox" id="resizeCanvas-canvas2" checked>&nbsp;
         <label for="pointerLock-canvas2">L</label><input type="checkbox" id="pointerLock-canvas2">
       </td>
@@ -214,6 +220,7 @@
     <tr><td class="action">Hide/Show Cursor</td><td>"C"</td></tr>
     <tr><td class="action">Lock/Unlock Cursor</td><td>"L" (ESC will unlock as well)</td></tr>
     <tr><td class="action">Cycle Cursor</td><td>"[" &amp; "]"</td></tr>
+    <tr><td class="action">Toggle Hi DPI Aware</td><td>"4"</td></tr>
     </tbody>
   </table>
 </div>
@@ -240,7 +247,7 @@
     })(),
     canvas1Enabled: isCanvasEnabled("canvas1"),
     canvas2Enabled: isCanvasEnabled("canvas2"),
-    eventTypes: {exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5, opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9},
+    eventTypes: {exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5, opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10},
     events: [],
     hasEvents: () => { return Module.events.length > 0; },
     pushEvent: (name, canvasSelector) => {

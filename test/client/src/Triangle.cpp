@@ -576,6 +576,10 @@ void Triangle::updateValues()
   bool visible = glfwGetWindowAttrib(fWindow, GLFW_VISIBLE) == GLFW_TRUE;
   setHtmlValue(fWindow, "glfwGetWindowAttrib-visible", "%s", visible ? "visible" : "hidden");
   setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
+
+  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "true" : "false");
+  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "Disable" : "Enable");
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
@@ -624,6 +628,10 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
         if(fCursor < 0)
           fCursor = kCursors.size() - 1;
         glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
+        break;
+
+      case GLFW_KEY_4: // toggle hi dpi aware
+        toggleHiDPIAware();
         break;
 
       default:
@@ -686,4 +694,13 @@ void Triangle::setOpacity(float iOpacity)
 void Triangle::close()
 {
   glfwSetWindowShouldClose(fWindow, GLFW_TRUE);
+}
+
+//------------------------------------------------------------------------
+// Triangle::toggleHiDPIAware
+//------------------------------------------------------------------------
+void Triangle::toggleHiDPIAware()
+{
+  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
+  glfwSetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR, hiDPIAware == GLFW_FALSE ? GLFW_TRUE : GLFW_FALSE);
 }

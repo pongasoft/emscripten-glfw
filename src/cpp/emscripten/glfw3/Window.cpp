@@ -112,16 +112,26 @@ void Window::focus()
 }
 
 //------------------------------------------------------------------------
+// Window::maybeRescale
+//------------------------------------------------------------------------
+bool Window::maybeRescale(std::function<void()> const &iAction)
+{
+  auto oldScale = getScale();
+  iAction();
+  auto scaleChanged = oldScale != getScale();
+  if(scaleChanged)
+    setSize(fWidth, fHeight);
+  return scaleChanged;
+}
+
+//------------------------------------------------------------------------
 // Window::setMonitorScale
 //------------------------------------------------------------------------
 void Window::setMonitorScale(float iScale)
 {
   if(fMonitorScale != iScale)
   {
-    auto oldScale = getScale();
-    fMonitorScale = iScale;
-    auto newScale = getScale();
-    if(oldScale != newScale && fContentScaleCallback)
+    if(maybeRescale([this, scale=iScale]() { fMonitorScale = scale; }) && fContentScaleCallback)
       fContentScaleCallback(asOpaquePtr(), fMonitorScale, fMonitorScale);
   }
 }
@@ -198,20 +208,54 @@ void Window::setVisibility(bool iVisible)
 {
   fVisible = iVisible;
   emscripten_glfw3_context_window_set_visibility(asOpaquePtr(), fVisible);
+  if(fVisible && fConfig.fFocusOnShow)
+    focus();
 }
 
 //------------------------------------------------------------------------
 // Window::getAttrib
 //------------------------------------------------------------------------
-int Window::getAttrib(int attrib)
+int Window::getAttrib(int iAttrib)
 {
-  switch(attrib)
+  switch(iAttrib)
   {
     case GLFW_VISIBLE:
       return toGlfwBool(fVisible);
 
+    case GLFW_FOCUS_ON_SHOW:
+      return fConfig.fFocusOnShow;
+
+    case GLFW_SCALE_TO_MONITOR:
+      return fConfig.fScaleToMonitor;
+
     default:
+      kErrorHandler.logWarning("glfwGetWindowAttrib: attrib [%d] not supported", iAttrib);
       return 0;
+  }
+}
+
+//------------------------------------------------------------------------
+// Window::setAttrib
+//------------------------------------------------------------------------
+void Window::setAttrib(int iAttrib, int iValue)
+{
+  switch(iAttrib)
+  {
+    case GLFW_VISIBLE:
+      setVisibility(toCBool(iValue));
+      break;
+
+    case GLFW_FOCUS_ON_SHOW:
+      fConfig.fFocusOnShow = iValue;
+      break;
+
+    case GLFW_SCALE_TO_MONITOR:
+      maybeRescale([this, iValue]() { fConfig.fScaleToMonitor = iValue; });
+      break;
+
+    default:
+      kErrorHandler.logWarning("glfwSetWindowAttrib: attrib [%d] not supported", iAttrib);
+      break;
   }
 }
 

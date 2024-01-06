@@ -488,7 +488,11 @@ void Context::windowHint(int iHint, int iValue)
       fConfig.fScaleToMonitor = iValue;
       break;
 
-    // Framebuffer
+    case GLFW_FOCUS_ON_SHOW:
+      fConfig.fFocusOnShow = iValue;
+      break;
+
+      // Framebuffer
     case GLFW_ALPHA_BITS:
       fConfig.fAlphaBits = iValue;
       break;

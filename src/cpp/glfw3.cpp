@@ -623,6 +623,16 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib)
 }
 
 //------------------------------------------------------------------------
+// glfwSetWindowAttrib
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowAttrib(GLFWwindow* window, int attrib, int value)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setAttrib(attrib, value);
+}
+
+//------------------------------------------------------------------------
 // glfwRawMouseMotionSupported
 //------------------------------------------------------------------------
 GLFWAPI int glfwRawMouseMotionSupported()
@@ -946,7 +956,6 @@ GLFWAPI void glfwMaximizeWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRequestWindowAttention(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate){ not_implemented(); }
-GLFWAPI void glfwSetWindowAttrib(GLFWwindow* window, int attrib, int value){ not_implemented(); }
 GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwindowclosefun callback){ not_implemented(); }
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback){ not_implemented(); }

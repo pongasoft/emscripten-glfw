@@ -44,7 +44,8 @@ struct Event
     opacity30,
     opacity60,
     opacity100,
-    close
+    close,
+    toggleHiDPIAware,
   };
 
   Type fType;
@@ -97,6 +98,7 @@ bool handleEvents()
       case Event::Type::opacity60: if(triangle) triangle->setOpacity(0.6f); break;
       case Event::Type::opacity100: if(triangle) triangle->setOpacity(1.0f); break;
       case Event::Type::close: if(triangle) triangle->close(); break;
+      case Event::Type::toggleHiDPIAware: if(triangle) triangle->toggleHiDPIAware(); break;
       default: break;
     }
   }

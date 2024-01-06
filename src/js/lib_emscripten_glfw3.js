@@ -4,8 +4,9 @@ let impl = {
   $GLFW3__deps: ['$GL'],
   $GLFW3__postset: `
     // exports
-    Module["requestFullscreen"] = GLFW3.requestFullscreen;
+    Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
     Module["glfwGetWindow"] = (canvasSelector) => { const ctx = GLFW3.findContextBySelector(canvasSelector); return ctx ? ctx.id : null; };
+    Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
     fCanvasContexts: null,
@@ -35,7 +36,7 @@ let impl = {
       return GLFW3.findContext(findEventTarget(canvasSelector));
     },
 
-    requestFullscreen(lockPointer, resizeCanvas, target) {
+    requestFullscreen(target, lockPointer, resizeCanvas) {
       if(GLFW3.fRequestFullscreen) {
         const ctx = target ? GLFW3.findContext(findEventTarget(target)) : null;
         {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.id : 0, lockPointer, resizeCanvas);

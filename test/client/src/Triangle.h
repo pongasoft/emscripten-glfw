@@ -39,6 +39,7 @@ public:
   void zoomReset();
   void setOpacity(float iOpacity);
   void close();
+  void toggleHiDPIAware();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;
