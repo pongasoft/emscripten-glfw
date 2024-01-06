@@ -11,6 +11,10 @@
       margin: 0px;
     }
 
+    .hidden {
+      display: none;
+    }
+
     canvas.emscripten {
       margin: 20px;
       border: 0px none;
@@ -30,6 +34,11 @@
 
     #actions .table-bordered {
       float: left;
+    }
+
+    #actions input {
+      font-family: monospace;
+      font-size: smaller;
     }
 
     .table-bordered {
@@ -100,7 +109,11 @@
     <tr class="glfwGetWindowSize"><td>glfwGetWindowSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetFramebufferSize"><td>glfwGetFramebufferSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetWindowContentScale"><td>glfwGetWindowContentScale</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetWindowOpacity"><td>glfwGetWindowOpacity</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetWindowAttrib-visible"><td>glfwGetWindowAttrib(GLFW_VISIBLE)</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwJoystickPresent"><td>glfwJoystickPresent</td><td class="no-canvas" colspan="2">-</td></tr>
+    </tbody>
+    <tbody id="joystick">
     <tr class="glfwGetJoystickName"><td>glfwGetJoystickName</td><td class="no-canvas" colspan="2">-</td></tr>
     <tr class="glfwGetJoystickGUID"><td>glfwGetJoystickGUID</td><td class="no-canvas" colspan="2">-</td></tr>
     <tr class="glfwJoystickIsGamepad"><td>glfwJoystickIsGamepad</td><td class="no-canvas" colspan="2">-</td></tr>
@@ -123,6 +136,42 @@
       <td class="action">Enable/Disable</td>
       <td><input id="canvas1-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(1);"></td>
       <td><input id="canvas2-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(2);"></td>
+    </tr>
+    <tr class="glfwShowWindow">
+      <td class="action">Visibility</td>
+      <td><input class="canvas1" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas1')"></td>
+      <td><input class="canvas2" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas2')"></td>
+    </tr>
+    <tr>
+      <td class="action">Size (Zoom)</td>
+      <td>
+        <input type="button" value="+" onclick="Module.pushEvent('zoom_in', '#canvas1')">
+        <input type="button" value="-" onclick="Module.pushEvent('zoom_out', '#canvas1')">
+        <input type="button" value="Reset" onclick="Module.pushEvent('zoom_reset', '#canvas1')">
+      </td>
+      <td>
+        <input type="button" value="+" onclick="Module.pushEvent('zoom_in', '#canvas2')">
+        <input type="button" value="-" onclick="Module.pushEvent('zoom_out', '#canvas2')">
+        <input type="button" value="Reset" onclick="Module.pushEvent('zoom_reset', '#canvas2')">
+      </td>
+    </tr>
+    <tr>
+      <td class="action">Opacity</td>
+      <td>
+        <input type="button" value="30%" onclick="Module.pushEvent('opacity_30', '#canvas1')">
+        <input type="button" value="60%" onclick="Module.pushEvent('opacity_60', '#canvas1')">
+        <input type="button" value="100%" onclick="Module.pushEvent('opacity_100', '#canvas1')">
+      </td>
+      <td>
+        <input type="button" value="30%" onclick="Module.pushEvent('opacity_30', '#canvas2')">
+        <input type="button" value="60%" onclick="Module.pushEvent('opacity_60', '#canvas2')">
+        <input type="button" value="100%" onclick="Module.pushEvent('opacity_100', '#canvas2')">
+      </td>
+    </tr>
+    <tr>
+      <td class="action">Close</td>
+      <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas1')"></td>
+      <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas2')"></td>
     </tr>
     <tr>
       <td class="action">Fullscreen</td>
@@ -153,7 +202,7 @@
     </tr>
     <tr>
       <td class="action">Exit main loop</td>
-      <td colspan="2"><input type="button" value="Exit" onclick="Module.terminated = true;"></td>
+      <td colspan="2"><input type="button" value="Exit" onclick="Module.pushEvent('exit');"></td>
     </tr>
     </tbody>
   </table>
@@ -162,12 +211,9 @@
     <tr><th>Action</th><th>Use CTRL + &lt;key&gt;</th></tr>
     </thead>
     <tbody>
-    <tr><td class="action">Hide/Show Cursor</td><td>"H"</td></tr>
+    <tr><td class="action">Hide/Show Cursor</td><td>"C"</td></tr>
     <tr><td class="action">Lock/Unlock Cursor</td><td>"L" (ESC will unlock as well)</td></tr>
     <tr><td class="action">Cycle Cursor</td><td>"[" &amp; "]"</td></tr>
-    <tr><td class="action">Zoom</td><td>"=" (out) &amp; "-" (in)</td></tr>
-    <tr><td class="action">Toggle Half Opacity</td><td>"O"</td></tr>
-    <tr><td class="action">Destroy</td><td>"Q"</td></tr>
     </tbody>
   </table>
 </div>
@@ -194,7 +240,29 @@
     })(),
     canvas1Enabled: isCanvasEnabled("canvas1"),
     canvas2Enabled: isCanvasEnabled("canvas2"),
-    terminated: false,
+    eventTypes: {exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5, opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9},
+    events: [],
+    hasEvents: () => { return Module.events.length > 0; },
+    pushEvent: (name, canvasSelector) => {
+      Module.events.push({type: Module.eventTypes[name], canvas: Module.glfwGetWindow(canvasSelector)});
+    },
+    popEvent: () => { return Module.events.shift(); },
+    showHTMLElement: (selector) => {
+      const element = document.querySelector(selector);
+      if(element)
+      {
+        if(element.classList.contains('hidden'))
+          element.classList.remove('hidden');
+      }
+    },
+    hideHTMLElement: (selector) => {
+      const element = document.querySelector(selector);
+      if(element)
+      {
+        if(!element.classList.contains('hidden'))
+          element.classList.add('hidden');
+      }
+    },
   };
 
   var debug = (key, message) => {

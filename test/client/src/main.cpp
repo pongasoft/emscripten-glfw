@@ -31,8 +31,80 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 
 std::vector<std::shared_ptr<Triangle>> kTriangles{};
 
-bool terminated() { return static_cast<bool>(EM_ASM_INT( return Module.terminated; )); }
 
+struct Event
+{
+  enum class Type : int
+  {
+    exit = 1,
+    toggleShow,
+    zoomIn,
+    zoomOut,
+    zoomReset,
+    opacity30,
+    opacity60,
+    opacity100,
+    close
+  };
+
+  Type fType;
+  GLFWwindow *fWindow{};
+};
+
+//------------------------------------------------------------------------
+// popEvent
+//------------------------------------------------------------------------
+std::optional<Event> popEvent()
+{
+  int type{};
+  GLFWwindow *w;
+  EM_ASM({
+           if(Module.hasEvents()) {
+             const event = Module.popEvent();
+             setValue($0, event.type, 'i32');
+             setValue($1, event.canvas, '*');
+           }
+         }, &type, &w);
+  if(type > 0)
+    return Event{static_cast<Event::Type>(type), w};
+  else
+    return std::nullopt;
+}
+
+//------------------------------------------------------------------------
+// handleEvents
+//------------------------------------------------------------------------
+bool handleEvents()
+{
+  while(true)
+  {
+    auto event = popEvent();
+    if(!event)
+      return true;
+
+    auto triangle = event->fWindow ?
+                    *std::find_if(kTriangles.begin(), kTriangles.end(), [w = event->fWindow](auto const &triangle) { return triangle->getWindow() == w; }):
+                    nullptr;
+
+    switch(event->fType)
+    {
+      case Event::Type::exit: return false;
+      case Event::Type::toggleShow: if(triangle) triangle->toggleShow(); break;
+      case Event::Type::zoomIn: if(triangle) triangle->zoomIn(); break;
+      case Event::Type::zoomOut: if(triangle) triangle->zoomOut(); break;
+      case Event::Type::zoomReset: if(triangle) triangle->zoomReset(); break;
+      case Event::Type::opacity30: if(triangle) triangle->setOpacity(0.3f); break;
+      case Event::Type::opacity60: if(triangle) triangle->setOpacity(0.6f); break;
+      case Event::Type::opacity100: if(triangle) triangle->setOpacity(1.0f); break;
+      case Event::Type::close: if(triangle) triangle->close(); break;
+      default: break;
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// main
+//------------------------------------------------------------------------
 int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
@@ -101,8 +173,11 @@ int main()
 
   Triangle::registerNoWindowCallbacks();
 
-  while(!kTriangles.empty() && !terminated())
+  while(!kTriangles.empty())
   {
+    if(!handleEvents())
+      break;
+
     for(auto it = kTriangles.begin(); it != kTriangles.end();)
     {
       if((*it)->shouldClose())

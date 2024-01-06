@@ -30,8 +30,15 @@ public:
   static std::unique_ptr<Triangle> init(GLFWwindow *iWindow, char const *iName);
   ~Triangle();
 
+  inline GLFWwindow *getWindow() const { return fWindow; }
   bool render();
   void updateValues();
+  void toggleShow();
+  void zoomIn();
+  void zoomOut();
+  void zoomReset();
+  void setOpacity(float iOpacity);
+  void close();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;

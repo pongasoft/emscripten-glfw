@@ -591,6 +591,38 @@ GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity)
 }
 
 //------------------------------------------------------------------------
+// glfwShowWindow
+//------------------------------------------------------------------------
+GLFWAPI void glfwShowWindow(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setVisibility(true);
+}
+
+//------------------------------------------------------------------------
+// glfwHideWindow
+//------------------------------------------------------------------------
+GLFWAPI void glfwHideWindow(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setVisibility(false);
+}
+
+//------------------------------------------------------------------------
+// glfwGetWindowAttrib
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getAttrib(attrib);
+  else
+    return 0;
+}
+
+//------------------------------------------------------------------------
 // glfwRawMouseMotionSupported
 //------------------------------------------------------------------------
 GLFWAPI int glfwRawMouseMotionSupported()
@@ -875,8 +907,6 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 //------------------------------------------------------------------------
 // no implementation for the emscripten platform
 //------------------------------------------------------------------------
-GLFWAPI void glfwShowWindow(GLFWwindow* window) { }
-GLFWAPI void glfwHideWindow(GLFWwindow* window) { }
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
 {
   *count = 0;
@@ -916,7 +946,6 @@ GLFWAPI void glfwMaximizeWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRequestWindowAttention(GLFWwindow* window){ not_implemented(); }
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate){ not_implemented(); }
-GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib){ not_implemented(); }
 GLFWAPI void glfwSetWindowAttrib(GLFWwindow* window, int attrib, int value){ not_implemented(); }
 GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback){ not_implemented(); }
 GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwindowclosefun callback){ not_implemented(); }

@@ -136,6 +136,13 @@ public:
   float getOpacity() const { return fOpacity; }
   void setOpacity(float iOpacity);
 
+  // visibility
+  inline bool isVisible() const { return fVisible; }
+  void setVisibility(bool iVisible);
+
+  // window attributes
+  int getAttrib(int attrib);
+
   // OpenGL
   bool createGLContext();
   void makeGLContextCurrent();
@@ -147,6 +154,7 @@ public:
   friend class Context;
 
 protected:
+  void init();
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
@@ -173,6 +181,7 @@ private:
   float fMonitorScale;
   bool fDestroyed{};
   bool fFocused{};
+  bool fVisible{true};
   bool fFullscreen{};
   bool fFocusOnMouse{true};
   int fWidth{};

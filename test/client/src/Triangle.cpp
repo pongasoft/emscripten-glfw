@@ -243,14 +243,34 @@ void setHtmlValue(std::string_view iElementSelector, std::string_view iValue)
 {
   EM_ASM({
            const element = document.querySelector(UTF8ToString($0));
-           if(element)
-           {
+           if(element) {
              const value = UTF8ToString($1);
-             if(element.innerHTML !== value)
-               element.innerHTML = value;
+             if(element instanceof HTMLInputElement) {
+               if(element.value !== value)
+                 element.value = value;
+             } else {
+               if(element.innerHTML !== value)
+                 element.innerHTML = value;
+             }
            }
 
          }, iElementSelector.data(), iValue.data());
+}
+
+//------------------------------------------------------------------------
+// hideHTMLElement
+//------------------------------------------------------------------------
+void hideHTMLElement(std::string_view iElementSelector)
+{
+  EM_ASM({ Module.hideHTMLElement(UTF8ToString($0)); }, iElementSelector.data());
+}
+
+//------------------------------------------------------------------------
+// showHTMLElement
+//------------------------------------------------------------------------
+void showHTMLElement(std::string_view iElementSelector)
+{
+  EM_ASM({ Module.showHTMLElement(UTF8ToString($0)); }, iElementSelector.data());
 }
 
 //------------------------------------------------------------------------
@@ -408,10 +428,11 @@ void Triangle::updateNoWindowValues()
     }
   }
 
-  setHtmlValue(nullptr, "glfwJoystickPresent", "%d present", jids.size());
+  setHtmlValue(nullptr, "glfwJoystickPresent", "%zu present", jids.size());
 
   if(!jids.empty())
   {
+    showHTMLElement("#joystick");
     auto jid = jids[0];
     setHtmlValue(nullptr, "glfwGetJoystickName", "[%d] %s", jid, toNonNullString(glfwGetJoystickName(jid)));
     setHtmlValue(nullptr, "glfwGetJoystickGUID", "[%d] %s", jid, toNonNullString(glfwGetJoystickGUID(jid)));
@@ -487,7 +508,8 @@ void Triangle::updateNoWindowValues()
                    state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER],
                    state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER]
       );
-      setHtmlValue(nullptr, "glfwGetGamepadState-buttons", "[%d] A:%d,B:%d,X:%d,Y:%d,LB:%d,RB:%d,Back:%d,Start:%d,Guide:%d,LT:%d,RT:%d,U:%d,R:%d,D:%d,L:%d",
+      setHtmlValue(nullptr, "glfwGetGamepadState-buttons",
+                   "[%d] A:%d,B:%d,X:%d,Y:%d,LB:%d,RB:%d,Back:%d,Start:%d,Guide:%d,LT:%d,RT:%d,U:%d,R:%d,D:%d,L:%d",
                    jid,
                    state.buttons[GLFW_GAMEPAD_BUTTON_A],
                    state.buttons[GLFW_GAMEPAD_BUTTON_B],
@@ -506,11 +528,12 @@ void Triangle::updateNoWindowValues()
                    state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]
       );
     }
-    else
-    {
-      setHtmlValue(nullptr, "glfwGetGamepadState-axes", "[%d] -", jid);
-      setHtmlValue(nullptr, "glfwGetGamepadState-buttons", "[%d] -", jid);
-    }
+  }
+  else
+  {
+    hideHTMLElement("#joystick");
+    setHtmlValue(nullptr, "glfwGetGamepadState-axes", "%s", "-");
+    setHtmlValue(nullptr, "glfwGetGamepadState-buttons", "%s", "-");
   }
 }
 
@@ -547,14 +570,21 @@ void Triangle::updateValues()
 
   glfwGetWindowContentScale(fWindow, &xf, &yf);
   setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);
+
+  setHtmlValue(fWindow, "glfwGetWindowOpacity", "%.2f", glfwGetWindowOpacity(fWindow));
+
+  bool visible = glfwGetWindowAttrib(fWindow, GLFW_VISIBLE) == GLFW_TRUE;
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-visible", "%s", visible ? "visible" : "hidden");
+  setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
 }
+
+static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
 
 //------------------------------------------------------------------------
 // Triangle::onKeyChange
 //------------------------------------------------------------------------
 void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
 {
-  static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
   static std::array<int, 6> kCursors =
     {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR, GLFW_VRESIZE_CURSOR};
 
@@ -563,7 +593,7 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
   {
     switch(iKey)
     {
-      case GLFW_KEY_H: // toggle between input mode GLFW_CURSOR_HIDDEN / GLFW_CURSOR_NORMAL
+      case GLFW_KEY_C: // toggle between input mode GLFW_CURSOR_HIDDEN / GLFW_CURSOR_NORMAL
       {
         auto mode = glfwGetInputMode(fWindow, GLFW_CURSOR);
         if(mode == GLFW_CURSOR_NORMAL)
@@ -581,20 +611,6 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
           glfwSetInputMode(fWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         break;
       }
-      case GLFW_KEY_MINUS: // zoom out (-10%)
-      {
-        int w,h;
-        glfwGetWindowSize(fWindow, &w, &h);
-        glfwSetWindowSize(fWindow, adjust(w, 0.9), adjust(h, 0.9));
-        break;
-      }
-      case GLFW_KEY_EQUAL: // zoom in (+10%)
-      {
-        int w,h;
-        glfwGetWindowSize(fWindow, &w, &h);
-        glfwSetWindowSize(fWindow, adjust(w, 1.1), adjust(h, 1.1));
-        break;
-      }
 
       case GLFW_KEY_RIGHT_BRACKET: // cycle through cursor
         fCursor++;
@@ -610,17 +626,6 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
         glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
         break;
 
-      case GLFW_KEY_O: // switch opacity
-      {
-        auto opacity = glfwGetWindowOpacity(fWindow) != 1.0f ? 1.0f : 0.5f;
-        glfwSetWindowOpacity(fWindow, opacity);
-        break;
-      }
-
-      case GLFW_KEY_Q: // close window
-        glfwSetWindowShouldClose(fWindow, GLFW_TRUE);
-        break;
-
       default:
         // ignore
         break;
@@ -628,3 +633,57 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
   }
 }
 
+//------------------------------------------------------------------------
+// Triangle::toggleShow
+//------------------------------------------------------------------------
+void Triangle::toggleShow()
+{
+  if(glfwGetWindowAttrib(fWindow, GLFW_VISIBLE) == GLFW_TRUE)
+    glfwHideWindow(fWindow);
+  else
+    glfwShowWindow(fWindow);
+}
+
+//------------------------------------------------------------------------
+// Triangle::zoomIn
+//------------------------------------------------------------------------
+void Triangle::zoomIn()
+{
+  int w,h;
+  glfwGetWindowSize(fWindow, &w, &h);
+  glfwSetWindowSize(fWindow, adjust(w, 1.1), adjust(h, 1.1));
+}
+
+//------------------------------------------------------------------------
+// Triangle::zoomOut
+//------------------------------------------------------------------------
+void Triangle::zoomOut()
+{
+  int w,h;
+  glfwGetWindowSize(fWindow, &w, &h);
+  glfwSetWindowSize(fWindow, adjust(w, 0.9), adjust(h, 0.9));
+}
+
+//------------------------------------------------------------------------
+// Triangle::zoomReset
+//------------------------------------------------------------------------
+void Triangle::zoomReset()
+{
+  glfwSetWindowSize(fWindow, 300, 200);
+}
+
+//------------------------------------------------------------------------
+// Triangle::setOpacity
+//------------------------------------------------------------------------
+void Triangle::setOpacity(float iOpacity)
+{
+  glfwSetWindowOpacity(fWindow, iOpacity);
+}
+
+//------------------------------------------------------------------------
+// Triangle::close
+//------------------------------------------------------------------------
+void Triangle::close()
+{
+  glfwSetWindowShouldClose(fWindow, GLFW_TRUE);
+}

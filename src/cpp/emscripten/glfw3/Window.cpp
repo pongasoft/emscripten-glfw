@@ -29,7 +29,10 @@ void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
+float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
+bool emscripten_glfw3_context_window_get_computed_visibility(GLFWwindow *iWindow);
+void emscripten_glfw3_context_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -67,6 +70,15 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
 {
   printf("Window(%p)\n", asOpaquePtr());
   createEventListeners();
+}
+
+//------------------------------------------------------------------------
+// Window::init
+//------------------------------------------------------------------------
+void Window::init()
+{
+  fOpacity = emscripten_glfw3_context_window_get_computed_opacity(asOpaquePtr());
+  fVisible = emscripten_glfw3_context_window_get_computed_visibility(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
@@ -175,7 +187,32 @@ void Window::setCursorPos(Vec2<double> const &iPos)
 void Window::setOpacity(float iOpacity)
 {
   fOpacity = std::clamp(iOpacity, 0.0f, 1.0f);
-  emscripten_glfw3_context_window_set_opacity(asOpaquePtr(), iOpacity);
+  emscripten_glfw3_context_window_set_opacity(asOpaquePtr(), fOpacity);
+}
+
+
+//------------------------------------------------------------------------
+// Window::setVisibility
+//------------------------------------------------------------------------
+void Window::setVisibility(bool iVisible)
+{
+  fVisible = iVisible;
+  emscripten_glfw3_context_window_set_visibility(asOpaquePtr(), fVisible);
+}
+
+//------------------------------------------------------------------------
+// Window::getAttrib
+//------------------------------------------------------------------------
+int Window::getAttrib(int attrib)
+{
+  switch(attrib)
+  {
+    case GLFW_VISIBLE:
+      return toGlfwBool(fVisible);
+
+    default:
+      return 0;
+  }
 }
 
 //------------------------------------------------------------------------
@@ -560,6 +597,7 @@ bool Window::onExitFullscreen()
 
   return true;
 }
+
 
 
 }

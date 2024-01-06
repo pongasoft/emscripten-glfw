@@ -412,7 +412,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
       kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector);
     return nullptr;
   }
-
+  window->init();
   window->setSize(iWidth, iHeight);
 
   if(!window->createGLContext())

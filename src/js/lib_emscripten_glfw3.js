@@ -4,7 +4,9 @@ let impl = {
   $GLFW3__deps: ['$GL'],
   $GLFW3__postset: `
     // exports
-    Module["requestFullscreen"] = GLFW3.requestFullscreen;`,
+    Module["requestFullscreen"] = GLFW3.requestFullscreen;
+    Module["glfwGetWindow"] = (canvasSelector) => { const ctx = GLFW3.findContextBySelector(canvasSelector); return ctx ? ctx.id : null; };
+    `,
   $GLFW3: {
     fCanvasContexts: null,
     fCurrentCanvasContext: null,
@@ -26,6 +28,11 @@ let impl = {
         }
       }
       return null;
+    },
+
+    findContextBySelector__deps: ['$findEventTarget'],
+    findContextBySelector(canvasSelector) {
+      return GLFW3.findContext(findEventTarget(canvasSelector));
     },
 
     requestFullscreen(lockPointer, resizeCanvas, target) {
@@ -108,8 +115,32 @@ let impl = {
     canvasCtx.selector = canvasSelector;
     canvasCtx.canvas = canvas;
     canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
-    canvasCtx.originalCSSSize = { width: canvas.style.getPropertyValue("width"),
-                                  height: canvas.style.getPropertyValue("height") };
+
+    canvasCtx.originalCSS = {};
+    ["width", "height", "opacity", "cursor", "display"].forEach((name) => {
+      canvasCtx.originalCSS[name] = canvas.style.getPropertyValue(name);
+    });
+    canvasCtx.restoreCSSValue = (name) => {
+      const value = canvasCtx.originalCSS[name];
+      if(!value)
+        canvas.style.removeProperty(name);
+      else
+        canvas.style.setProperty(name, value);
+    };
+    canvasCtx.restoreCSSValues = () => {
+      Object.entries(canvasCtx.originalCSS).forEach(([name, value]) => {
+        if(!value)
+          canvas.style.removeProperty(name);
+        else
+          canvas.style.setProperty(name, value);
+      });
+    };
+    canvasCtx.setCSSValue = (name, value) => {
+      canvas.style.setProperty(name, value);
+    };
+    canvasCtx.getComputedCSSValue = (name) => {
+      return window.getComputedStyle(canvas).getPropertyValue(name);
+    };
 
     GLFW3.fCanvasContexts[canvasCtx.id] = canvasCtx;
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
@@ -121,15 +152,7 @@ let impl = {
       const ctx = GLFW3.fCanvasContexts[canvasId];
       const canvas = ctx.canvas;
 
-      if(ctx.originalCSSSize.width)
-        canvas.style.setProperty("width", ctx.originalCSSSize.width);
-      else
-        canvas.style.removeProperty("width");
-
-      if(ctx.originalCSSSize.height)
-        canvas.style.setProperty("height", ctx.originalCSSSize.height);
-      else
-        canvas.style.removeProperty("height");
+      ctx.restoreCSSValues();
 
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
@@ -151,24 +174,37 @@ let impl = {
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
 
     // this will (on purpose) override any css setting
-    canvas.style.setProperty("width",   width + "px", "important");
-    canvas.style.setProperty("height", height + "px", "important");
+    ctx.setCSSValue("width",   width + "px", "important");
+    ctx.setCSSValue("height", height + "px", "important");
   },
 
   emscripten_glfw3_context_window_set_cursor: (canvasId, cursor) => {
-    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+    const ctx = GLFW3.fCanvasContexts[canvasId];
     if(cursor)
-      canvas.style.setProperty("cursor", UTF8ToString(cursor));
+      ctx.setCSSValue("cursor", UTF8ToString(cursor));
     else
-      canvas.style.removeProperty("cursor");
+      ctx.restoreCSSValue("cursor");
+  },
+
+  emscripten_glfw3_context_window_get_computed_opacity: (canvasId) => {
+    return GLFW3.fCanvasContexts[canvasId].getComputedCSSValue("opacity");
   },
 
   emscripten_glfw3_context_window_set_opacity: (canvasId, opacity) => {
-    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
-    if(opacity < 1.0)
-      canvas.style.setProperty("opacity", opacity);
+    const ctx = GLFW3.fCanvasContexts[canvasId];
+    ctx.setCSSValue("opacity", opacity);
+  },
+
+  emscripten_glfw3_context_window_get_computed_visibility: (canvasId) => {
+    return GLFW3.fCanvasContexts[canvasId].getComputedCSSValue("display") !== "none";
+  },
+
+  emscripten_glfw3_context_window_set_visibility: (canvasId, visible) => {
+    const ctx = GLFW3.fCanvasContexts[canvasId];
+    if(!visible)
+      ctx.setCSSValue("display", "none");
     else
-      canvas.style.removeProperty("opacity");
+      ctx.restoreCSSValue("display");
   },
 
   emscripten_glfw3_context_gl_init: (canvasId) => {

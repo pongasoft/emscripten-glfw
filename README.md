@@ -125,6 +125,7 @@ Release Notes
 #### wip-0.4.0 - 2023/01/03
 
 - Added support for joystick/gamepad
+  - Joystick support can be disabled via `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation flag
 
 #### wip-0.3.0 - 2023/12/31
 
