@@ -38,13 +38,20 @@ const char *Keyboard::getKeyName(glfw_key_t iKey, glfw_scancode_t iScancode)
 //------------------------------------------------------------------------
 // Keyboard::getKeyState
 //------------------------------------------------------------------------
-glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey) const
+glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey)
 {
   if(iKey < 0 || iKey > GLFW_KEY_LAST)
   {
     ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "Invalid key [%d]", iKey);
     return GLFW_RELEASE;
   }
+
+  if(fKeyStates[iKey] == kStickyPress)
+  {
+    fKeyStates[iKey] = GLFW_RELEASE;
+    return GLFW_PRESS;
+  }
+
   return fKeyStates[iKey];
 }
 
@@ -111,11 +118,11 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
   if(key == GLFW_KEY_UNKNOWN)
     return false;
 
-  glfw_key_state_t state = GLFW_RELEASE;
+  const glfw_key_state_t state = GLFW_RELEASE;
 
-  if(fKeyStates[key] != GLFW_RELEASE)
+  if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
   {
-    fKeyStates[key] = state;
+    fKeyStates[key] = fStickyKeys ? kStickyPress : state;
 
     if(fKeyCallback)
       fKeyCallback(iWindow, key, scancode, state, computeCallbackModifierBits(iKeyboardEvent));
@@ -133,12 +140,28 @@ void Keyboard::resetAllKeys(GLFWwindow *iWindow)
 
   for(auto key = 0; key < fKeyStates.size(); key++)
   {
-    if(fKeyStates[key] != GLFW_RELEASE)
+    if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
     {
       fKeyStates[key] = GLFW_RELEASE;
 
       if(fKeyCallback)
         fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifiedBits);
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// Keyboard::setStickyKeys
+//------------------------------------------------------------------------
+void Keyboard::setStickyKeys(bool iStickyKeys)
+{
+  fStickyKeys = iStickyKeys;
+  if(!fStickyKeys)
+  {
+    for(auto &state: fKeyStates)
+    {
+      if(state == kStickyPress)
+        state = GLFW_RELEASE;
     }
   }
 }

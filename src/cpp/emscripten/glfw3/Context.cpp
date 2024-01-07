@@ -525,7 +525,7 @@ void Context::windowHint(int iHint, char const *iValue)
 {
   switch(iHint)
   {
-    // Gl Context
+    // canvas selector
     case GLFW_EMSCRIPTEN_CANVAS_SELECTOR:
       fConfig.fCanvasSelector = iValue ? iValue : Config::kDefaultCanvasSelector;
       break;

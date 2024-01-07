@@ -31,7 +31,7 @@ using glfw_key_state_t = int; // ex: GLFW_RELEASE
 class Keyboard
 {
 public:
-  glfw_key_state_t getKeyState(glfw_key_t iKey) const;
+  glfw_key_state_t getKeyState(glfw_key_t iKey);
 //  bool isKeyPressed(glfw_key_t iKey) const { return getKeyState(iKey) != GLFW_RELEASE; }
   constexpr bool isShiftPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_SHIFT) || isValidKeyPressed(GLFW_KEY_RIGHT_SHIFT); }
   constexpr bool isControlPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_CONTROL) || isValidKeyPressed(GLFW_KEY_RIGHT_CONTROL); }
@@ -48,11 +48,15 @@ public:
   bool onKeyUp(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
   void resetAllKeys(GLFWwindow *iWindow);
 
+  void setStickyKeys(bool iStickyKeys);
+  bool getStickyKeys() const { return fStickyKeys; };
+
 public:
   static constexpr glfw_scancode_t getKeyScancode(glfw_key_t iKey) { return keyboard::keyCodeToScancode(iKey); }
   static const char* getKeyName(glfw_key_t iKey, glfw_scancode_t iScancode);
 
 private:
+  static constexpr glfw_key_state_t kStickyPress = 3;
   static constexpr glfw_key_t getGLFWKey(glfw_scancode_t iScancode) { return keyboard::scancodeToKeyCode(iScancode); }
   static constexpr glfw_scancode_t getKeyScancode(char const *iKeyboardEventCode) { return keyboard::keyboardEventCodeToScancode(iKeyboardEventCode); }
 
@@ -63,6 +67,7 @@ private:
 private:
   std::array<glfw_key_state_t, GLFW_KEY_LAST + 1> fKeyStates{GLFW_RELEASE};
   bool fInputModeLockKeyMods{};
+  bool fStickyKeys{};
   GLFWkeyfun fKeyCallback{};
   GLFWcharfun fCharCallback{};
 };

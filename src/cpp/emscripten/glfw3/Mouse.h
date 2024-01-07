@@ -32,9 +32,11 @@ namespace emscripten::glfw3 {
 
 class Window;
 
+
 class Mouse
 {
 public:
+
   constexpr bool isPointerLock() const { return fCursorMode == GLFW_CURSOR_DISABLED; }
 
   inline Cursor const *hideCursor() {
@@ -58,6 +60,7 @@ public:
   std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
 
   glfw_cursor_mode_t fCursorMode{GLFW_CURSOR_NORMAL};
+  glfw_bool_t fStickyMouseButtons{GLFW_FALSE};
 
   Vec2<double> fCursorPos{};
   Vec2<double> fCursorPosBeforePointerLock{};
@@ -67,6 +70,9 @@ public:
   GLFWscrollfun fScrollCallback{};
   GLFWcursorenterfun fCursorEnterCallback{};
   GLFWcursorposfun fCursorPosCallback{};
+
+private:
+  static constexpr glfw_mouse_button_state_t kStickyPress = 3;
 
 private:
   Cursor const *fCursor{Cursor::getDefault()};

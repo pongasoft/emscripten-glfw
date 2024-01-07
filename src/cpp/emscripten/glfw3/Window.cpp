@@ -314,6 +314,13 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
     kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid button [%d]", iButton);
     return GLFW_RELEASE;
   }
+
+  if(fMouse.fButtonStates[iButton] == Mouse::kStickyPress)
+  {
+    fMouse.fButtonStates[iButton] = GLFW_RELEASE;
+    return GLFW_PRESS;
+  }
+
   return fMouse.fButtonStates[iButton];
 }
 
@@ -375,8 +382,22 @@ void Window::setInputMode(int iMode, int iValue)
       setCursorMode(iValue);
       break;
 
-    case GLFW_STICKY_KEYS:
     case GLFW_STICKY_MOUSE_BUTTONS:
+      fMouse.fStickyMouseButtons = toGlfwBool(iValue);
+      if(fMouse.fStickyMouseButtons == GLFW_FALSE)
+      {
+        for(auto &state: fMouse.fButtonStates)
+        {
+          if(state == Mouse::kStickyPress)
+            state = GLFW_RELEASE;
+        }
+      }
+      break;
+
+    case GLFW_STICKY_KEYS:
+      fKeyboard.setStickyKeys(toCBool(iValue));
+      break;
+
     case GLFW_LOCK_KEY_MODS: // TODO: need to implement my own keyboard event to get this info
       kErrorHandler.logWarning("glfwSetInputMode: input mode [%d] not implemented yet", iMode);
       break;
@@ -499,7 +520,6 @@ void Window::createEventListeners()
 
   // fOnMouseButtonDown
   fOnMouseButtonDown = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
     auto lastButton = emscriptenToGLFWButton(iEvent->button);
     if(lastButton >= 0)
     {
@@ -564,7 +584,6 @@ void Window::createEventListeners()
 //------------------------------------------------------------------------
 bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
 {
-  // TODO: implement GLFW_STICKY_MOUSE_BUTTONS
   auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
   if(lastButton >= 0)
   {
@@ -573,7 +592,7 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
     {
       fMouse.fLastButton = lastButton;
       fMouse.fLastButtonState = GLFW_RELEASE;
-      fMouse.fButtonStates[lastButton] = GLFW_RELEASE;
+      fMouse.fButtonStates[lastButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
         fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState,fKeyboard.computeCallbackModifierBits());

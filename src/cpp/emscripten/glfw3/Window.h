@@ -111,7 +111,7 @@ public:
   void setCursor(GLFWcursor* iCursor);
 
   // keyboard
-  glfw_key_state_t getKeyState(glfw_key_t iKey) const { return fKeyboard.getKeyState(iKey); }
+  glfw_key_state_t getKeyState(glfw_key_t iKey) { return fKeyboard.getKeyState(iKey); }
 
   // user pointer
   inline void *getUserPointer() const { return fUserPointer; }
