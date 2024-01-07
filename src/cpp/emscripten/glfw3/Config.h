@@ -26,9 +26,9 @@ namespace emscripten::glfw3 {
 
 using glfw_bool_t = int;
 
-constexpr inline bool toCBool(glfw_bool_t iGlfwBool) { return iGlfwBool != GLFW_FALSE; }
 constexpr inline glfw_bool_t toGlfwBool(bool iCBool) { return iCBool ? GLFW_TRUE : GLFW_FALSE; }
 constexpr inline glfw_bool_t toGlfwBool(int iValue) { return iValue == GLFW_FALSE ? GLFW_FALSE : GLFW_TRUE; }
+constexpr inline bool toCBool(int iValue) { return toGlfwBool(iValue) != GLFW_FALSE; }
 constexpr inline char const *boolToString(bool b) { return b ? "true" : "false"; }
 
 struct Config
@@ -42,6 +42,8 @@ struct Config
   // Window
   glfw_bool_t fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
   glfw_bool_t fFocusOnShow{GLFW_TRUE};     // GLFW_FOCUS_ON_SHOW
+  glfw_bool_t fVisible{GLFW_TRUE};         // GLFW_VISIBLE
+  glfw_bool_t fFocused{GLFW_TRUE};         // GLFW_FOCUSED
   std::string fCanvasSelector{kDefaultCanvasSelector};
 
   // Framebuffer

@@ -286,7 +286,7 @@ GLFWAPI void glfwWindowHint(int hint, int value)
 {
   auto context = getContext();
   if(context)
-    context->windowHint(hint, value);
+    context->setWindowHint(hint, value);
 }
 
 //------------------------------------------------------------------------
@@ -296,7 +296,7 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value)
 {
   auto context = getContext();
   if(context)
-    context->windowHint(hint, value);
+    context->setWindowHint(hint, value);
 }
 
 //------------------------------------------------------------------------

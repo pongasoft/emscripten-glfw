@@ -472,9 +472,9 @@ GLFWwindow *Context::getCurrentContext() const
 }
 
 //------------------------------------------------------------------------
-// Context::windowHint
+// Context::setWindowHint
 //------------------------------------------------------------------------
-void Context::windowHint(int iHint, int iValue)
+void Context::setWindowHint(int iHint, int iValue)
 {
   switch(iHint)
   {
@@ -485,11 +485,19 @@ void Context::windowHint(int iHint, int iValue)
 
     // Window
     case GLFW_SCALE_TO_MONITOR:
-      fConfig.fScaleToMonitor = iValue;
+      fConfig.fScaleToMonitor = toGlfwBool(iValue);;
       break;
 
     case GLFW_FOCUS_ON_SHOW:
-      fConfig.fFocusOnShow = iValue;
+      fConfig.fFocusOnShow = toGlfwBool(iValue);;
+      break;
+
+    case GLFW_VISIBLE:
+      fConfig.fVisible = toGlfwBool(iValue);
+      break;
+
+    case GLFW_FOCUSED:
+      fConfig.fFocused = toGlfwBool(iValue);
       break;
 
       // Framebuffer
@@ -519,9 +527,9 @@ void Context::windowHint(int iHint, int iValue)
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
 
 //------------------------------------------------------------------------
-// Context::windowHint
+// Context::setWindowHint
 //------------------------------------------------------------------------
-void Context::windowHint(int iHint, char const *iValue)
+void Context::setWindowHint(int iHint, char const *iValue)
 {
   switch(iHint)
   {

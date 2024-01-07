@@ -330,6 +330,7 @@ inline static char const *toNonNullString(char const *s)
   return s ? s : kNoValue;
 }
 
+constexpr inline char const *glfwBoolToString(int b) { return b == GLFW_FALSE ?  "false" : "true"; }
 
 void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 {
@@ -360,7 +361,7 @@ void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 }
 void onCursorEnterChange(GLFWwindow* window, int entered)
 {
-  setHtmlValue(window, "glfwSetCursorEnterCallback", "%s", entered == GLFW_TRUE ? "true" : "false");
+  setHtmlValue(window, "glfwSetCursorEnterCallback", "%s", glfwBoolToString(entered));
 }
 void onScrollChange(GLFWwindow* window, double xoffset, double yoffset)
 {
@@ -378,7 +379,7 @@ void onCharChange(GLFWwindow* window, unsigned int codepoint)
 }
 void onWindowFocusChange(GLFWwindow* window, int focused)
 {
-  setHtmlValue(window, "glfwSetWindowFocusCallback", "%s", focused == GLFW_TRUE ? "true" : "false");
+  setHtmlValue(window, "glfwSetWindowFocusCallback", "%s", glfwBoolToString(focused));
 }
 void onJoystickChange(int jid, int event)
 {
@@ -436,7 +437,7 @@ void Triangle::updateNoWindowValues()
     auto jid = jids[0];
     setHtmlValue(nullptr, "glfwGetJoystickName", "[%d] %s", jid, toNonNullString(glfwGetJoystickName(jid)));
     setHtmlValue(nullptr, "glfwGetJoystickGUID", "[%d] %s", jid, toNonNullString(glfwGetJoystickGUID(jid)));
-    setHtmlValue(nullptr, "glfwJoystickIsGamepad", "[%d] %s", jid, glfwJoystickIsGamepad(jid) == GLFW_TRUE ? "true" : "false");
+    setHtmlValue(nullptr, "glfwJoystickIsGamepad", "[%d] %s", jid, glfwBoolToString(glfwJoystickIsGamepad(jid)));
 
     int count;
     auto axes = glfwGetJoystickAxes(jid, &count);
@@ -578,8 +579,10 @@ void Triangle::updateValues()
   setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
 
   auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
-  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "true" : "false");
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", glfwBoolToString(hiDPIAware));
   setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "Disable" : "Enable");
+
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-focused", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED)));
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };

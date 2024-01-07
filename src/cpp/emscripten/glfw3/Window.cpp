@@ -79,6 +79,12 @@ void Window::init()
 {
   fOpacity = emscripten_glfw3_context_window_get_computed_opacity(asOpaquePtr());
   fVisible = emscripten_glfw3_context_window_get_computed_visibility(asOpaquePtr());
+
+  if(fConfig.fVisible == GLFW_FALSE && fVisible)
+    setVisibility(false);
+
+  if(fConfig.fFocused)
+    focus();
 }
 
 //------------------------------------------------------------------------
@@ -222,6 +228,9 @@ int Window::getAttrib(int iAttrib)
     case GLFW_VISIBLE:
       return toGlfwBool(fVisible);
 
+    case GLFW_FOCUSED:
+      return toGlfwBool(fFocused);
+
     case GLFW_FOCUS_ON_SHOW:
       return fConfig.fFocusOnShow;
 
@@ -243,6 +252,11 @@ void Window::setAttrib(int iAttrib, int iValue)
   {
     case GLFW_VISIBLE:
       setVisibility(toCBool(iValue));
+      break;
+
+    case GLFW_FOCUSED:
+      if(toCBool(iValue))
+        focus();
       break;
 
     case GLFW_FOCUS_ON_SHOW:
