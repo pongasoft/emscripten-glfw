@@ -25,10 +25,6 @@
 
 namespace emscripten::glfw3 {
 
-//! EventListener
-template<typename E>
-using EventListener = std::function<bool(int iEventType, E const *iEvent)>;
-
 //! EmscriptenEventCallback
 template<typename E>
 using EmscriptenEventCallback = EM_BOOL (*)(int, E const *, void *);
@@ -41,6 +37,65 @@ using EmscriptenListenerFunction = EMSCRIPTEN_RESULT (*)(const char *, void *, E
 template<typename E>
 using EmscriptenListenerFunction2 = EMSCRIPTEN_RESULT (*)(void *, EM_BOOL, EmscriptenEventCallback<E>, pthread_t);
 
+
+template<typename E>
+class EventListener
+{
+public:
+  using event_listener_t = std::function<bool(int iEventType, E const *iEvent)>;
+
+public:
+
+  EventListener &target(char const *iTarget);
+  EventListener &listener(event_listener_t v) { fEventListener = std::move(v); return *this; }
+  EventListener &useCapture(bool v) { fUseCapture = v; return *this; }
+
+  bool add(EmscriptenListenerFunction<E> iListenerFunction);
+  bool add(EmscriptenListenerFunction2<E> iListenerFunction);
+
+  void remove() { if(fRemoveListenerFunction) fRemoveListenerFunction(); }
+  bool invoke(int iEventType, E const *iEvent) { if(fEventListener) return fEventListener(iEventType, iEvent); else return false; }
+
+  ~EventListener() { remove(); }
+
+private:
+  using remove_listener_function_t = std::function<void(void)>;
+
+private:
+  char const *fSpecialTarget{};
+  std::string fTarget{};
+  event_listener_t fEventListener{};
+  bool fUseCapture{false};
+  pthread_t fThread{EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD};
+  remove_listener_function_t fRemoveListenerFunction{};
+};
+
+//------------------------------------------------------------------------
+// EventListenerCallback
+// - generic callback which extracts EventListener<E> from iUserData and invoke it
+//------------------------------------------------------------------------
+template<typename E>
+EventListener<E> &EventListener<E>::target(char const *iTarget)
+{
+  if(iTarget == EMSCRIPTEN_EVENT_TARGET_WINDOW)
+  {
+    fSpecialTarget = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    fTarget = "window";
+  } else if(iTarget == EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+  {
+    fSpecialTarget = EMSCRIPTEN_EVENT_TARGET_DOCUMENT;
+    fTarget = "document";
+  } else if(iTarget == EMSCRIPTEN_EVENT_TARGET_SCREEN)
+  {
+    fSpecialTarget = EMSCRIPTEN_EVENT_TARGET_SCREEN;
+    fTarget = "screen";
+  } else {
+    fTarget = iTarget;
+  }
+
+  return *this;
+}
+
 //------------------------------------------------------------------------
 // EventListenerCallback
 // - generic callback which extracts EventListener<E> from iUserData and invoke it
@@ -49,54 +104,86 @@ template<typename E>
 EM_BOOL EventListenerCallback(int iEventType, E const *iEvent, void *iUserData)
 {
   auto cb = reinterpret_cast<EventListener<E> *>(iUserData);
-  return std::invoke(*cb, iEventType, iEvent) ? EM_TRUE : EM_FALSE;
+  return (*cb).invoke(iEventType, iEvent) ? EM_TRUE : EM_FALSE;
 }
 
 //------------------------------------------------------------------------
-// addOrRemoveListener
+// EventListener<E>::add
 //------------------------------------------------------------------------
 template<typename E>
-void addOrRemoveListener(EmscriptenListenerFunction<E> iListenerFunction,
-                         bool iAdd,
-                         char const *iTarget,
-                         EventListener<E> *iEventListener,
-                         bool iUseCapture,
-                         pthread_t iThread = EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD)
+bool EventListener<E>::add(EmscriptenListenerFunction<E> iListenerFunction)
 {
-  auto error = iListenerFunction(iTarget,
-                                 iAdd ? iEventListener : nullptr,
-                                 iUseCapture ? EM_TRUE : EM_FALSE,
-                                 iAdd ? EventListenerCallback<E> : nullptr,
-                                 iThread);
+  remove();
+
+  auto error = iListenerFunction(fSpecialTarget ? fSpecialTarget : fTarget.c_str(),
+                                 this,
+                                 fUseCapture ? EM_TRUE : EM_FALSE,
+                                 EventListenerCallback<E>,
+                                 fThread);
 
   if(error != EMSCRIPTEN_RESULT_SUCCESS)
   {
     ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while registering listener for [%s]",
                                       error,
-                                      iTarget);
+                                      fTarget.c_str());
+    fRemoveListenerFunction = {};
+    return false;
   }
+
+  fRemoveListenerFunction = [iListenerFunction, this]() {
+    auto error = iListenerFunction(fSpecialTarget ? fSpecialTarget : fTarget.c_str(),
+                                   nullptr,
+                                   fUseCapture ? EM_TRUE : EM_FALSE,
+                                   nullptr,
+                                   fThread);
+
+    if(error != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while removing listener for [%s]",
+                                        error,
+                                        fTarget.c_str());
+    }
+  };
+
+  return true;
 }
 
 //------------------------------------------------------------------------
-// addOrRemoveListener
+// EventListener<E>::add
 //------------------------------------------------------------------------
 template<typename E>
-void addOrRemoveListener2(EmscriptenListenerFunction2<E> iListenerFunction,
-                          bool iAdd,
-                          EventListener<E> *iEventListener,
-                          bool iUseCapture,
-                          pthread_t iThread = EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD)
+bool EventListener<E>::add(EmscriptenListenerFunction2<E> iListenerFunction)
 {
-  auto error = iListenerFunction(iAdd ? iEventListener : nullptr,
-                                 iUseCapture ? EM_TRUE : EM_FALSE,
-                                 iAdd ? EventListenerCallback<E> : nullptr,
-                                 iThread);
+  remove();
+
+  auto error = iListenerFunction(this,
+                                 fUseCapture ? EM_TRUE : EM_FALSE,
+                                 EventListenerCallback<E>,
+                                 fThread);
 
   if(error != EMSCRIPTEN_RESULT_SUCCESS)
   {
     ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while registering listener", error);
+    fRemoveListenerFunction = {};
+    return false;
   }
+
+  fRemoveListenerFunction = [iListenerFunction, useCapture = fUseCapture, thread = fThread]() {
+    auto error = iListenerFunction(nullptr,
+                                   useCapture ? EM_TRUE : EM_FALSE,
+                                   nullptr,
+                                   thread);
+
+    if(error != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      ErrorHandler::instance().logError(GLFW_PLATFORM_ERROR, "Error [%d] while removing listener", error);
+    }
+  };
+
+  return true;
+
 }
+
 
 }
 #endif //EMSCRIPTEN_GLFW_EVENTS_H

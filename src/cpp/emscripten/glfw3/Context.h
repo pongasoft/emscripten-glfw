@@ -85,6 +85,7 @@ private:
   bool onExitFullscreen();
   bool onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent);
   bool onPointerUnlock();
+  bool onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent);
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
 
 private:
@@ -111,7 +112,8 @@ private:
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
-  EventListener<EmscriptenGamepadEvent> fOnGamepadConnectionChange{};
+  EventListener<EmscriptenGamepadEvent> fOnGamepadConnected{};
+  EventListener<EmscriptenGamepadEvent> fOnGamepadDisconnected{};
 };
 
 }

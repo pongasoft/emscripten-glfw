@@ -161,18 +161,20 @@ protected:
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
   inline bool onKeyDown(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iKeyboardEvent); }
   inline bool onKeyUp(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iKeyboardEvent); }
+  bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonDown{};
-  EventListener<EmscriptenMouseEvent> fOnMouseEnterOrLeave{};
+  EventListener<EmscriptenMouseEvent> fOnMouseEnter{};
+  EventListener<EmscriptenMouseEvent> fOnMouseLeave{};
   EventListener<EmscriptenWheelEvent> fOnMouseWheel{};
   EventListener<EmscriptenFocusEvent> fOnFocusChange{};
+  EventListener<EmscriptenFocusEvent> fOnBlurChange{};
 
 private:
-  void createEventListeners();
   void addOrRemoveEventListeners(bool iAdd);
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
   void setCursorPos(Vec2<double> const &iPos);

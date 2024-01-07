@@ -74,72 +74,6 @@ Context::Context()
   printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
   emscripten_glfw3_context_init(fScale, ContextScaleChangeCallback, ContextRequestFullscreen, this);
-
-  // fOnMouseUpButton
-  fOnMouseButtonUp = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    bool handled = false;
-    for(auto &w: fWindows)
-      handled |= w->onMouseButtonUp(iEvent);
-    return handled;
-  };
-
-  // fOnKeyDown
-  fOnKeyDown = [this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
-    bool handled = false;
-    auto w = findFocusedOrSingleWindow();
-    if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
-      handled |= w->onKeyDown(iEvent);
-    return handled;
-  };
-
-  // fOnKeyUp
-  fOnKeyUp = [this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
-    bool handled = false;
-    for(auto &w: fWindows)
-      handled |= w->onKeyUp(iEvent);
-    return handled;
-  };
-
-  // fOnFullscreenChange
-  fOnFullscreenChange = [this](int iEventType, EmscriptenFullscreenChangeEvent const *iEvent) {
-    return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
-  };
-
-  // fOnPointerLockChange
-  fOnPointerLockChange = [this](int iEventType, EmscriptenPointerlockChangeEvent const *iEvent) {
-    return toCBool(iEvent->isActive) ? onPointerLock(iEvent) : onPointerUnlock();
-  };
-
-  // fOnPointerLockError
-  fOnPointerLockError = [this](int iEventType, void const *iEvent) {
-    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
-    fPointerLockRequest = std::nullopt;
-    return true;
-  };
-
-  // fOnFullscreenChange
-  fOnFullscreenChange = [this](int iEventType, EmscriptenFullscreenChangeEvent const *iEvent) {
-    return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
-  };
-
-  // fOnGamepadConnectionChange
-  fOnGamepadConnectionChange = [this](int iEventType, EmscriptenGamepadEvent const *iEvent) {
-    auto joystick = Joystick::findJoystick(iEvent->index);
-    if(joystick)
-    {
-      if(iEvent->connected)
-        joystick->connect(iEvent);
-      else
-        joystick->disconnect(iEvent);
-      fPresentJoystickCount = Joystick::computePresentJoystickCount();
-      if(fJoystickCallback)
-        fJoystickCallback(joystick->fId, joystick->isPresent() ? GLFW_CONNECTED : GLFW_DISCONNECTED);
-      printf("fPresentJoystickCount = %d\n", fPresentJoystickCount);
-      return true;
-    }
-    return false;
-  };
-
   addOrRemoveEventListeners(true);
 }
 
@@ -158,26 +92,94 @@ Context::~Context()
 void Context::addOrRemoveEventListeners(bool iAdd)
 {
   printf("Context::addOrRemoveEventListeners(%s)\n", iAdd ? "true" : "false");
-  // mouse
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnMouseButtonUp, false);
 
-  // keyboard
-  addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keydown_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyDown, false);
-  addOrRemoveListener<EmscriptenKeyboardEvent>(emscripten_set_keyup_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_WINDOW, &fOnKeyUp, false);
+  if(iAdd)
+  {
+    fOnMouseButtonUp
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        bool handled = false;
+        for(auto &w: fWindows)
+          handled |= w->onMouseButtonUp(iEvent);
+        return handled;
+      })
+      .add(emscripten_set_mouseup_callback_on_thread);
 
-  // fullscreen
-  addOrRemoveListener<EmscriptenFullscreenChangeEvent>(emscripten_set_fullscreenchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnFullscreenChange, false);
+    // fOnKeyDown
+    fOnKeyDown
+      .target(EMSCRIPTEN_EVENT_TARGET_WINDOW)
+      .listener([this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
+        bool handled = false;
+        auto w = findFocusedOrSingleWindow();
+        if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
+          handled |= w->onKeyDown(iEvent);
+        return handled;
+      })
+      .add(emscripten_set_keydown_callback_on_thread);
 
-  // pointerLock
-  addOrRemoveListener<EmscriptenPointerlockChangeEvent>(emscripten_set_pointerlockchange_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockChange, false);
-  addOrRemoveListener<void>(emscripten_set_pointerlockerror_callback_on_thread, iAdd, EMSCRIPTEN_EVENT_TARGET_DOCUMENT, &fOnPointerLockError, false);
+    // fOnKeyUp
+    fOnKeyUp
+      .target(EMSCRIPTEN_EVENT_TARGET_WINDOW)
+      .listener([this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
+        bool handled = false;
+        for(auto &w: fWindows)
+          handled |= w->onKeyUp(iEvent);
+        return handled;
+      })
+      .add(emscripten_set_keyup_callback_on_thread);
 
-  // gamepad
+    // fOnFullscreenChange
+    fOnFullscreenChange
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, EmscriptenFullscreenChangeEvent const *iEvent) {
+        return toCBool(iEvent->isFullscreen) ? onEnterFullscreen(iEvent) : onExitFullscreen();
+      })
+      .add(emscripten_set_fullscreenchange_callback_on_thread);
+
+    // fOnPointerLockChange
+    fOnPointerLockChange
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, EmscriptenPointerlockChangeEvent const *iEvent) {
+        return toCBool(iEvent->isActive) ? onPointerLock(iEvent) : onPointerUnlock();
+      })
+      .add(emscripten_set_pointerlockchange_callback_on_thread);
+
+    // fOnPointerLockError
+    fOnPointerLockError
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, void const *iEvent) {
+        kErrorHandler.logError(GLFW_PLATFORM_ERROR,
+                               "Error while requesting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
+        fPointerLockRequest = std::nullopt;
+        return true;
+      })
+      .add(emscripten_set_pointerlockerror_callback_on_thread);
+
+    // gamepad
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
-  addOrRemoveListener2<EmscriptenGamepadEvent>(emscripten_set_gamepadconnected_callback_on_thread, iAdd, &fOnGamepadConnectionChange, false);
-  addOrRemoveListener2<EmscriptenGamepadEvent>(emscripten_set_gamepaddisconnected_callback_on_thread, iAdd, &fOnGamepadConnectionChange, false);
-#endif
+    fOnGamepadConnected
+      .listener([this](int iEventType, EmscriptenGamepadEvent const *iEvent) { return onGamepadConnectionChange(iEvent); })
+      .add(emscripten_set_gamepadconnected_callback_on_thread);
 
+    fOnGamepadDisconnected
+      .listener([this](int iEventType, EmscriptenGamepadEvent const *iEvent) { return onGamepadConnectionChange(iEvent); })
+      .add(emscripten_set_gamepaddisconnected_callback_on_thread);
+#endif
+  }
+  else
+  {
+    fOnMouseButtonUp.remove();
+    fOnKeyDown.remove();
+    fOnKeyUp.remove();
+    fOnFullscreenChange.remove();
+    fOnPointerLockChange.remove();
+    fOnPointerLockError.remove();
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+    fOnGamepadConnected.remove();
+    fOnGamepadDisconnected.remove();
+#endif
+  }
 }
 
 //------------------------------------------------------------------------
@@ -343,6 +345,27 @@ bool Context::onPointerUnlock()
     res |= w->onPointerUnlock(std::nullopt);
 
   return res;
+}
+
+//------------------------------------------------------------------------
+// Context::onGamepadConnectionChange
+//------------------------------------------------------------------------
+bool Context::onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent)
+{
+  auto joystick = Joystick::findJoystick(iEvent->index);
+  if(joystick)
+  {
+    if(iEvent->connected)
+      joystick->connect(iEvent);
+    else
+      joystick->disconnect(iEvent);
+    fPresentJoystickCount = Joystick::computePresentJoystickCount();
+    if(fJoystickCallback)
+      fJoystickCallback(joystick->fId, joystick->isPresent() ? GLFW_CONNECTED : GLFW_DISCONNECTED);
+    printf("fPresentJoystickCount = %d\n", fPresentJoystickCount);
+    return true;
+  }
+  return false;
 }
 
 //------------------------------------------------------------------------
@@ -525,6 +548,7 @@ void Context::setWindowHint(int iHint, int iValue)
 
 // Making up a hint that is not currently used: TODO how to add to glfw???
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
+#define GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR  0x00027002
 
 //------------------------------------------------------------------------
 // Context::setWindowHint
@@ -538,10 +562,14 @@ void Context::setWindowHint(int iHint, char const *iValue)
       fConfig.fCanvasSelector = iValue ? iValue : Config::kDefaultCanvasSelector;
       break;
 
+    // canvas resize selector
+    case GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR:
+      fConfig.fCanvasResizeSelector = iValue ? std::optional<std::string>(iValue) : std::nullopt;
+      break;
+
     default:
       kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
   }
-
 }
 
 //------------------------------------------------------------------------

@@ -69,7 +69,6 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
   fMonitorScale{iMonitorScale}
 {
   printf("Window(%p)\n", asOpaquePtr());
-  createEventListeners();
 }
 
 //------------------------------------------------------------------------
@@ -508,89 +507,18 @@ inline glfw_mouse_button_t emscriptenToGLFWButton(unsigned short iEmscriptenButt
 }
 
 //------------------------------------------------------------------------
-// Window::createEventListeners
+// Window::onFocusChange
 //------------------------------------------------------------------------
-void Window::createEventListeners()
+bool Window::onFocusChange(bool iFocus)
 {
-  // fOnMouseMove
-  fOnMouseMove = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    Vec2<double> cursorPos{};
-    if(isPointerLock())
-    {
-      fMouse.fCursorLockResidual.x += iEvent->movementX;
-      fMouse.fCursorLockResidual.y += iEvent->movementY;
-      cursorPos = fMouse.fCursorLockResidual;
-      // following SDL implementation to not lose sub-pixel motion
-      fMouse.fCursorLockResidual.x -= cursorPos.x;
-      fMouse.fCursorLockResidual.y -= cursorPos.y;
-    }
-    else
-    {
-      cursorPos = {static_cast<double>(iEvent->targetX), static_cast<double>(iEvent->targetY)};
-    }
-    setCursorPos(cursorPos);
-    return true;
-  };
-
-  // fOnMouseButtonDown
-  fOnMouseButtonDown = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    auto lastButton = emscriptenToGLFWButton(iEvent->button);
-    if(lastButton >= 0)
-    {
-      // down can only happen when inside the window
-      fMouse.fLastButton = lastButton;
-      fMouse.fLastButtonState = GLFW_PRESS;
-      fMouse.fButtonStates[lastButton] = GLFW_PRESS;
-
-      if(fFocusOnMouse && !isFocused())
-        focus();
-
-      if(fMouse.fButtonCallback)
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeCallbackModifierBits());
-    }
-    return true;
-  };
-
-  // fOnMouseEnterOrLeave
-  fOnMouseEnterOrLeave = [this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-    if(fMouse.fCursorEnterCallback)
-    {
-      fMouse.fCursorEnterCallback(asOpaquePtr(), toGlfwBool(iEventType == EMSCRIPTEN_EVENT_MOUSEENTER));
-      return true;
-    }
-    return false;
-  };
-
-  // fOnMouseWheel
-  fOnMouseWheel = [this](int iEventType, const EmscriptenWheelEvent *iEvent) {
-    if(fMouse.fScrollCallback)
-    {
-      // Note: this code is copied/inspired by SDL implementation
-      double multiplier;
-      switch(iEvent->deltaMode)
-      {
-        case DOM_DELTA_PIXEL: multiplier = 1.0 / 100.0; break; // 100 pixels make up a step.
-        case DOM_DELTA_LINE:  multiplier = 1.0 / 3.0;   break; // 3 lines make up a step.
-        case DOM_DELTA_PAGE:  multiplier = 80.0;        break; // A page makes up 80 steps.
-        default: return false; // should not happen
-      }
-      fMouse.fScrollCallback(asOpaquePtr(), iEvent->deltaX * -multiplier, iEvent->deltaY * -multiplier);
-      return true;
-    }
-    return false;
-  };
-
-  // fOnFocusChange
-  fOnFocusChange = [this](int eventType, const EmscriptenFocusEvent *iEvent) {
-    fFocused = eventType == EMSCRIPTEN_EVENT_FOCUS;
-    if(!isFocused())
-      fKeyboard.resetAllKeys(asOpaquePtr());
-    else
-      fContext->onFocus(asOpaquePtr());
-    if(fFocusCallback)
-      fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
-    return true;
-  };
+  fFocused = iFocus;
+  if(!isFocused())
+    fKeyboard.resetAllKeys(asOpaquePtr());
+  else
+    fContext->onFocus(asOpaquePtr());
+  if(fFocusCallback)
+    fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
+  return true;
 }
 
 //------------------------------------------------------------------------
@@ -624,20 +552,126 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   auto selector = getCanvasSelector();
   printf("Window::addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
 
-  // mouse
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousemove_callback_on_thread, iAdd, selector, &fOnMouseMove, false);
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mousedown_callback_on_thread, iAdd, selector, &fOnMouseButtonDown, false);
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseenter_callback_on_thread, iAdd, selector, &fOnMouseEnterOrLeave, false);
-  addOrRemoveListener<EmscriptenMouseEvent>(emscripten_set_mouseleave_callback_on_thread, iAdd, selector, &fOnMouseEnterOrLeave, false);
-  addOrRemoveListener<EmscriptenWheelEvent>(emscripten_set_wheel_callback_on_thread, iAdd, selector, &fOnMouseWheel, false);
-  // note: mouseup_callback is registered with context because target is "document"
+  if(iAdd)
+  {
+    // fOnMouseMove
+    fOnMouseMove
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        Vec2<double> cursorPos{};
+        if(isPointerLock())
+        {
+          fMouse.fCursorLockResidual.x += iEvent->movementX;
+          fMouse.fCursorLockResidual.y += iEvent->movementY;
+          cursorPos = fMouse.fCursorLockResidual;
+          // following SDL implementation to not lose sub-pixel motion
+          fMouse.fCursorLockResidual.x -= cursorPos.x;
+          fMouse.fCursorLockResidual.y -= cursorPos.y;
+        }
+        else
+        {
+          cursorPos = {static_cast<double>(iEvent->targetX), static_cast<double>(iEvent->targetY)};
+        }
+        setCursorPos(cursorPos);
+        return true;
+      })
+      .add(emscripten_set_mousemove_callback_on_thread);
 
-  // keyboard
-  // note: keyboard events are handled in context because target is "window"
+    // fOnMouseButtonDown
+    fOnMouseButtonDown
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        auto lastButton = emscriptenToGLFWButton(iEvent->button);
+        if(lastButton >= 0)
+        {
+          // down can only happen when inside the window
+          fMouse.fLastButton = lastButton;
+          fMouse.fLastButtonState = GLFW_PRESS;
+          fMouse.fButtonStates[lastButton] = GLFW_PRESS;
 
-  // focus
-  addOrRemoveListener<EmscriptenFocusEvent>(emscripten_set_focus_callback_on_thread, iAdd, selector, &fOnFocusChange, false);
-  addOrRemoveListener<EmscriptenFocusEvent>(emscripten_set_blur_callback_on_thread, iAdd, selector, &fOnFocusChange, false);
+          if(fFocusOnMouse && !isFocused())
+            focus();
+
+          if(fMouse.fButtonCallback)
+            fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeCallbackModifierBits());
+        }
+        return true;
+      })
+      .add(emscripten_set_mousedown_callback_on_thread);
+
+    // fOnMouseEnter
+    fOnMouseEnter
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        if(fMouse.fCursorEnterCallback)
+        {
+          fMouse.fCursorEnterCallback(asOpaquePtr(), GLFW_TRUE);
+          return true;
+        }
+        return false;
+      })
+      .add(emscripten_set_mouseenter_callback_on_thread);
+
+    // fOnMouseLeave
+    fOnMouseLeave
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        if(fMouse.fCursorEnterCallback)
+        {
+          fMouse.fCursorEnterCallback(asOpaquePtr(), GLFW_FALSE);
+          return true;
+        }
+        return false;
+      })
+      .add(emscripten_set_mouseleave_callback_on_thread);
+
+    // fOnMouseWheel
+    fOnMouseWheel
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenWheelEvent *iEvent) {
+        if(fMouse.fScrollCallback)
+        {
+          // Note: this code is copied/inspired by SDL implementation
+          double multiplier;
+          switch(iEvent->deltaMode)
+          {
+            case DOM_DELTA_PIXEL: multiplier = 1.0 / 100.0; break; // 100 pixels make up a step.
+            case DOM_DELTA_LINE:  multiplier = 1.0 / 3.0;   break; // 3 lines make up a step.
+            case DOM_DELTA_PAGE:  multiplier = 80.0;        break; // A page makes up 80 steps.
+            default: return false; // should not happen
+          }
+          fMouse.fScrollCallback(asOpaquePtr(), iEvent->deltaX * -multiplier, iEvent->deltaY * -multiplier);
+          return true;
+        }
+        return false;
+      })
+      .add(emscripten_set_wheel_callback_on_thread);
+
+    // keyboard
+    // note: keyboard events are handled in context because target is "window"
+
+    // fOnFocusChange
+    fOnFocusChange
+      .target(selector)
+      .listener([this](int eventType, const EmscriptenFocusEvent *iEvent) { return onFocusChange(true); })
+      .add(emscripten_set_focus_callback_on_thread);
+
+    // fOnBlurChange
+    fOnBlurChange
+      .target(selector)
+      .listener([this](int eventType, const EmscriptenFocusEvent *iEvent) { return onFocusChange(false); })
+      .add(emscripten_set_blur_callback_on_thread);
+  }
+  else
+  {
+    fOnMouseMove.remove();
+    fOnMouseButtonDown.remove();
+    fOnMouseEnter.remove();
+    fOnMouseLeave.remove();
+    fOnMouseWheel.remove();
+    fOnFocusChange.remove();
+    fOnBlurChange.remove();
+  }
 }
 
 //------------------------------------------------------------------------
