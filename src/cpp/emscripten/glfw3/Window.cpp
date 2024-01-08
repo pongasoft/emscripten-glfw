@@ -27,6 +27,7 @@
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emscripten_glfw3_context_window_get_size(GLFWwindow *iWindow, double *iWidth, double *iHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
 float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
@@ -232,7 +233,7 @@ bool Window::onResize()
   if(isResizable())
   {
     double width, height;
-    emscripten_get_element_css_size(getCanvasResizeSelector(), &width, &height);
+    emscripten_glfw3_context_window_get_size(asOpaquePtr(), &width, &height);
     resize(static_cast<int>(std::floor(width)), static_cast<int>(std::floor(height)));
     return true;
   }

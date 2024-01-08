@@ -47,6 +47,7 @@ struct Event
     opacity100,
     close,
     toggleHiDPIAware,
+    toggleResizable
   };
 
   Type fType;
@@ -100,6 +101,7 @@ bool handleEvents()
       case Event::Type::opacity100: if(triangle) triangle->setOpacity(1.0f); break;
       case Event::Type::close: if(triangle) triangle->close(); break;
       case Event::Type::toggleHiDPIAware: if(triangle) triangle->toggleHiDPIAware(); break;
+      case Event::Type::toggleResizable: if(triangle) triangle->toggleResizable(); break;
       default: break;
     }
   }

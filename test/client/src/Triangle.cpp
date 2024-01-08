@@ -578,11 +578,13 @@ void Triangle::updateValues()
   setHtmlValue(fWindow, "glfwGetWindowAttrib-visible", "%s", visible ? "visible" : "hidden");
   setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
 
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-focused", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED)));
+
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-resizable", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_RESIZABLE)));
+
   auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
   setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", glfwBoolToString(hiDPIAware));
   setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "Disable" : "Enable");
-
-  setHtmlValue(fWindow, "glfwGetWindowAttrib-focused", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED)));
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
@@ -700,10 +702,26 @@ void Triangle::close()
 }
 
 //------------------------------------------------------------------------
+// toggleWindowAttrib
+//------------------------------------------------------------------------
+static void toggleWindowAttrib(GLFWwindow *iWindow, int iAttrib)
+{
+  auto value = glfwGetWindowAttrib(iWindow, iAttrib);
+  glfwSetWindowAttrib(iWindow, iAttrib, value == GLFW_FALSE ? GLFW_TRUE : GLFW_FALSE);
+}
+
+//------------------------------------------------------------------------
 // Triangle::toggleHiDPIAware
 //------------------------------------------------------------------------
 void Triangle::toggleHiDPIAware()
 {
-  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
-  glfwSetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR, hiDPIAware == GLFW_FALSE ? GLFW_TRUE : GLFW_FALSE);
+  toggleWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
+}
+
+//------------------------------------------------------------------------
+// Triangle::toggleResizable
+//------------------------------------------------------------------------
+void Triangle::toggleResizable()
+{
+  toggleWindowAttrib(fWindow, GLFW_RESIZABLE);
 }
