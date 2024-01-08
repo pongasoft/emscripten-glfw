@@ -28,6 +28,7 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 }
 
 #define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
+#define GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR  0x00027002
 
 std::vector<std::shared_ptr<Triangle>> kTriangles{};
 
@@ -120,6 +121,7 @@ int main()
   GLFWwindow *window1{};
   if(canvas1Enabled)
   {
+    glfwDefaultWindowHints();
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
     window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
@@ -133,8 +135,10 @@ int main()
   GLFWwindow *window2{};
   if(canvas2Enabled)
   {
+    glfwDefaultWindowHints();
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
+    glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR, "#canvas2-container");
     window2 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
     if(!window2)
     {

@@ -158,6 +158,12 @@ let impl = {
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
 
+      if(ctx.fResizeObserver)
+      {
+        ctx.fResizeObserver.disconnect();
+        delete ctx.fResizeObserver;
+      }
+
       delete GLFW3.fCanvasContexts[canvasId];
     }
   },
@@ -206,6 +212,39 @@ let impl = {
       ctx.setCSSValue("display", "none");
     else
       ctx.restoreCSSValue("display");
+  },
+
+  emscripten_glfw3_context_window_set_resize_callback__deps: ['$findEventTarget'],
+  emscripten_glfw3_context_window_set_resize_callback: (canvasId, canvasResizeSelector, resizeCallback, resizeCallbackUserData) => {
+    const ctx = GLFW3.fCanvasContexts[canvasId];
+
+    if(ctx.fResizeObserver)
+    {
+      ctx.fResizeObserver.disconnect();
+      delete ctx.fResizeCallback;
+      delete ctx.fResizeObserver;
+    }
+
+    if(canvasResizeSelector) {
+      canvasResizeSelector = UTF8ToString(canvasResizeSelector);
+      const canvasResize =  findEventTarget(canvasResizeSelector);
+      if(!canvasResize)
+        return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+      ctx.fResizeCallback = resizeCallback;
+      ctx.fResizeObserver = new ResizeObserver((entries) => {
+        const ctx = GLFW3.fCanvasContexts[canvasId];
+        if(ctx.fResizeCallback) {
+          for(const entry of entries) {
+            if(entry.target === canvasResize) {
+              {{{ makeDynCall('vp', 'ctx.fResizeCallback') }}}(resizeCallbackUserData);
+            }
+          }
+        }
+      });
+      ctx.fResizeObserver.observe(canvasResize);
+    }
+
+    return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
   emscripten_glfw3_context_gl_init: (canvasId) => {

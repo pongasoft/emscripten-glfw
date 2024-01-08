@@ -33,6 +33,8 @@ float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
 bool emscripten_glfw3_context_window_get_computed_visibility(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
+using ResizeCallback = void (*)(void *);
+int emscripten_glfw3_context_window_set_resize_callback(GLFWwindow *iWindow, char const *iCanvasResizeSelector, ResizeCallback iResizeCallback, void *iResizeCallbackUserData);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -61,6 +63,15 @@ const std::array<Cursor, 6> Cursor::kCursors = {
 const Cursor Cursor::kCursorHidden{0, "none"};
 
 //------------------------------------------------------------------------
+// WindowResizeCallback
+//------------------------------------------------------------------------
+void WindowResizeCallback(void *iUserData)
+{
+  auto window = reinterpret_cast<Window *>(iUserData);
+  window->onResize();
+}
+
+//------------------------------------------------------------------------
 // Window::Window
 //------------------------------------------------------------------------
 Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
@@ -74,7 +85,7 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
 //------------------------------------------------------------------------
 // Window::init
 //------------------------------------------------------------------------
-void Window::init()
+void Window::init(int iWidth, int iHeight)
 {
   fOpacity = emscripten_glfw3_context_window_get_computed_opacity(asOpaquePtr());
   fVisible = emscripten_glfw3_context_window_get_computed_visibility(asOpaquePtr());
@@ -84,6 +95,14 @@ void Window::init()
 
   if(fConfig.fFocused)
     focus();
+
+  if(isResizable())
+  {
+    if(!setResizable(true)) // will set callback and update size
+      setSize(iWidth, iHeight);
+  }
+  else
+    setSize(iWidth, iHeight);
 }
 
 //------------------------------------------------------------------------
@@ -180,6 +199,47 @@ void Window::setSize(int iWidth, int iHeight)
 }
 
 //------------------------------------------------------------------------
+// Window::setResizable
+//------------------------------------------------------------------------
+bool Window::setResizable(bool iResizable)
+{
+  fConfig.fResizable = toGlfwBool(iResizable);
+
+  if(isResizable())
+  {
+    if(emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(),
+                                                           fConfig.fCanvasResizeSelector->c_str(),
+                                                           WindowResizeCallback,
+                                                           this) != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid canvas resize selector [%s]", fConfig.fCanvasResizeSelector->c_str());
+      fConfig.fCanvasResizeSelector = std::nullopt;
+      return false;
+    }
+    else
+      onResize();
+  }
+  else
+    emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(), nullptr, nullptr, nullptr);
+  return true;
+}
+
+//------------------------------------------------------------------------
+// Window::onResize
+//------------------------------------------------------------------------
+bool Window::onResize()
+{
+  if(isResizable())
+  {
+    double width, height;
+    emscripten_get_element_css_size(getCanvasResizeSelector(), &width, &height);
+    resize(static_cast<int>(std::floor(width)), static_cast<int>(std::floor(height)));
+    return true;
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------
 // Window::setCursorPos
 //------------------------------------------------------------------------
 void Window::setCursorPos(Vec2<double> const &iPos)
@@ -236,6 +296,9 @@ int Window::getAttrib(int iAttrib)
     case GLFW_SCALE_TO_MONITOR:
       return fConfig.fScaleToMonitor;
 
+    case GLFW_RESIZABLE:
+      return fConfig.fResizable;
+
     default:
       kErrorHandler.logWarning("glfwGetWindowAttrib: attrib [%d] not supported", iAttrib);
       return 0;
@@ -259,11 +322,15 @@ void Window::setAttrib(int iAttrib, int iValue)
       break;
 
     case GLFW_FOCUS_ON_SHOW:
-      fConfig.fFocusOnShow = iValue;
+      fConfig.fFocusOnShow = toGlfwBool(iValue);
       break;
 
     case GLFW_SCALE_TO_MONITOR:
-      maybeRescale([this, iValue]() { fConfig.fScaleToMonitor = iValue; });
+      maybeRescale([this, iValue]() { fConfig.fScaleToMonitor = toGlfwBool(iValue); });
+      break;
+
+    case GLFW_RESIZABLE:
+      setResizable(toCBool(iValue));
       break;
 
     default:

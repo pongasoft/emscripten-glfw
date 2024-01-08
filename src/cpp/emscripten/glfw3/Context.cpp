@@ -435,8 +435,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
       kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector);
     return nullptr;
   }
-  window->init();
-  window->setSize(iWidth, iHeight);
+  window->init(iWidth, iHeight);
 
   if(!window->createGLContext())
     return nullptr;
@@ -508,11 +507,11 @@ void Context::setWindowHint(int iHint, int iValue)
 
     // Window
     case GLFW_SCALE_TO_MONITOR:
-      fConfig.fScaleToMonitor = toGlfwBool(iValue);;
+      fConfig.fScaleToMonitor = toGlfwBool(iValue);
       break;
 
     case GLFW_FOCUS_ON_SHOW:
-      fConfig.fFocusOnShow = toGlfwBool(iValue);;
+      fConfig.fFocusOnShow = toGlfwBool(iValue);
       break;
 
     case GLFW_VISIBLE:
@@ -543,7 +542,6 @@ void Context::setWindowHint(int iHint, int iValue)
     default:
       kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
   }
-
 }
 
 // Making up a hint that is not currently used: TODO how to add to glfw???

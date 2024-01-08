@@ -15,6 +15,16 @@
       display: none;
     }
 
+    .handle {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background-color: #444444;
+      width: 10px;
+      height: 10px;
+      cursor: nwse-resize;
+    }
+
     canvas.emscripten {
       margin: 20px;
       border: 0px none;
@@ -39,6 +49,26 @@
     #actions input {
       font-family: monospace;
       font-size: smaller;
+    }
+
+    #canvases {
+      display: inline-block;
+    }
+
+    #canvas1 {
+      float: left;
+    }
+
+    #canvas2-container {
+      margin: 20px;
+      width: 300px;
+      height: 200px;
+      position: relative;
+      float: right;
+    }
+
+    #canvas2 {
+      margin: 0;
     }
 
     .table-bordered {
@@ -76,8 +106,10 @@
   </style>
 </head>
 <body>
-<canvas class=emscripten id=canvas1 style="width: 285px; height: 190px;" oncontextmenu=event.preventDefault() tabindex=0></canvas>
-<canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=0></canvas>
+<div id="canvases">
+  <canvas class=emscripten id=canvas1 style="width: 285px; height: 190px;" oncontextmenu=event.preventDefault() tabindex=0></canvas>
+  <div id="canvas2-container"><div id="canvas2-handle" class="handle"></div><canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=0></canvas></div>
+</div>
 <div id="canvas-details">
   <table class="table-bordered">
     <thead>
@@ -331,6 +363,38 @@
 
   const c2EnableAction = document.getElementById('canvas2-enable-action');
   c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable"
+
+  function makeResizable(resizableSelector, handleSelector) {
+    const resizable = document.querySelector(resizableSelector);
+    const handle = document.querySelector(handleSelector);
+    var isResizing = false;
+    var lastDownX = 0;
+    var lastDownY = 0;
+
+    handle.addEventListener('mousedown', function(e) {
+      isResizing = true;
+      lastDownX = e.clientX;
+      lastDownY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!isResizing) {
+        return;
+      }
+      var offsetX = lastDownX - e.clientX;
+      var offsetY = lastDownY - e.clientY;
+      resizable.style.width = (resizable.offsetWidth - offsetX) + 'px';
+      resizable.style.height = (resizable.offsetHeight - offsetY) + 'px';
+      lastDownX = e.clientX;
+      lastDownY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', function(e) {
+      isResizing = false;
+    });
+  }
+
+  makeResizable("#canvas2-container", "#canvas2-handle");
 
 </script>
 {{{ SCRIPT }}}

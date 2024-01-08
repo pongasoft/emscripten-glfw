@@ -21,6 +21,7 @@
 
 #include <GLFW/glfw3.h>
 #include <string>
+#include <optional>
 
 namespace emscripten::glfw3 {
 
@@ -42,9 +43,12 @@ struct Config
   // Window
   glfw_bool_t fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
   glfw_bool_t fFocusOnShow{GLFW_TRUE};     // GLFW_FOCUS_ON_SHOW
+  glfw_bool_t fResizable{GLFW_TRUE};       // GLFW_RESIZABLE
   glfw_bool_t fVisible{GLFW_TRUE};         // GLFW_VISIBLE
   glfw_bool_t fFocused{GLFW_TRUE};         // GLFW_FOCUSED
-  std::string fCanvasSelector{kDefaultCanvasSelector};
+
+  std::string fCanvasSelector{kDefaultCanvasSelector}; // GLFW_EMSCRIPTEN_CANVAS_SELECTOR
+  std::optional<std::string> fCanvasResizeSelector{};  // GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR
 
   // Framebuffer
   int fAlphaBits   {8};  // GLFW_ALPHA_BITS

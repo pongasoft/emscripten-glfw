@@ -70,6 +70,7 @@ public:
     if(oHeight) *oHeight = getHeight();
   }
   void setSize(int iWidth, int iHeight);
+  void resize(int iWidth, int iHeight) { setSize(iWidth, iHeight); }
   inline int getFramebufferWidth() const {  return fFramebufferWidth; }
   inline int getFramebufferHeight() const { return fFramebufferHeight; }
   inline void getFramebufferSize(int* oWidth, int* oHeight) const
@@ -154,8 +155,11 @@ public:
 
   friend class Context;
 
+public: // should be private but called from static
+  bool onResize();
+
 protected:
-  void init();
+  void init(int iWidth, int iHeight);
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
@@ -164,6 +168,9 @@ protected:
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);
+  bool setResizable(bool iResizable);
+  inline char const *getCanvasResizeSelector() const { return fConfig.fCanvasResizeSelector ? fConfig.fCanvasResizeSelector->data() : nullptr; }
+  inline bool isResizable() const { return toCBool(fConfig.fResizable) && fConfig.fCanvasResizeSelector; }
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
