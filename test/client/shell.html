@@ -403,8 +403,11 @@
       }
       var offsetX = lastDownX - e.clientX;
       var offsetY = lastDownY - e.clientY;
-      resizable.style.width = (resizable.offsetWidth - offsetX) + 'px';
-      resizable.style.height = (resizable.offsetHeight - offsetY) + 'px';
+      const style = getComputedStyle(resizable);
+      const resizableWidth = resizable.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const resizableHeight = resizable.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      resizable.style.width = (Math.floor(resizableWidth) - offsetX) + 'px';
+      resizable.style.height = (Math.floor(resizableHeight) - offsetY) + 'px';
       lastDownX = e.clientX;
       lastDownY = e.clientY;
     });

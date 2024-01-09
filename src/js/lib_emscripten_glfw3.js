@@ -193,9 +193,11 @@ let impl = {
       {{{ makeSetValue('height', '0', 'window.innerHeight', 'double') }}};
     } else {
       const target = ctx.fCanvasResize ? ctx.fCanvasResize : ctx.fCanvas;
-      const rect = getBoundingClientRect(target);
-      {{{ makeSetValue('width', '0', 'rect.width', 'double') }}};
-      {{{ makeSetValue('height', '0', 'rect.height', 'double') }}};
+      const style = getComputedStyle(target);
+      const targetWidth = target.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const targetHeight = target.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      {{{ makeSetValue('width', '0', 'targetWidth', 'double') }}};
+      {{{ makeSetValue('height', '0', 'targetHeight', 'double') }}};
     }
   },
 
