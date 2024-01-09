@@ -15,6 +15,10 @@
       display: none;
     }
 
+    .bordered {
+      border: solid 2px black;
+    }
+
     .handle {
       position: absolute;
       bottom: 0;
@@ -64,11 +68,22 @@
       width: 300px;
       height: 200px;
       position: relative;
+    }
+
+    #canvas2-area {
       float: right;
     }
 
     #canvas2 {
       margin: 0;
+    }
+
+    #canvas2-caption {
+      text-align: center;
+      font-family: monospace;
+      font-size: smaller;
+      font-style: italic;
+      margin-top: -15px;
     }
 
     .table-bordered {
@@ -108,7 +123,13 @@
 <body>
 <div id="canvases">
   <canvas class=emscripten id=canvas1 style="width: 285px; height: 190px;" oncontextmenu=event.preventDefault() tabindex=0></canvas>
-  <div id="canvas2-container"><div id="canvas2-handle" class="handle"></div><canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=0></canvas></div>
+  <div id="canvas2-area">
+    <div class="bordered" id="canvas2-container"> <!-- the container used to determine the size of the container -->
+      <div id="canvas2-handle" class="handle"></div> <!-- the handle used to resize the container -->
+      <canvas class=emscripten id=canvas2 oncontextmenu=event.preventDefault() tabindex=0></canvas>
+    </div>
+    <div id="canvas2-caption"><span class="size-limit hidden">Size Limits: On </span><span class="aspect-ratio hidden">Aspect Ratio: On</span></div>
+  </div>
 </div>
 <div id="canvas-details">
   <table class="table-bordered">
@@ -195,13 +216,24 @@
     </tr>
     <tr class="glfwShowWindow">
       <td class="action">glfwShowWindow / glfwHideWindow</td>
-      <td><input class="canvas1" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas1')"></td>
-      <td><input class="canvas2" type="button" value="Toggle" onclick="Module.pushEvent('toggle_show', '#canvas2')"></td>
+      <td><input class="canvas1" type="button" value="Toggle Show/Hide" onclick="Module.pushEvent('toggle_show', '#canvas1')"></td>
+      <td><input class="canvas2" type="button" value="Toggle Show/Hide" onclick="Module.pushEvent('toggle_show', '#canvas2')"></td>
     </tr>
     <tr class="glfwShowWindow">
       <td class="action">glfwSetWindowAttrib(GLFW_RESIZABLE)</td>
       <td>-</td>
-      <td><input class="canvas2" type="button" value="Toggle" onclick="Module.toggleHTMLElement('#canvas2-handle'); Module.pushEvent('toggle_resizable', '#canvas2')"></td>
+      <td><input class="canvas2" type="button" value="Toggle Resizable"
+                 onclick="Module.toggleCSSClass('#canvas2-container', 'bordered'); Module.toggleHTMLElement('#canvas2-handle'); Module.pushEvent('toggle_resizable', '#canvas2')"></td>
+    </tr>
+    <tr class="glfwSetWindowSizeLimits">
+      <td class="action">glfwSetWindowSizeLimits(150x100, 300x200)</td>
+      <td>-</td>
+      <td><input class="canvas2" type="button" value="Toggle Size Limits" onclick="Module.toggleSizeLimits('#canvas2')"></td>
+    </tr>
+    <tr class="glfwSetWindowAspectRatio">
+      <td class="action">glfwSetWindowAspectRatio(3:2)</td>
+      <td>-</td>
+      <td><input class="canvas2" type="button" value="Toggle Aspect Ratio" onclick="Module.toggleAspectRatio('#canvas2')"></td>
     </tr>
     <tr>
       <td class="action">glfwSetWindowShouldClose</td>
@@ -286,10 +318,16 @@
     })(),
     canvas1Enabled: isCanvasEnabled("canvas1"),
     canvas2Enabled: isCanvasEnabled("canvas2"),
+    onCanvasSizeChanged: {},
+    onWindowSizeChanged: (window, width, height) => {
+      const canvasSelector = Module.glfwGetCanvasSelector(window);
+      if(Module.onCanvasSizeChanged[canvasSelector])
+        Module.onCanvasSizeChanged[canvasSelector](width, height);
+    },
     eventTypes: {
       exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5,
       opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10,
-      toggle_resizable: 11
+      toggle_resizable: 11, toggle_size_limits: 12, toggle_aspect_ratio: 13
     },
     events: [],
     hasEvents: () => { return Module.events.length > 0; },
@@ -297,16 +335,17 @@
       Module.events.push({type: Module.eventTypes[name], canvas: Module.glfwGetWindow(canvasSelector)});
     },
     popEvent: () => { return Module.events.shift(); },
-    toggleHTMLElement: (selector) => {
+    toggleCSSClass: (selector, cssClass) => {
       const element = document.querySelector(selector);
       if(element)
       {
-        if(element.classList.contains('hidden'))
-          element.classList.remove('hidden');
+        if(element.classList.contains(cssClass))
+          element.classList.remove(cssClass);
         else
-          element.classList.add('hidden');
+          element.classList.add(cssClass);
       }
     },
+    toggleHTMLElement: (selector) => Module.toggleCSSClass(selector, 'hidden'),
     showHTMLElement: (selector) => {
       const element = document.querySelector(selector);
       if(element)
@@ -322,6 +361,14 @@
         if(!element.classList.contains('hidden'))
           element.classList.add('hidden');
       }
+    },
+    toggleSizeLimits: (canvas) => {
+      Module.pushEvent('toggle_size_limits', canvas);
+      Module.toggleHTMLElement(canvas + '-caption .size-limit');
+    },
+    toggleAspectRatio: (canvas) => {
+      Module.pushEvent('toggle_aspect_ratio', canvas);
+      Module.toggleHTMLElement(canvas + '-caption .aspect-ratio');
     },
   };
 
@@ -345,40 +392,62 @@
   const c2EnableAction = document.getElementById('canvas2-enable-action');
   c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable"
 
-  function makeResizable(resizableSelector, handleSelector) {
+  function makeResizable(canvasSelector, resizableSelector, handleSelector) {
+    const canvas = document.querySelector(canvasSelector);
     const resizable = document.querySelector(resizableSelector);
     const handle = document.querySelector(handleSelector);
-    var isResizing = false;
     var lastDownX = 0;
     var lastDownY = 0;
+    var size = undefined;
+
+    Module.onCanvasSizeChanged[canvasSelector] = (width, height) => {
+      if(!size) { // while not resizing (otherwise it conflicts)
+        resizable.style.width = width + 'px';
+        resizable.style.height = height + 'px';
+      }
+    }
+
+    function computeSize(element) {
+      const style = getComputedStyle(element);
+      return { width: parseFloat(style.width), height: parseFloat(style.height) };
+    }
 
     handle.addEventListener('mousedown', function(e) {
-      isResizing = true;
+      size = computeSize(resizable);
       lastDownX = e.clientX;
       lastDownY = e.clientY;
     });
 
     window.addEventListener('mousemove', function(e) {
-      if (!isResizing) {
+      if (!size) {
         return;
       }
       var offsetX = lastDownX - e.clientX;
       var offsetY = lastDownY - e.clientY;
-      const style = getComputedStyle(resizable);
-      const resizableWidth = resizable.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      const resizableHeight = resizable.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-      resizable.style.width = (Math.floor(resizableWidth) - offsetX) + 'px';
-      resizable.style.height = (Math.floor(resizableHeight) - offsetY) + 'px';
+      size.width -= offsetX;
+      size.height -= offsetY;
+      if(size.width < 0)
+        size.width = 0;
+      if(size.height < 0)
+        size.height = 0;
+      resizable.style.width = size.width + 'px';
+      resizable.style.height = size.height + 'px';
       lastDownX = e.clientX;
       lastDownY = e.clientY;
     });
 
     window.addEventListener('mouseup', function(e) {
-      isResizing = false;
+      if(size)
+      {
+        const canvasSize = computeSize(canvas);
+        resizable.style.width = canvasSize.width + 'px';
+        resizable.style.height = canvasSize.height + 'px';
+        size = undefined;
+      }
     });
   }
 
-  makeResizable("#canvas2-container", "#canvas2-handle");
+  makeResizable("#canvas2", "#canvas2-container", "#canvas2-handle");
 
   // var debug = (key, message) => {
   //   var elt = document.querySelector("#debug ." + key.toString());

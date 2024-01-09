@@ -6,6 +6,7 @@ let impl = {
     // exports
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
     Module["glfwGetWindow"] = (canvasSelector) => { const ctx = GLFW3.findContextBySelector(canvasSelector); return ctx ? ctx.id : null; };
+    Module["glfwGetCanvasSelector"] = (window) => { const ctx = GLFW3.fCanvasContexts[window]; return ctx ? ctx.selector : null; };
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
@@ -61,6 +62,7 @@ let impl = {
     console.log("emscripten_glfw3_context_init()");
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
+    specialHTMLTargets["window"] = window;
     GLFW3.fCanvasContexts = {};
     GLFW3.fCurrentCanvasContext = null;
 
@@ -158,10 +160,10 @@ let impl = {
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
 
-      if(ctx.fResizeObserver)
+      if(ctx.fCanvasResize)
       {
-        ctx.fResizeObserver.disconnect();
-        delete ctx.fResizeObserver;
+        ctx.fCanvasResize.observer.disconnect();
+        delete ctx.fCanvasResize;
       }
 
       delete GLFW3.fCanvasContexts[canvasId];
@@ -191,31 +193,17 @@ let impl = {
     if(!ctx.fCanvasResize)
       return;
 
-    if(ctx.fCanvasResize === window) {
-      {{{ makeSetValue('width', '0', 'window.innerWidth', 'double') }}};
-      {{{ makeSetValue('height', '0', 'window.innerHeight', 'double') }}};
+    if(ctx.fCanvasResize.target === window) {
+      {{{ makeSetValue('width', '0', 'window.innerWidth', 'i32') }}};
+      {{{ makeSetValue('height', '0', 'window.innerHeight', 'i32') }}};
     } else {
-      const target = ctx.fCanvasResize;
+      const target = ctx.fCanvasResize.target;
       const style = getComputedStyle(target);
-      const targetWidth = target.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      const targetHeight = target.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-      {{{ makeSetValue('width', '0', 'targetWidth', 'double') }}};
-      {{{ makeSetValue('height', '0', 'targetHeight', 'double') }}};
+      const targetWidth = parseInt(style.width, 10);
+      const targetHeight = parseInt(style.height, 10);
+      {{{ makeSetValue('width', '0', 'targetWidth', 'i32') }}};
+      {{{ makeSetValue('height', '0', 'targetHeight', 'i32') }}};
     }
-  },
-
-  emscripten_glfw3_context_window_set_resize: (canvasId, width, height) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
-
-    // can't resize window
-    if(!ctx.fCanvasResize || ctx.fCanvasResize === window)
-      return {{{ cDefs.EMSCRIPTEN_RESULT_INVALID_PARAM }}};
-
-    const target = ctx.fCanvasResize;
-    target.style.setProperty('width', width + 'px');
-    target.style.setProperty('height', height + 'px');
-
-    return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
   emscripten_glfw3_context_window_set_cursor: (canvasId, cursor) => {
@@ -251,46 +239,46 @@ let impl = {
   emscripten_glfw3_context_window_set_resize_callback: (canvasId, canvasResizeSelector, resizeCallback, resizeCallbackUserData) => {
     const ctx = GLFW3.fCanvasContexts[canvasId];
 
-    if(ctx.fResizeObserver)
+    if(ctx.fCanvasResize)
     {
-      ctx.fResizeObserver.disconnect();
+      ctx.fCanvasResize.observer.disconnect();
       delete ctx.fCanvasResize;
-      delete ctx.fResizeCallback;
-      delete ctx.fResizeObserver;
     }
 
     if(canvasResizeSelector) {
       canvasResizeSelector = UTF8ToString(canvasResizeSelector);
 
-      const canvasResize =  canvasResizeSelector === "window" ? window : findEventTarget(canvasResizeSelector);
+      const canvasResize =  findEventTarget(canvasResizeSelector);
 
       if(!canvasResize)
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
 
-      ctx.fCanvasResize = canvasResize;
-      ctx.fResizeCallback = resizeCallback;
+      ctx.fCanvasResize = {
+        target: canvasResize,
+        callback: resizeCallback,
+      };
 
       if(canvasResize === window) {
         const listener = (e) => {
-          {{{ makeDynCall('vp', 'ctx.fResizeCallback') }}}(resizeCallbackUserData);
+          {{{ makeDynCall('vp', 'ctx.fCanvasResize.callback') }}}(resizeCallbackUserData);
         };
-        ctx.fResizeObserver = {
+        ctx.fCanvasResize.observer = {
           observe: (elt) => { window.addEventListener('resize', listener); },
           disconnect: () => { window.removeEventListener('resize', listener) }
         }
       } else {
-        ctx.fResizeObserver = new ResizeObserver((entries) => {
+        ctx.fCanvasResize.observer = new ResizeObserver((entries) => {
           const ctx = GLFW3.fCanvasContexts[canvasId];
-          if(ctx.fResizeCallback) {
+          if(ctx.fCanvasResize) {
             for(const entry of entries) {
               if(entry.target === canvasResize) {
-                {{{ makeDynCall('vp', 'ctx.fResizeCallback') }}}(resizeCallbackUserData);
+                {{{ makeDynCall('vp', 'ctx.fCanvasResize.callback') }}}(resizeCallbackUserData);
               }
             }
           }
         });
       }
-      ctx.fResizeObserver.observe(canvasResize);
+      ctx.fCanvasResize.observer.observe(canvasResize);
     }
 
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};

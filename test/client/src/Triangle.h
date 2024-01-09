@@ -41,6 +41,8 @@ public:
   void close();
   void toggleHiDPIAware();
   void toggleResizable();
+  void toggleSizeLimits();
+  void toggleAspectRatio();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;
@@ -72,6 +74,8 @@ private:
   GLfloat fBgBlue{0};
   GLfloat fBgAlpha{1.0f};
   int fCursor{};
+  bool fHasSizeLimits{};
+  bool fHasAspectRatio{};
 };
 
 

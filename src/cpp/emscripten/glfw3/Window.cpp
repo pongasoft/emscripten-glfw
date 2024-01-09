@@ -27,8 +27,7 @@
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_context_window_get_resize(GLFWwindow *iWindow, double *iWidth, double *iHeight);
-int emscripten_glfw3_context_window_set_resize(GLFWwindow *iWindow, int iWidth, int iHeight);
+void emscripten_glfw3_context_window_get_resize(GLFWwindow *iWindow, int *iWidth, int *iHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
 float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
@@ -98,13 +97,13 @@ void Window::init(int iWidth, int iHeight)
   if(fConfig.fFocused)
     focus();
 
-  if(isResizable())
+  if(isResizableByUser())
   {
     if(!setResizable(true)) // will set callback and update size
-      setCanvasSize(iWidth, iHeight);
+      setCanvasSize({iWidth, iHeight});
   }
   else
-    setCanvasSize(iWidth, iHeight);
+    setCanvasSize({iWidth, iHeight});
 }
 
 //------------------------------------------------------------------------
@@ -146,7 +145,7 @@ bool Window::maybeRescale(std::function<void()> const &iAction)
   iAction();
   auto scaleChanged = oldScale != getScale();
   if(scaleChanged)
-    setCanvasSize(fWidth, fHeight);
+    setCanvasSize(fSize);
   return scaleChanged;
 }
 
@@ -163,46 +162,110 @@ void Window::setMonitorScale(float iScale)
 }
 
 //------------------------------------------------------------------------
-// Window::setSize
+// Window::maybeApplySizeConstraints
 //------------------------------------------------------------------------
-void Window::setSize(int iWidth, int iHeight)
+Vec2<int> Window::maybeApplySizeConstraints(Vec2<int> const &iSize) const
 {
-  if(isResizable())
+  if(isFullscreen() || !isResizable())
+    return iSize;
+
+  Vec2<int> size = iSize;
+
+  if(fMinSize.width != GLFW_DONT_CARE && size.width < fMinSize.width)
+    size.width = fMinSize.width;
+  if(fMinSize.height != GLFW_DONT_CARE && size.height < fMinSize.height)
+    size.height = fMinSize.height;
+
+  if(fMaxSize.width != GLFW_DONT_CARE && size.width > fMaxSize.width)
+    size.width = fMaxSize.width;
+  if(fMaxSize.height != GLFW_DONT_CARE && size.height > fMaxSize.height)
+    size.height = fMaxSize.height;
+
+  if(fAspectRatioNumerator != GLFW_DONT_CARE && fAspectRatioDenominator != GLFW_DONT_CARE)
   {
-    if(emscripten_glfw3_context_window_set_resize(asOpaquePtr(), iWidth, iHeight) != EMSCRIPTEN_RESULT_SUCCESS)
-    {
-      // can't resize window for example...
-      setCanvasSize(iWidth, iHeight);
-    }
+    auto ratio = static_cast<float>(fAspectRatioNumerator) / static_cast<float>(fAspectRatioDenominator);
+    auto sizeRatio = static_cast<float>(size.width) / static_cast<float>(size.height);
+    if(sizeRatio < ratio)
+      size.width = static_cast<int>(std::round(static_cast<float>(size.height) * ratio));
+    else
+      size.height = static_cast<int>(std::round(static_cast<float>(size.width) / ratio));
+  }
+
+  return size;
+}
+
+//------------------------------------------------------------------------
+// Window::setSizeLimits
+//------------------------------------------------------------------------
+void Window::setSizeLimits(int iMinWidth, int iMinHeight, int iMaxWidth, int iMaxHeight)
+{
+  if((iMinWidth == GLFW_DONT_CARE || iMinWidth >= 0) &&
+     (iMinHeight == GLFW_DONT_CARE || iMinHeight >= 0) &&
+     (iMaxWidth == GLFW_DONT_CARE || (iMaxWidth >= 0 && iMaxWidth > iMinWidth)) &&
+     iMaxHeight == GLFW_DONT_CARE || (iMaxHeight >= 0 && iMaxHeight > iMinHeight))
+  {
+    fMinSize = {iMinWidth, iMinHeight};
+    fMaxSize = {iMaxWidth, iMaxHeight};
+
+    auto newSize = maybeApplySizeConstraints(fSize);
+    if(newSize != fSize)
+      setSize(newSize);
   }
   else
-    setCanvasSize(iWidth, iHeight);
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "glfwSetWindowSizeLimits: Invalid parameter(s) (%d,%d,%d,%d)",
+                           iMinWidth, iMinHeight, iMaxWidth, iMaxHeight);
+  }
+}
+
+//------------------------------------------------------------------------
+// Window::setAspectRatio
+//------------------------------------------------------------------------
+void Window::setAspectRatio(int iNumerator, int iDenominator)
+{
+  if(iNumerator == GLFW_DONT_CARE || iDenominator == GLFW_DONT_CARE)
+  {
+    fAspectRatioNumerator = GLFW_DONT_CARE;
+    fAspectRatioDenominator = GLFW_DONT_CARE;
+    return;
+  }
+
+  if(iNumerator <= 0 || iDenominator <= 0)
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "glfwSetWindowAspectRatio: Invalid parameter(s) (%d,%d)",
+                           iNumerator, iDenominator);
+    return;
+  }
+
+  fAspectRatioNumerator = iNumerator;
+  fAspectRatioDenominator = iDenominator;
+
+  auto newSize = maybeApplySizeConstraints(fSize);
+  if(newSize != fSize)
+    setSize(newSize);
 }
 
 //------------------------------------------------------------------------
 // Window::setCanvasSize
 //------------------------------------------------------------------------
-void Window::setCanvasSize(int iWidth, int iHeight)
+void Window::setCanvasSize(Vec2<int> const &iSize)
 {
-  auto sizeChanged = fWidth != iWidth || fHeight != iHeight;
-  fWidth = iWidth;
-  fHeight = iHeight;
+  auto sizeChanged = fSize != iSize;
+  fSize = iSize;
 
-  int fbWidth = iWidth;
-  int fbHeight = iHeight;
+  auto fbSize = iSize;
 
   if(isHiDPIAware())
   {
-    fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fMonitorScale));
-    fbHeight = static_cast<int>(std::floor(static_cast<float>(iHeight) * fMonitorScale));
+    fbSize.width = static_cast<int>(std::floor(static_cast<float>(iSize.width) * fMonitorScale));
+    fbSize.height = static_cast<int>(std::floor(static_cast<float>(iSize.height) * fMonitorScale));
   }
 
-  auto framebufferSizeChanged = fFramebufferWidth != fbWidth || fFramebufferHeight != fbHeight;
+  auto framebufferSizeChanged = fFramebufferSize != fbSize;
 
-  fFramebufferWidth = fbWidth;
-  fFramebufferHeight = fbHeight;
+  fFramebufferSize = fbSize;
 
-  emscripten_glfw3_context_window_set_size(asOpaquePtr(), fWidth, fHeight, fFramebufferWidth, fFramebufferHeight);
+  emscripten_glfw3_context_window_set_size(asOpaquePtr(), fSize.width, fSize.height, fFramebufferSize.width, fFramebufferSize.height);
 
   if(sizeChanged)
   {
@@ -210,11 +273,20 @@ void Window::setCanvasSize(int iWidth, int iHeight)
     setCursorPos({fMouse.fCursorPos.x, fMouse.fCursorPos.y});
 
     if(fSizeCallback)
-      fSizeCallback(asOpaquePtr(), fWidth, fHeight);
+      fSizeCallback(asOpaquePtr(), fSize.width, fSize.height);
   }
 
   if(framebufferSizeChanged && fFramebufferSizeCallback)
-    fFramebufferSizeCallback(asOpaquePtr(), fFramebufferWidth, fFramebufferHeight);
+    fFramebufferSizeCallback(asOpaquePtr(), fFramebufferSize.width, fFramebufferSize.height);
+}
+
+//------------------------------------------------------------------------
+// Window::resize
+//------------------------------------------------------------------------
+void Window::resize(Vec2<int> const &iSize)
+{
+  if(iSize != fSize)
+    setSize(maybeApplySizeConstraints(iSize));
 }
 
 //------------------------------------------------------------------------
@@ -224,7 +296,7 @@ bool Window::setResizable(bool iResizable)
 {
   fConfig.fResizable = toGlfwBool(iResizable);
 
-  if(isResizable())
+  if(isResizableByUser())
   {
     if(emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(),
                                                            fConfig.fCanvasResizeSelector->c_str(),
@@ -255,11 +327,11 @@ bool Window::setResizable(bool iResizable)
 //------------------------------------------------------------------------
 bool Window::onResize()
 {
-  if(isResizable())
+  if(isResizableByUser())
   {
-    double width, height;
+    int width, height;
     emscripten_glfw3_context_window_get_resize(asOpaquePtr(), &width, &height);
-    resize(static_cast<int>(std::floor(width)), static_cast<int>(std::floor(height)));
+    resize({width, height});
     return true;
   }
   return false;
@@ -271,8 +343,8 @@ bool Window::onResize()
 void Window::setCursorPos(Vec2<double> const &iPos)
 {
   // clamp to window when not in pointer lock mode
-  auto pos = isPointerLock() ? iPos : Vec2<double>{std::clamp(iPos.x, 0.0, static_cast<double>(fWidth)),
-                                                   std::clamp(iPos.y, 0.0, static_cast<double>(fHeight))};
+  auto pos = isPointerLock() ? iPos : Vec2<double>{std::clamp(iPos.x, 0.0, static_cast<double>(fSize.width)),
+                                                   std::clamp(iPos.y, 0.0, static_cast<double>(fSize.height))};
 
   if(fMouse.fCursorPos != pos)
   {
@@ -775,9 +847,8 @@ void Window::onEnterFullscreen(std::optional<Vec2<int>> const &iScreenSize)
   fFullscreen = true;
   if(iScreenSize)
   {
-    fWidthBeforeFullscreen = fWidth;
-    fHeightBeforeFullscreen = fHeight;
-    setSize(iScreenSize->width, iScreenSize->height);
+    fSizeBeforeFullscreen = fSize;
+    setSize(*iScreenSize);
   }
   focus();
 }
@@ -792,12 +863,10 @@ bool Window::onExitFullscreen()
 
   fFullscreen = false;
 
-  if((fWidthBeforeFullscreen && *fWidthBeforeFullscreen != fWidth) || (fHeightBeforeFullscreen && *fHeightBeforeFullscreen != fHeight))
-    setSize(*fWidthBeforeFullscreen, *fHeightBeforeFullscreen);
+  if((fSizeBeforeFullscreen && *fSizeBeforeFullscreen != fSize))
+    setSize(*fSizeBeforeFullscreen);
 
-  fWidthBeforeFullscreen = std::nullopt;
-  fHeightBeforeFullscreen = std::nullopt;
-
+  fSizeBeforeFullscreen = std::nullopt;
 
   return true;
 }

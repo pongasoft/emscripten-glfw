@@ -62,16 +62,18 @@ public:
   inline int getShouldClose() const { return fShouldClose; }
   inline void setShouldClose(int iShouldClose) { fShouldClose = iShouldClose; }
 
-  inline int getWidth() const { return fWidth; }
-  inline int getHeight() const { return fHeight; }
+  inline int getWidth() const { return fSize.width; }
+  inline int getHeight() const { return fSize.height; }
   inline void getSize(int* oWidth, int* oHeight) const
   {
     if(oWidth) *oWidth = getWidth();
     if(oHeight) *oHeight = getHeight();
   }
-  void setSize(int iWidth, int iHeight);
-  inline int getFramebufferWidth() const {  return fFramebufferWidth; }
-  inline int getFramebufferHeight() const { return fFramebufferHeight; }
+  inline void setSize(Vec2<int> const &iSize) { setCanvasSize(iSize); }
+  void setSizeLimits(int iMinWidth, int iMinHeight, int iMaxWidth, int iMaxHeight);
+  void setAspectRatio(int iNumerator, int iDenominator);
+  inline int getFramebufferWidth() const {  return fFramebufferSize.width; }
+  inline int getFramebufferHeight() const { return fFramebufferSize.height; }
   inline void getFramebufferSize(int* oWidth, int* oHeight) const
   {
     if(oWidth) *oWidth = getFramebufferWidth();
@@ -168,10 +170,11 @@ protected:
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);
   bool setResizable(bool iResizable);
-  inline char const *getCanvasResizeSelector() const { return fConfig.fCanvasResizeSelector ? fConfig.fCanvasResizeSelector->data() : nullptr; }
-  inline bool isResizable() const { return toCBool(fConfig.fResizable) && fConfig.fCanvasResizeSelector; }
-  void setCanvasSize(int iWidth, int iHeight);
-  void resize(int iWidth, int iHeight) { setCanvasSize(iWidth, iHeight); }
+  inline bool isResizable() const { return toCBool(fConfig.fResizable); }
+  inline bool isResizableByUser() const { return isResizable() && fConfig.fCanvasResizeSelector; }
+  void setCanvasSize(Vec2<int> const &iSize);
+  void resize(Vec2<int> const &iSize);
+  Vec2<int> maybeApplySizeConstraints(Vec2<int> const &iSize) const;
 
 private:
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
@@ -196,12 +199,13 @@ private:
   bool fVisible{true};
   bool fFullscreen{};
   bool fFocusOnMouse{true};
-  int fWidth{};
-  int fHeight{};
-  int fFramebufferWidth{};
-  int fFramebufferHeight{};
-  std::optional<int> fWidthBeforeFullscreen{};
-  std::optional<int> fHeightBeforeFullscreen{};
+  Vec2<int> fSize{};
+  Vec2<int> fFramebufferSize{};
+  Vec2<int> fMinSize{GLFW_DONT_CARE, GLFW_DONT_CARE};
+  Vec2<int> fMaxSize{GLFW_DONT_CARE, GLFW_DONT_CARE};
+  int fAspectRatioNumerator{GLFW_DONT_CARE};
+  int fAspectRatioDenominator{GLFW_DONT_CARE};
+  std::optional<Vec2<int>> fSizeBeforeFullscreen{};
   float fOpacity{1.0f};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};

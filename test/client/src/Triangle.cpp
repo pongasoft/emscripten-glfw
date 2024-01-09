@@ -339,6 +339,7 @@ void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 void onWindowSizeChange(GLFWwindow* window, int width, int height)
 {
   setHtmlValue(window, "glfwSetWindowSizeCallback", "%dx%d", width, height);
+  EM_ASM({ Module.onWindowSizeChanged($0, $1, $2); }, window, width, height);
 }
 void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
 {
@@ -724,4 +725,28 @@ void Triangle::toggleHiDPIAware()
 void Triangle::toggleResizable()
 {
   toggleWindowAttrib(fWindow, GLFW_RESIZABLE);
+}
+
+//------------------------------------------------------------------------
+// Triangle::toggleSizeLimits
+//------------------------------------------------------------------------
+void Triangle::toggleSizeLimits()
+{
+  if(fHasSizeLimits)
+    glfwSetWindowSizeLimits(fWindow, GLFW_DONT_CARE, GLFW_DONT_CARE, GLFW_DONT_CARE, GLFW_DONT_CARE);
+  else
+    glfwSetWindowSizeLimits(fWindow, 150, 100, 300, 200);
+  fHasSizeLimits = !fHasSizeLimits;
+}
+
+//------------------------------------------------------------------------
+// Triangle::toggleAspectRatio
+//------------------------------------------------------------------------
+void Triangle::toggleAspectRatio()
+{
+  if(fHasAspectRatio)
+    glfwSetWindowAspectRatio(fWindow, GLFW_DONT_CARE, GLFW_DONT_CARE);
+  else
+    glfwSetWindowAspectRatio(fWindow, 3, 2);
+  fHasAspectRatio = !fHasAspectRatio;
 }

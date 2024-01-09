@@ -328,7 +328,27 @@ GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height)
 {
   auto w = getWindow(window);
   if(w)
-    w->setSize(width, height);
+    w->setSize({width, height});
+}
+
+//------------------------------------------------------------------------
+// glfwSetWindowSizeLimits
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowSizeLimits(GLFWwindow* window, int minwidth, int minheight, int maxwidth, int maxheight)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setSizeLimits(minwidth, minheight, maxwidth, maxheight);
+}
+
+//------------------------------------------------------------------------
+// glfwSetWindowAspectRatio
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setAspectRatio(numer, denom);
 }
 
 //------------------------------------------------------------------------
@@ -947,8 +967,6 @@ GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp){ 
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title){ not_implemented(); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images){ not_implemented(); }
 GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos){ not_implemented(); }
-GLFWAPI void glfwSetWindowSizeLimits(GLFWwindow* window, int minwidth, int minheight, int maxwidth, int maxheight){ not_implemented(); }
-GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom){ not_implemented(); }
 GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int* right, int* bottom){ not_implemented(); }
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window){ not_implemented(); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window){ not_implemented(); }
