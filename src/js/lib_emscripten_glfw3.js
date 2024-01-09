@@ -185,20 +185,37 @@ let impl = {
     ctx.setCSSValue("height", height + "px", "important");
   },
 
-  emscripten_glfw3_context_window_get_size: (canvasId, width, height) => {
+  emscripten_glfw3_context_window_get_resize: (canvasId, width, height) => {
     const ctx = GLFW3.fCanvasContexts[canvasId];
+
+    if(!ctx.fCanvasResize)
+      return;
 
     if(ctx.fCanvasResize === window) {
       {{{ makeSetValue('width', '0', 'window.innerWidth', 'double') }}};
       {{{ makeSetValue('height', '0', 'window.innerHeight', 'double') }}};
     } else {
-      const target = ctx.fCanvasResize ? ctx.fCanvasResize : ctx.fCanvas;
+      const target = ctx.fCanvasResize;
       const style = getComputedStyle(target);
       const targetWidth = target.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       const targetHeight = target.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
       {{{ makeSetValue('width', '0', 'targetWidth', 'double') }}};
       {{{ makeSetValue('height', '0', 'targetHeight', 'double') }}};
     }
+  },
+
+  emscripten_glfw3_context_window_set_resize: (canvasId, width, height) => {
+    const ctx = GLFW3.fCanvasContexts[canvasId];
+
+    // can't resize window
+    if(!ctx.fCanvasResize || ctx.fCanvasResize === window)
+      return {{{ cDefs.EMSCRIPTEN_RESULT_INVALID_PARAM }}};
+
+    const target = ctx.fCanvasResize;
+    target.style.setProperty('width', width + 'px');
+    target.style.setProperty('height', height + 'px');
+
+    return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
   emscripten_glfw3_context_window_set_cursor: (canvasId, cursor) => {

@@ -325,45 +325,6 @@
     },
   };
 
-  var debug = (key, message) => {
-    var elt = document.querySelector("#debug ." + key.toString());
-    if(!elt)
-    {
-      const row = document.createElement("tr");
-      const keyCell = document.createElement("td");
-      keyCell.innerHTML = key.toString();
-      row.appendChild(keyCell);
-      elt = document.createElement("td");
-      elt.className = key;
-      row.appendChild(elt);
-      document.querySelector("#debug tbody").appendChild(row);
-    }
-    elt.innerHTML = message.toString();
-  };
-
-  window.onresize = (event) => {
-    debug("window-onresize-innerWidth", window.innerWidth);
-    debug("window-onresize-innerHeight", window.innerHeight);
-  };
-
-  window.onscroll = (event) => {
-    debug("window-onscroll-scrollX", window.scrollX);
-    debug("window-onscroll-scrollY", window.scrollY);
-  }
-
-  document.onkeydown = (e) => {
-    // computing scancode in javascript to see if that works
-    let scancode = 0;
-    for(let i = 0; i < e.code.length; i++) {
-      scancode = ((scancode ^ 0x7E057D79) << 3) ^ e.code.charCodeAt(i);
-    }
-    debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0) + "|" + (scancode >>> 0).toString(16).toUpperCase());
-  }
-
-  document.onfullscreenchange = (e) => {
-    debug("document-onfullscreenchange", document.fullscreenElement ? document.fullscreenElement.id : "none");
-  }
-
   var toggleCanvasVisibility = (id) => {
     if(id === 1)
       Module.canvas1Enabled = !Module.canvas1Enabled;
@@ -418,6 +379,45 @@
   }
 
   makeResizable("#canvas2-container", "#canvas2-handle");
+
+  // var debug = (key, message) => {
+  //   var elt = document.querySelector("#debug ." + key.toString());
+  //   if(!elt)
+  //   {
+  //     const row = document.createElement("tr");
+  //     const keyCell = document.createElement("td");
+  //     keyCell.innerHTML = key.toString();
+  //     row.appendChild(keyCell);
+  //     elt = document.createElement("td");
+  //     elt.className = key;
+  //     row.appendChild(elt);
+  //     document.querySelector("#debug tbody").appendChild(row);
+  //   }
+  //   elt.innerHTML = message.toString();
+  // };
+  //
+  // window.onresize = (event) => {
+  //   debug("window-onresize-innerWidth", window.innerWidth);
+  //   debug("window-onresize-innerHeight", window.innerHeight);
+  // };
+  //
+  // window.onscroll = (event) => {
+  //   debug("window-onscroll-scrollX", window.scrollX);
+  //   debug("window-onscroll-scrollY", window.scrollY);
+  // }
+  //
+  // document.onkeydown = (e) => {
+  //   // computing scancode in javascript to see if that works
+  //   let scancode = 0;
+  //   for(let i = 0; i < e.code.length; i++) {
+  //     scancode = ((scancode ^ 0x7E057D79) << 3) ^ e.code.charCodeAt(i);
+  //   }
+  //   debug("document-onkeydown", e.code + "|" + e.keyCode + "|" + e.key + "|" + e.key.charCodeAt(0) + "|" + (scancode >>> 0).toString(16).toUpperCase());
+  // }
+  //
+  // document.onfullscreenchange = (e) => {
+  //   debug("document-onfullscreenchange", document.fullscreenElement ? document.fullscreenElement.id : "none");
+  // }
 
 </script>
 {{{ SCRIPT }}}

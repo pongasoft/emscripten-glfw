@@ -27,7 +27,8 @@
 extern "C" {
 void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_context_window_get_size(GLFWwindow *iWindow, double *iWidth, double *iHeight);
+void emscripten_glfw3_context_window_get_resize(GLFWwindow *iWindow, double *iWidth, double *iHeight);
+int emscripten_glfw3_context_window_set_resize(GLFWwindow *iWindow, int iWidth, int iHeight);
 void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
 float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
@@ -100,10 +101,10 @@ void Window::init(int iWidth, int iHeight)
   if(isResizable())
   {
     if(!setResizable(true)) // will set callback and update size
-      setSize(iWidth, iHeight);
+      setCanvasSize(iWidth, iHeight);
   }
   else
-    setSize(iWidth, iHeight);
+    setCanvasSize(iWidth, iHeight);
 }
 
 //------------------------------------------------------------------------
@@ -145,7 +146,7 @@ bool Window::maybeRescale(std::function<void()> const &iAction)
   iAction();
   auto scaleChanged = oldScale != getScale();
   if(scaleChanged)
-    setSize(fWidth, fHeight);
+    setCanvasSize(fWidth, fHeight);
   return scaleChanged;
 }
 
@@ -166,13 +167,30 @@ void Window::setMonitorScale(float iScale)
 //------------------------------------------------------------------------
 void Window::setSize(int iWidth, int iHeight)
 {
+  if(isResizable())
+  {
+    if(emscripten_glfw3_context_window_set_resize(asOpaquePtr(), iWidth, iHeight) != EMSCRIPTEN_RESULT_SUCCESS)
+    {
+      // can't resize window for example...
+      setCanvasSize(iWidth, iHeight);
+    }
+  }
+  else
+    setCanvasSize(iWidth, iHeight);
+}
+
+//------------------------------------------------------------------------
+// Window::setCanvasSize
+//------------------------------------------------------------------------
+void Window::setCanvasSize(int iWidth, int iHeight)
+{
   auto sizeChanged = fWidth != iWidth || fHeight != iHeight;
   fWidth = iWidth;
   fHeight = iHeight;
 
   int fbWidth = iWidth;
   int fbHeight = iHeight;
-  
+
   if(isHiDPIAware())
   {
     fbWidth = static_cast<int>(std::floor(static_cast<float>(iWidth) * fMonitorScale));
@@ -218,10 +236,17 @@ bool Window::setResizable(bool iResizable)
       return false;
     }
     else
+    {
+      // callback was set properly => we make sure that the window matches the size of the canvas resize element
       onResize();
+    }
   }
   else
+  {
+    // we remove the callback (noop if there was none)
     emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(), nullptr, nullptr, nullptr);
+  }
+
   return true;
 }
 
@@ -233,7 +258,7 @@ bool Window::onResize()
   if(isResizable())
   {
     double width, height;
-    emscripten_glfw3_context_window_get_size(asOpaquePtr(), &width, &height);
+    emscripten_glfw3_context_window_get_resize(asOpaquePtr(), &width, &height);
     resize(static_cast<int>(std::floor(width)), static_cast<int>(std::floor(height)));
     return true;
   }
