@@ -25,17 +25,15 @@
 #include <algorithm>
 
 extern "C" {
-void emscripten_glfw3_context_window_destroy(GLFWwindow *iWindow);
-void emscripten_glfw3_context_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_context_window_get_resize(GLFWwindow *iWindow, int *iWidth, int *iHeight);
-void emscripten_glfw3_context_window_focus(GLFWwindow *iWindow);
-void emscripten_glfw3_context_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
-float emscripten_glfw3_context_window_get_computed_opacity(GLFWwindow *iWindow);
-void emscripten_glfw3_context_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
-bool emscripten_glfw3_context_window_get_computed_visibility(GLFWwindow *iWindow);
-void emscripten_glfw3_context_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
-using ResizeCallback = void (*)(void *);
-int emscripten_glfw3_context_window_set_resize_callback(GLFWwindow *iWindow, char const *iCanvasResizeSelector, ResizeCallback iResizeCallback, void *iResizeCallbackUserData);
+void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
+void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emscripten_glfw3_window_focus(GLFWwindow *iWindow);
+void emscripten_glfw3_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
+float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
+void emscripten_glfw3_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
+bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
+void emscripten_glfw3_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
+int emscripten_glfw3_window_set_canvas_resizable_selector(GLFWwindow *iWindow, char const *iCanvasResizeSelector);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -64,15 +62,6 @@ const std::array<Cursor, 6> Cursor::kCursors = {
 const Cursor Cursor::kCursorHidden{0, "none"};
 
 //------------------------------------------------------------------------
-// WindowResizeCallback
-//------------------------------------------------------------------------
-void WindowResizeCallback(void *iUserData)
-{
-  auto window = reinterpret_cast<Window *>(iUserData);
-  window->onResize();
-}
-
-//------------------------------------------------------------------------
 // Window::Window
 //------------------------------------------------------------------------
 Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
@@ -88,8 +77,8 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
 //------------------------------------------------------------------------
 void Window::init(int iWidth, int iHeight)
 {
-  fOpacity = emscripten_glfw3_context_window_get_computed_opacity(asOpaquePtr());
-  fVisible = emscripten_glfw3_context_window_get_computed_visibility(asOpaquePtr());
+  fOpacity = emscripten_glfw3_window_get_computed_opacity(asOpaquePtr());
+  fVisible = emscripten_glfw3_window_get_computed_visibility(asOpaquePtr());
 
   if(fConfig.fVisible == GLFW_FALSE && fVisible)
     setVisibility(false);
@@ -97,13 +86,7 @@ void Window::init(int iWidth, int iHeight)
   if(fConfig.fFocused)
     focus();
 
-  if(isResizableByUser())
-  {
-    if(!setResizable(true)) // will set callback and update size
-      setCanvasSize({iWidth, iHeight});
-  }
-  else
-    setCanvasSize({iWidth, iHeight});
+  setCanvasSize({iWidth, iHeight});
 }
 
 //------------------------------------------------------------------------
@@ -123,7 +106,7 @@ void Window::destroy()
   if(!isDestroyed())
   {
     addOrRemoveEventListeners(false);
-    emscripten_glfw3_context_window_destroy(asOpaquePtr());
+    emscripten_glfw3_window_destroy(asOpaquePtr());
     fDestroyed = true;
   }
 }
@@ -133,7 +116,7 @@ void Window::destroy()
 //------------------------------------------------------------------------
 void Window::focus()
 {
-  emscripten_glfw3_context_window_focus(asOpaquePtr());
+  emscripten_glfw3_window_focus(asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
@@ -265,7 +248,7 @@ void Window::setCanvasSize(Vec2<int> const &iSize)
 
   fFramebufferSize = fbSize;
 
-  emscripten_glfw3_context_window_set_size(asOpaquePtr(), fSize.width, fSize.height, fFramebufferSize.width, fFramebufferSize.height);
+  emscripten_glfw3_window_set_size(asOpaquePtr(), fSize.width, fSize.height, fFramebufferSize.width, fFramebufferSize.height);
 
   if(sizeChanged)
   {
@@ -298,43 +281,21 @@ bool Window::setResizable(bool iResizable)
 
   if(isResizableByUser())
   {
-    if(emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(),
-                                                           fConfig.fCanvasResizeSelector->c_str(),
-                                                           WindowResizeCallback,
-                                                           this) != EMSCRIPTEN_RESULT_SUCCESS)
+    if(emscripten_glfw3_window_set_canvas_resizable_selector(asOpaquePtr(),
+                                                             fConfig.fCanvasResizeSelector->c_str()) != EMSCRIPTEN_RESULT_SUCCESS)
     {
       kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid canvas resize selector [%s]", fConfig.fCanvasResizeSelector->c_str());
       fConfig.fCanvasResizeSelector = std::nullopt;
       return false;
     }
-    else
-    {
-      // callback was set properly => we make sure that the window matches the size of the canvas resize element
-      onResize();
-    }
   }
   else
   {
     // we remove the callback (noop if there was none)
-    emscripten_glfw3_context_window_set_resize_callback(asOpaquePtr(), nullptr, nullptr, nullptr);
+    emscripten_glfw3_window_set_canvas_resizable_selector(asOpaquePtr(), nullptr);
   }
 
   return true;
-}
-
-//------------------------------------------------------------------------
-// Window::onResize
-//------------------------------------------------------------------------
-bool Window::onResize()
-{
-  if(isResizableByUser())
-  {
-    int width, height;
-    emscripten_glfw3_context_window_get_resize(asOpaquePtr(), &width, &height);
-    resize({width, height});
-    return true;
-  }
-  return false;
 }
 
 //------------------------------------------------------------------------
@@ -360,7 +321,7 @@ void Window::setCursorPos(Vec2<double> const &iPos)
 void Window::setOpacity(float iOpacity)
 {
   fOpacity = std::clamp(iOpacity, 0.0f, 1.0f);
-  emscripten_glfw3_context_window_set_opacity(asOpaquePtr(), fOpacity);
+  emscripten_glfw3_window_set_opacity(asOpaquePtr(), fOpacity);
 }
 
 
@@ -370,7 +331,7 @@ void Window::setOpacity(float iOpacity)
 void Window::setVisibility(bool iVisible)
 {
   fVisible = iVisible;
-  emscripten_glfw3_context_window_set_visibility(asOpaquePtr(), fVisible);
+  emscripten_glfw3_window_set_visibility(asOpaquePtr(), fVisible);
   if(fVisible && fConfig.fFocusOnShow)
     focus();
 }
@@ -515,7 +476,7 @@ void Window::setCursor(GLFWcursor *iCursor)
     else
     {
       fMouse.fCursor = cursor;
-      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+      emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
     }
   }
   else
@@ -615,7 +576,7 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
     {
       fMouse.fCursorMode = iCursorMode;
       auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
-      emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+      emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
     }
   }
 }
@@ -646,7 +607,7 @@ bool Window::onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode)
     auto cursorMode = iCursorMode ? *iCursorMode : GLFW_CURSOR_NORMAL;
     fMouse.fCursorMode = cursorMode;
     auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
-    emscripten_glfw3_context_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+    emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
     setCursorPos(fMouse.fCursorPosBeforePointerLock);
     return true;
   }

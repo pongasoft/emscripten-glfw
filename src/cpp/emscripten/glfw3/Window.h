@@ -156,9 +156,6 @@ public:
 
   friend class Context;
 
-public: // should be private but called from static
-  bool onResize();
-
 protected:
   void init(int iWidth, int iHeight);
   void destroy();

@@ -25,13 +25,15 @@
 
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
+using WindowResizeCallback = void (*)(void *, GLFWwindow *, int, int);
 using RequestFullscreen = void (*)(void *, GLFWwindow *, bool, bool);
-void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, RequestFullscreen, void *iUserData);
+void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, void *iUserData);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
-int emscripten_glfw3_context_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
+int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
+void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 }
 
 namespace emscripten::glfw3 {
@@ -57,6 +59,15 @@ void ContextScaleChangeCallback(void *iUserData)
 }
 
 //------------------------------------------------------------------------
+// ContextWindowResizeCallback
+//------------------------------------------------------------------------
+void ContextWindowResizeCallback(void *iUserData, GLFWwindow *iWindow, int iWidth, int iHeight)
+{
+  auto context = reinterpret_cast<Context *>(iUserData);
+  context->onWindowResize(iWindow, iWidth, iHeight);
+}
+
+//------------------------------------------------------------------------
 // ContextRequestFullscreen
 //------------------------------------------------------------------------
 void ContextRequestFullscreen(void *iUserData, GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
@@ -73,7 +84,11 @@ Context::Context()
 {
   printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  emscripten_glfw3_context_init(fScale, ContextScaleChangeCallback, ContextRequestFullscreen, this);
+  emscripten_glfw3_context_init(fScale,
+                                ContextScaleChangeCallback,
+                                ContextWindowResizeCallback,
+                                ContextRequestFullscreen,
+                                this);
   addOrRemoveEventListeners(true);
 }
 
@@ -193,6 +208,16 @@ void Context::onScaleChange()
   {
     w->setMonitorScale(fScale);
   }
+}
+
+//------------------------------------------------------------------------
+// Context::onWindowResize
+//------------------------------------------------------------------------
+void Context::onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight)
+{
+  auto window = findWindow(iWindow);
+  if(window)
+    window->resize({iWidth, iHeight});
 }
 
 //------------------------------------------------------------------------
@@ -426,7 +451,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   auto const canvasSelector = fConfig.fCanvasSelector.data();
 
-  auto res = emscripten_glfw3_context_window_init(window->asOpaquePtr(), canvasSelector);
+  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector);
   if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
     if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
@@ -443,6 +468,11 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   fWindows.emplace_back(window);
 
   window->registerEventListeners();
+
+  if(window->isResizableByUser())
+    window->setResizable(true);
+
+  emscripten_glfw3_window_on_created(window->asOpaquePtr());
 
   return window->asOpaquePtr();
 }
