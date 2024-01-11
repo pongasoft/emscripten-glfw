@@ -5,12 +5,12 @@ let impl = {
   $GLFW3__postset: `
     // exports
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
-    Module["glfwGetWindow"] = (canvasSelector) => { const ctx = GLFW3.findContextBySelector(canvasSelector); return ctx ? ctx.id : null; };
+    Module["glfwGetWindow"] = (canvasSelector) => { const ctx = GLFW3.findContextBySelector(canvasSelector); return ctx ? ctx.glfwWindow : null; };
     Module["glfwGetCanvasSelector"] = (window) => { const ctx = GLFW3.fCanvasContexts[window]; return ctx ? ctx.selector : null; };
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
-    fCanvasContexts: null,
+    fWindowContexts: null,
     fCurrentCanvasContext: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
@@ -24,9 +24,9 @@ let impl = {
     },
 
     findContext(canvas) {
-      for(let id in GLFW3.fCanvasContexts) {
-        if(GLFW3.fCanvasContexts[id].canvas === canvas) {
-          return GLFW3.fCanvasContexts[id];
+      for(let window in GLFW3.fWindowContexts) {
+        if(GLFW3.fWindowContexts[window].canvas === canvas) {
+          return GLFW3.fWindowContexts[window];
         }
       }
       return null;
@@ -40,7 +40,7 @@ let impl = {
     requestFullscreen(target, lockPointer, resizeCanvas) {
       if(GLFW3.fRequestFullscreen) {
         const ctx = target ? GLFW3.findContext(findEventTarget(target)) : null;
-        {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.id : 0, lockPointer, resizeCanvas);
+        {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.glfwWindow : 0, lockPointer, resizeCanvas);
       }
     }
   },
@@ -63,7 +63,7 @@ let impl = {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
-    GLFW3.fCanvasContexts = {};
+    GLFW3.fWindowContexts = {};
     GLFW3.fCurrentCanvasContext = null;
 
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
@@ -79,18 +79,18 @@ let impl = {
 
   emscripten_glfw3_context_get_fullscreen_window: () => {
     const ctx = GLFW3.findContext(document.fullscreenElement);
-    return ctx ? ctx.id : null;
+    return ctx ? ctx.glfwWindow : null;
   },
 
   emscripten_glfw3_context_get_pointer_lock_window: () => {
     const ctx = GLFW3.findContext(document.pointerLockElement);
-    return ctx ? ctx.id : null;
+    return ctx ? ctx.glfwWindow : null;
   },
 
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");
 
-    GLFW3.fCanvasContexts = null;
+    GLFW3.fWindowContexts = null;
     GLFW3.fCurrentCanvasContext = null;
     GLFW3.fScaleChangeCallback = null;
     if(GLFW3.fScaleMQL) {
@@ -100,7 +100,7 @@ let impl = {
   },
 
   emscripten_glfw3_context_window_init__deps: ['$findEventTarget'],
-  emscripten_glfw3_context_window_init: (canvasId, canvasSelector) => {
+  emscripten_glfw3_context_window_init: (glfwWindow, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
 
     const canvas =  findEventTarget(canvasSelector);
@@ -114,7 +114,7 @@ let impl = {
     }
 
     var canvasCtx = {};
-    canvasCtx.id = canvasId;
+    canvasCtx.glfwWindow = glfwWindow;
     canvasCtx.selector = canvasSelector;
     canvasCtx.canvas = canvas;
     canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
@@ -145,14 +145,14 @@ let impl = {
       return window.getComputedStyle(canvas).getPropertyValue(name);
     };
 
-    GLFW3.fCanvasContexts[canvasCtx.id] = canvasCtx;
+    GLFW3.fWindowContexts[canvasCtx.glfwWindow] = canvasCtx;
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
-  emscripten_glfw3_context_window_destroy: (canvasId) => {
-    if(GLFW3.fCanvasContexts)
+  emscripten_glfw3_context_window_destroy: (glfwWindow) => {
+    if(GLFW3.fWindowContexts)
     {
-      const ctx = GLFW3.fCanvasContexts[canvasId];
+      const ctx = GLFW3.fWindowContexts[glfwWindow];
       const canvas = ctx.canvas;
 
       ctx.restoreCSSValues();
@@ -166,17 +166,17 @@ let impl = {
         delete ctx.fCanvasResize;
       }
 
-      delete GLFW3.fCanvasContexts[canvasId];
+      delete GLFW3.fWindowContexts[glfwWindow];
     }
   },
 
-  emscripten_glfw3_context_window_focus: (canvasId) => {
-    const canvas = GLFW3.fCanvasContexts[canvasId].canvas;
+  emscripten_glfw3_context_window_focus: (glfwWindow) => {
+    const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     canvas.focus();
   },
 
-  emscripten_glfw3_context_window_set_size: (canvasId, width, height, fbWidth, fbHeight) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_set_size: (glfwWindow, width, height, fbWidth, fbHeight) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
     const canvas = ctx.canvas;
 
     if(canvas.width !== fbWidth) canvas.width = fbWidth;
@@ -187,8 +187,8 @@ let impl = {
     ctx.setCSSValue("height", height + "px", "important");
   },
 
-  emscripten_glfw3_context_window_get_resize: (canvasId, width, height) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_get_resize: (glfwWindow, width, height) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
 
     if(!ctx.fCanvasResize)
       return;
@@ -206,29 +206,29 @@ let impl = {
     }
   },
 
-  emscripten_glfw3_context_window_set_cursor: (canvasId, cursor) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_set_cursor: (glfwWindow, cursor) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(cursor)
       ctx.setCSSValue("cursor", UTF8ToString(cursor));
     else
       ctx.restoreCSSValue("cursor");
   },
 
-  emscripten_glfw3_context_window_get_computed_opacity: (canvasId) => {
-    return GLFW3.fCanvasContexts[canvasId].getComputedCSSValue("opacity");
+  emscripten_glfw3_context_window_get_computed_opacity: (glfwWindow) => {
+    return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("opacity");
   },
 
-  emscripten_glfw3_context_window_set_opacity: (canvasId, opacity) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_set_opacity: (glfwWindow, opacity) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
     ctx.setCSSValue("opacity", opacity);
   },
 
-  emscripten_glfw3_context_window_get_computed_visibility: (canvasId) => {
-    return GLFW3.fCanvasContexts[canvasId].getComputedCSSValue("display") !== "none";
+  emscripten_glfw3_context_window_get_computed_visibility: (glfwWindow) => {
+    return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("display") !== "none";
   },
 
-  emscripten_glfw3_context_window_set_visibility: (canvasId, visible) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_set_visibility: (glfwWindow, visible) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(!visible)
       ctx.setCSSValue("display", "none");
     else
@@ -236,8 +236,8 @@ let impl = {
   },
 
   emscripten_glfw3_context_window_set_resize_callback__deps: ['$findEventTarget'],
-  emscripten_glfw3_context_window_set_resize_callback: (canvasId, canvasResizeSelector, resizeCallback, resizeCallbackUserData) => {
-    const ctx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_window_set_resize_callback: (glfwWindow, canvasResizeSelector, resizeCallback, resizeCallbackUserData) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
 
     if(ctx.fCanvasResize)
     {
@@ -268,7 +268,7 @@ let impl = {
         }
       } else {
         ctx.fCanvasResize.observer = new ResizeObserver((entries) => {
-          const ctx = GLFW3.fCanvasContexts[canvasId];
+          const ctx = GLFW3.fWindowContexts[glfwWindow];
           if(ctx.fCanvasResize) {
             for(const entry of entries) {
               if(entry.target === canvasResize) {
@@ -284,22 +284,22 @@ let impl = {
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
-  emscripten_glfw3_context_gl_init: (canvasId) => {
-    const canvasCtx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_gl_init: (glfwWindow) => {
+    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
       return;
     canvasCtx.glAttributes = {};
   },
 
-  emscripten_glfw3_context_gl_bool_attribute: (canvasId, attributeName, attributeValue) => {
-    const canvasCtx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_gl_bool_attribute: (glfwWindow, attributeName, attributeValue) => {
+    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
       return;
     canvasCtx.glAttributes[UTF8ToString(attributeName)] = !!attributeValue;
   },
 
-  emscripten_glfw3_context_gl_create_context: (canvasId) => {
-    const canvasCtx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_gl_create_context: (glfwWindow) => {
+    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
     const contextHandle = GL.createContext(canvasCtx.canvas, canvasCtx.glAttributes);
@@ -311,8 +311,8 @@ let impl = {
     }
   },
 
-  emscripten_glfw3_context_gl_make_context_current: (canvasId) => {
-    const canvasCtx = GLFW3.fCanvasContexts[canvasId];
+  emscripten_glfw3_context_gl_make_context_current: (glfwWindow) => {
+    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
       return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
     if(!canvasCtx.glContextHandle)
