@@ -418,6 +418,9 @@ void Triangle::registerNoWindowCallbacks()
 //------------------------------------------------------------------------
 void Triangle::updateNoWindowValues()
 {
+  setHtmlValue(nullptr, "glfwGetTime", "%.2f", glfwGetTime());
+  setHtmlValue(nullptr, "glfwGetTimerValue", "%ld", glfwGetTimerValue());
+
   static std::vector<int> jids{};
 
   jids.clear();

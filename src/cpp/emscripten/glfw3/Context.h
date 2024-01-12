@@ -30,6 +30,9 @@
 
 namespace emscripten::glfw3 {
 
+// in javascript the performance/DOMHighResTimeStamp measures in milliseconds
+constexpr static uint64_t kTimerFrequency = 1000;
+
 class Context
 {
 public:
@@ -66,6 +69,8 @@ public:
 
   // time
   double getTimeInSeconds() const;
+  void setTimeInSeconds(double iValue);
+  static uint64_t getTimerValue() ;
 
   // events
   void pollEvents();
@@ -82,7 +87,6 @@ private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
-  static double getAbsoluteTimeInSeconds();
   void addOrRemoveEventListeners(bool iAdd);
   bool onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent);
   bool onExitFullscreen();
@@ -90,6 +94,7 @@ private:
   bool onPointerUnlock();
   bool onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent);
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
+  static double getPlatformTimerValue();
 
 private:
   std::vector<std::shared_ptr<Window>> fWindows{};
@@ -99,7 +104,7 @@ private:
   GLFWwindow *fLastKnownFocusedWindow{};
   Config fConfig{};
   float fScale{1.0f};
-  double fInitialTimeInSeconds{getAbsoluteTimeInSeconds()};
+  double fInitialTime{getPlatformTimerValue()};
   int fPresentJoystickCount{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};

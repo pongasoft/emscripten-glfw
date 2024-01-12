@@ -768,6 +768,8 @@ GLFWAPI const char* glfwGetMonitorName(GLFWmonitor* monitor)
   auto m = getMonitor(monitor);
   if(m)
     return m->getName();
+  else
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -826,6 +828,32 @@ GLFWAPI double glfwGetTime(void)
     return context->getTimeInSeconds();
   else
     return 0;
+}
+
+//------------------------------------------------------------------------
+// glfwSetTime
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetTime(double time)
+{
+  auto context = getContext();
+  if(context)
+    context->setTimeInSeconds(time);
+}
+
+//------------------------------------------------------------------------
+// glfwGetTimerValue
+//------------------------------------------------------------------------
+GLFWAPI uint64_t glfwGetTimerValue()
+{
+  return Context::getTimerValue();
+}
+
+//------------------------------------------------------------------------
+// glfwGetTimerFrequency
+//------------------------------------------------------------------------
+GLFWAPI uint64_t glfwGetTimerFrequency()
+{
+  return kTimerFrequency;
 }
 
 //------------------------------------------------------------------------
@@ -1041,12 +1069,9 @@ GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwi
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback) { logNotImplemented("GLFWwindowrefreshfun"); return callback; }
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback) { logNotImplemented("glfwSetWindowIconifyCallback"); return callback; }
 GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, GLFWwindowmaximizefun callback) { logNotImplemented("glfwSetWindowMaximizeCallback"); return callback; }
-GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback) { logNotImplemented("glfwSetDropCallback"); }
+GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback) { logNotImplemented("glfwSetDropCallback"); return callback; }
 GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string) { logNotImplemented("glfwSetClipboardString"); }
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window) { logNotImplemented("glfwGetClipboardString"); return nullptr; }
-GLFWAPI void glfwSetTime(double time) { logNotImplemented("glfwSetTime"); }
-GLFWAPI uint64_t glfwGetTimerValue(void) { logNotImplemented("glfwGetTimerValue"); return 0; }
-GLFWAPI uint64_t glfwGetTimerFrequency(void) { logNotImplemented("glfwGetTimerFrequency"); return 0; }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window) { logNotImplemented("glfwSwapBuffers"); }
 GLFWAPI void glfwSwapInterval(int interval) { logNotImplemented("glfwSwapInterval"); }
 GLFWAPI int glfwExtensionSupported(const char* extension) { logNotImplemented("glfwExtensionSupported"); return GLFW_FALSE; }

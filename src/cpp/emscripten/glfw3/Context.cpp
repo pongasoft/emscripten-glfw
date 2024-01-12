@@ -717,19 +717,40 @@ GLFWcursor *Context::createStandardCursor(int iShape)
 }
 
 //------------------------------------------------------------------------
-// Context::getTime
-//------------------------------------------------------------------------
-double Context::getAbsoluteTimeInSeconds()
-{
-  return emscripten_get_now() / 1000;
-}
-
-//------------------------------------------------------------------------
 // Context::getTimeInSeconds
 //------------------------------------------------------------------------
 double Context::getTimeInSeconds() const
 {
-  return getAbsoluteTimeInSeconds() - fInitialTimeInSeconds;
+  return (getPlatformTimerValue() - fInitialTime) / kTimerFrequency;
+}
+
+//------------------------------------------------------------------------
+// Context::setTimeInSeconds
+//------------------------------------------------------------------------
+void Context::setTimeInSeconds(double iValue)
+{
+  if(iValue != iValue || iValue < 0 || iValue >= 18446744073)
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid time [%f]", iValue);
+    return;
+  }
+  fInitialTime = getPlatformTimerValue() - (iValue * kTimerFrequency);
+}
+
+//------------------------------------------------------------------------
+// Context::getPlatformTimerValue
+//------------------------------------------------------------------------
+double Context::getPlatformTimerValue()
+{
+  return emscripten_get_now();
+}
+
+//------------------------------------------------------------------------
+// Context::getTimerValue
+//------------------------------------------------------------------------
+uint64_t Context::getTimerValue()
+{
+  return static_cast<uint64_t>(getPlatformTimerValue());
 }
 
 //------------------------------------------------------------------------
