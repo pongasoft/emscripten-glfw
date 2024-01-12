@@ -166,12 +166,12 @@ Vec2<int> Window::maybeApplySizeConstraints(Vec2<int> const &iSize) const
 
   if(fAspectRatioNumerator != GLFW_DONT_CARE && fAspectRatioDenominator != GLFW_DONT_CARE)
   {
-    auto ratio = static_cast<float>(fAspectRatioNumerator) / static_cast<float>(fAspectRatioDenominator);
-    auto sizeRatio = static_cast<float>(size.width) / static_cast<float>(size.height);
-    if(sizeRatio < ratio)
-      size.width = static_cast<int>(std::round(static_cast<float>(size.height) * ratio));
+    auto aspectRatio = static_cast<float>(fAspectRatioNumerator) / static_cast<float>(fAspectRatioDenominator);
+    auto imageAspectRatio = static_cast<float>(size.width) / static_cast<float>(size.height);
+    if(imageAspectRatio > aspectRatio)
+      size.width = static_cast<int>(std::round(static_cast<float>(size.height) * aspectRatio));
     else
-      size.height = static_cast<int>(std::round(static_cast<float>(size.width) / ratio));
+      size.height = static_cast<int>(std::round(static_cast<float>(size.width) / aspectRatio));
   }
 
   return size;
