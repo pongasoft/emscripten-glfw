@@ -5,9 +5,9 @@ let impl = {
   $GLFW3__postset: `
     // exports
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
-    Module["glfwGetWindow"] = (any) => { const ctx = GLFW3.findContextByAny(any); return ctx ? ctx.glfwWindow : null; };
-    Module["glfwGetCanvasSelector"] = (any) => { const ctx = GLFW3.findContextByAny(any); return ctx ? ctx.selector : null; };
-    Module["glfwSetCanvasResizableSelector"] = GLFW3.setCanvasResizableSelector;
+    Module["glfwGetWindow"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.glfwWindow : null; };
+    Module["glfwGetCanvasSelector"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.selector : null; };
+    Module["glfwSetCanvasResizableSelector"] = GLFW3.glfwSetCanvasResizableSelector;
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
@@ -18,18 +18,21 @@ let impl = {
     fRequestFullscreen: null,
     fContext: null,
 
+    //! onScaleChange
     onScaleChange() {
       if(GLFW3.fScaleChangeCallback) {
         {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fContext);
       }
     },
 
+    //! onWindowResize
     onWindowResize(glfwWindow, width, height) {
       if(GLFW3.fWindowResizeCallback) {
         {{{ makeDynCall('vppii', 'GLFW3.fWindowResizeCallback') }}}(GLFW3.fContext, glfwWindow, width, height);
       }
     },
 
+    //! findContextByCanvas
     findContextByCanvas(canvas) {
       for(let w in GLFW3.fWindowContexts) {
         if(GLFW3.fWindowContexts[w].canvas === canvas) {
@@ -39,12 +42,14 @@ let impl = {
       return null;
     },
 
+    //! findContextBySelector
     findContextBySelector__deps: ['$findEventTarget'],
     findContextBySelector(canvasSelector) {
       return GLFW3.findContextByCanvas(findEventTarget(canvasSelector));
     },
 
-    findContextByAny(any) {
+    //! findContext
+    findContext(any) {
       if(!any)
         return null;
 
@@ -60,16 +65,18 @@ let impl = {
       return GLFW3.findContextBySelector(any);
     },
 
+    //! requestFullscreen
     requestFullscreen(target, lockPointer, resizeCanvas) {
       if(GLFW3.fRequestFullscreen) {
-        const ctx = GLFW3.findContextByAny(target);
+        const ctx = GLFW3.findContext(target);
         {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.glfwWindow : 0, lockPointer, resizeCanvas);
       }
     },
 
+    //! setCanvasResizableSelector
     setCanvasResizableSelector__deps: ['$findEventTarget'],
     setCanvasResizableSelector: (any, canvasResizeSelector) => {
-      const ctx = GLFW3.findContextByAny(any);
+      const ctx = GLFW3.findContext(any);
       if(!ctx)
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
 
@@ -118,15 +125,19 @@ let impl = {
         }
         ctx.fCanvasResize.observer.observe(canvasResize);
         const size = ctx.fCanvasResize.computeSize();
-        console.log('setCanvasResizableSelector.done' + size.width + 'x' + size.height);
         GLFW3.onWindowResize(glfwWindow, size.width, size.height);
       }
 
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     },
 
+    //! glfwSetCanvasResizableSelector
+    glfwSetCanvasResizableSelector: (any, canvasResizeSelector) => {
+      return GLFW3.setCanvasResizableSelector(any, canvasResizeSelector) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+    }
   },
 
+  //! emscripten_glfw3_context_to_codepoint
   // see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
   emscripten_glfw3_context_to_codepoint: (eventKey) => {
     // TODO: the eventKey gets copied back and forth between C and javascript a few too many times IMO (try to fix)
@@ -139,6 +150,7 @@ let impl = {
       return codepoint;
   },
 
+  //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
   emscripten_glfw3_context_init: (scale, scaleChangeCallback, windowResizeCallback, requestFullscreen, context) => {
     console.log("emscripten_glfw3_context_init()");
@@ -155,20 +167,24 @@ let impl = {
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
   },
 
+  //! emscripten_glfw3_context_is_any_element_focused
   emscripten_glfw3_context_is_any_element_focused: () => {
     return document.activeElement !== document.body;
   },
 
+  //! emscripten_glfw3_context_get_fullscreen_window
   emscripten_glfw3_context_get_fullscreen_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.fullscreenElement);
     return ctx ? ctx.glfwWindow : null;
   },
 
+  //! emscripten_glfw3_context_get_pointer_lock_window
   emscripten_glfw3_context_get_pointer_lock_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.pointerLockElement);
     return ctx ? ctx.glfwWindow : null;
   },
 
+  //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");
 
@@ -180,6 +196,7 @@ let impl = {
     GLFW3.fContext = null;
   },
 
+  //! emscripten_glfw3_window_init
   emscripten_glfw3_window_init__deps: ['$findEventTarget'],
   emscripten_glfw3_window_init: (glfwWindow, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
@@ -230,12 +247,14 @@ let impl = {
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
+  //! emscripten_glfw3_window_on_created
   emscripten_glfw3_window_on_created: (glfwWindow) => {
     if(Module.glfwOnWindowCreated) {
       Module.glfwOnWindowCreated(glfwWindow, GLFW3.fWindowContexts[glfwWindow].selector);
     }
   },
 
+  //! emscripten_glfw3_window_destroy
   emscripten_glfw3_window_destroy: (glfwWindow) => {
     if(GLFW3.fWindowContexts)
     {
@@ -257,11 +276,13 @@ let impl = {
     }
   },
 
+  //! emscripten_glfw3_window_focus
   emscripten_glfw3_window_focus: (glfwWindow) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     canvas.focus();
   },
 
+  //! emscripten_glfw3_window_set_size
   emscripten_glfw3_window_set_size: (glfwWindow, width, height, fbWidth, fbHeight) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const canvas = ctx.canvas;
@@ -274,6 +295,7 @@ let impl = {
     ctx.setCSSValue("height", height + "px", "important");
   },
 
+  //! emscripten_glfw3_window_set_cursor
   emscripten_glfw3_window_set_cursor: (glfwWindow, cursor) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(cursor)
@@ -282,19 +304,23 @@ let impl = {
       ctx.restoreCSSValue("cursor");
   },
 
+  //! emscripten_glfw3_window_get_computed_opacity
   emscripten_glfw3_window_get_computed_opacity: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("opacity");
   },
 
+  //! emscripten_glfw3_window_set_opacity
   emscripten_glfw3_window_set_opacity: (glfwWindow, opacity) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     ctx.setCSSValue("opacity", opacity);
   },
 
+  //! emscripten_glfw3_window_get_computed_visibility
   emscripten_glfw3_window_get_computed_visibility: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("display") !== "none";
   },
 
+  //! emscripten_glfw3_window_set_visibility
   emscripten_glfw3_window_set_visibility: (glfwWindow, visible) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(!visible)
@@ -303,10 +329,12 @@ let impl = {
       ctx.restoreCSSValue("display");
   },
 
+  //! emscripten_glfw3_window_set_canvas_resizable_selector
   emscripten_glfw3_window_set_canvas_resizable_selector: (glfwWindow, canvasResizeSelector) => {
     return GLFW3.setCanvasResizableSelector(glfwWindow, UTF8ToString(canvasResizeSelector));
   },
 
+  //! emscripten_glfw3_context_gl_init
   emscripten_glfw3_context_gl_init: (glfwWindow) => {
     const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
@@ -314,6 +342,7 @@ let impl = {
     canvasCtx.glAttributes = {};
   },
 
+  //! emscripten_glfw3_context_gl_bool_attribute
   emscripten_glfw3_context_gl_bool_attribute: (glfwWindow, attributeName, attributeValue) => {
     const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
@@ -321,6 +350,7 @@ let impl = {
     canvasCtx.glAttributes[UTF8ToString(attributeName)] = !!attributeValue;
   },
 
+  //! emscripten_glfw3_context_gl_create_context
   emscripten_glfw3_context_gl_create_context: (glfwWindow) => {
     const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)
@@ -334,6 +364,7 @@ let impl = {
     }
   },
 
+  //! emscripten_glfw3_context_gl_make_context_current
   emscripten_glfw3_context_gl_make_context_current: (glfwWindow) => {
     const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
     if(!canvasCtx)

@@ -268,7 +268,7 @@ void Window::setCanvasSize(Vec2<int> const &iSize)
 //------------------------------------------------------------------------
 void Window::resize(Vec2<int> const &iSize)
 {
-  if(iSize != fSize)
+  if(isResizable())
     setSize(maybeApplySizeConstraints(iSize));
 }
 
