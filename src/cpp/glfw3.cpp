@@ -30,9 +30,11 @@ using namespace emscripten::glfw3;
 [[noreturn]] static void not_implemented() { throw std::logic_error("not implemented"); }
 
 //! logNotImplemented
-static void logNotImplemented(char const *iFunction)
+inline static void logNotImplemented(char const *iFunction)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
   ErrorHandler::instance().logWarning("%s is not implemented ont this platform\n", iFunction);
+#endif
 }
 
 //! Unique context

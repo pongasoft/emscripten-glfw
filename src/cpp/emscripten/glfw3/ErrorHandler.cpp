@@ -64,6 +64,7 @@ void ErrorHandler::doLogError(int iErrorCode, char const *iErrorMessage)
     fErrorCallback(fLastErrorCode, fLastErrorMessage.data());
 }
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
 //------------------------------------------------------------------------
 // ErrorHandler::doLogWarning
 //------------------------------------------------------------------------
@@ -80,6 +81,6 @@ void ErrorHandler::doLogWarning(char const *iWarningMessage)
     }
   }
 }
-
+#endif
 }
 

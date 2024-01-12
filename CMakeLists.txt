@@ -37,6 +37,7 @@ target_sources(${target} PUBLIC
 )
 
 target_include_directories(${target} PUBLIC external)
+#target_compile_definitions(${target} PUBLIC EMSCRIPTEN_GLFW3_DISABLE_WARNING)
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)

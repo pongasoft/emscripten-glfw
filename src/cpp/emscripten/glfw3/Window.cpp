@@ -494,7 +494,11 @@ int Window::getInputMode(int iMode) const
       return fMouse.fCursorMode;
 
     case GLFW_STICKY_KEYS:
+      return toGlfwBool(fKeyboard.getStickyKeys());
+
     case GLFW_STICKY_MOUSE_BUTTONS:
+      return fMouse.fStickyMouseButtons;
+
     case GLFW_LOCK_KEY_MODS:
       kErrorHandler.logWarning("glfwGetInputMode: input mode [%d] not implemented yet", iMode);
       break;

@@ -43,13 +43,17 @@ public:
 
 private:
   void doLogError(int iErrorCode, char const *iErrorMessage);
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
   void doLogWarning(char const *iWarningMessage);
+#endif
 
 private:
   GLFWerrorfun fErrorCallback{};
   int fLastErrorCode{GLFW_NO_ERROR};
   std::string fLastErrorMessage{};
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
   std::set<std::string> fWarningMessages{};
+#endif
 };
 
 //------------------------------------------------------------------------
@@ -76,6 +80,7 @@ void ErrorHandler::logError(int iErrorCode, char const *iErrorMessage, Args... a
 template<typename... Args>
 void ErrorHandler::logWarning(char const *iWarningMessage, Args... args)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
   if constexpr(sizeof...(args) > 0)
   {
     constexpr int kMessageSize = 1024;
@@ -86,6 +91,7 @@ void ErrorHandler::logWarning(char const *iWarningMessage, Args... args)
   }
   else
     doLogWarning(iWarningMessage);
+#endif
 }
 
 
