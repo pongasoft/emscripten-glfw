@@ -30,6 +30,7 @@ using RequestFullscreen = void (*)(void *, GLFWwindow *, bool, bool);
 void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, void *iUserData);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
+bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
@@ -762,6 +763,17 @@ void Context::pollEvents()
   if(fPresentJoystickCount > 0)
     fPresentJoystickCount = Joystick::pollJoysticks();
 #endif
+}
+
+//------------------------------------------------------------------------
+// Context::glfwExtensionSupported
+//------------------------------------------------------------------------
+glfw_bool_t Context::isExtensionSupported(char const *extension)
+{
+  if(extension)
+    return toGlfwBool(emscripten_glfw3_context_is_extension_supported(extension));
+  else
+    return GLFW_FALSE;
 }
 
 }

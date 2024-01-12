@@ -184,6 +184,20 @@ let impl = {
     return ctx ? ctx.glfwWindow : null;
   },
 
+  //! emscripten_glfw3_context_is_extension_supported (copied from library_glfw.js)
+  emscripten_glfw3_context_is_extension_supported: (extension) => {
+    extension = UTF8ToString(extension);
+    if(!GLFW3.fGLExtensions)
+      GLFW3.fGLExtensions = GL.getExtensions();
+
+    if(GLFW3.fGLExtensions) {
+      if(GLFW3.fGLExtensions.includes(extension))
+        return true;
+      return (GLFW3.fGLExtensions.includes("GL_" + extension));
+    }
+    return false;
+  },
+
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");

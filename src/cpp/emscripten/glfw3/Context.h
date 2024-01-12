@@ -75,6 +75,9 @@ public:
   // events
   void pollEvents();
 
+  // opengl
+  glfw_bool_t isExtensionSupported(const char* extension);
+
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);

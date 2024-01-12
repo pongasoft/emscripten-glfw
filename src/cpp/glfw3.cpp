@@ -148,7 +148,8 @@ GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev)
 GLFWAPI const char* glfwGetVersionString(void)
 {
 #define mkstr(s) #s
-  constexpr char const *kVersionString = mkstr(GLFW_VERSION_MAJOR) "." mkstr(GLFW_VERSION_MINOR) "." mkstr(GLFW_VERSION_REVISION);
+  constexpr char const *kVersionString =
+    "Emscripten/WebAssembly GLFW " mkstr(GLFW_VERSION_MAJOR) "." mkstr(GLFW_VERSION_MINOR) "." mkstr(GLFW_VERSION_REVISION);
   return kVersionString;
 }
 
@@ -875,6 +876,18 @@ GLFWAPI void glfwWaitEventsTimeout(double timeout) { logNotImplemented("glfwWait
 //! glfwPostEmptyEvent no access to even loop in emscripten/javascript
 GLFWAPI void glfwPostEmptyEvent(void) { logNotImplemented("glfwPostEmptyEvent"); }
 
+
+//------------------------------------------------------------------------
+// glfwExtensionSupported
+//------------------------------------------------------------------------
+GLFWAPI int glfwExtensionSupported(const char* extension)
+{
+  auto context = getContext();
+  if(context)
+    return context->isExtensionSupported(extension);
+  return GLFW_FALSE;
+}
+
 //------------------------------------------------------------------------
 // glfwSetJoystickUserPointer
 //------------------------------------------------------------------------
@@ -1074,7 +1087,6 @@ GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string) { lo
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window) { logNotImplemented("glfwGetClipboardString"); return nullptr; }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window) { logNotImplemented("glfwSwapBuffers"); }
 GLFWAPI void glfwSwapInterval(int interval) { logNotImplemented("glfwSwapInterval"); }
-GLFWAPI int glfwExtensionSupported(const char* extension) { logNotImplemented("glfwExtensionSupported"); return GLFW_FALSE; }
 // GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname) { logNotImplemented("glfwGetProcAddress"); } implemented by emscripten GL
 GLFWAPI int glfwVulkanSupported(void) { return GLFW_FALSE; }
 GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count) { logNotImplemented("glfwGetRequiredInstanceExtensions"); *count = 0; return nullptr; }
