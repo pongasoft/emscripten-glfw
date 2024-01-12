@@ -634,7 +634,7 @@ GLFWmonitor **Context::getMonitors(int *oCount)
 //------------------------------------------------------------------------
 // Context::getPrimaryMonitor
 //------------------------------------------------------------------------
-GLFWmonitor *Context::getPrimaryMonitor()
+GLFWmonitor *Context::getPrimaryMonitor() const
 {
   return fCurrentMonitor->asOpaquePtr();
 }
@@ -642,7 +642,7 @@ GLFWmonitor *Context::getPrimaryMonitor()
 //------------------------------------------------------------------------
 // Context::getMonitorPos
 //------------------------------------------------------------------------
-void Context::getMonitorPos(GLFWmonitor *iMonitor, int *oXPos, int *oYPos)
+void Context::getMonitorPos(GLFWmonitor *iMonitor, int *oXPos, int *oYPos) const
 {
   auto monitor = getMonitor(iMonitor);
   if(monitor)
@@ -657,7 +657,7 @@ void Context::getMonitorPos(GLFWmonitor *iMonitor, int *oXPos, int *oYPos)
 //------------------------------------------------------------------------
 // Context::getMonitorWorkArea
 //------------------------------------------------------------------------
-void Context::getMonitorWorkArea(GLFWmonitor *iMonitor, int *oXPos, int *oYPos, int *oWidth, int *oHeight)
+void Context::getMonitorWorkArea(GLFWmonitor *iMonitor, int *oXPos, int *oYPos, int *oWidth, int *oHeight) const
 {
   auto monitor = getMonitor(iMonitor);
   if(monitor)
@@ -673,6 +673,33 @@ void Context::getMonitorWorkArea(GLFWmonitor *iMonitor, int *oXPos, int *oYPos, 
     if(oHeight)
       *oHeight = height;
   }
+}
+
+//------------------------------------------------------------------------
+// Context::getMonitorContentScale
+//------------------------------------------------------------------------
+void Context::getMonitorContentScale(GLFWmonitor *iMonitor, float *oXScale, float *oYScale) const
+{
+  auto monitor = getMonitor(iMonitor);
+  if(monitor)
+  {
+    if(oXScale)
+      *oXScale = fScale;
+    if(oYScale)
+      *oYScale = fScale;
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::getMonitorContentScale
+//------------------------------------------------------------------------
+GLFWmonitor *Context::getMonitor(GLFWwindow *iWindow) const
+{
+  if(getWindow(iWindow))
+    // the best I can do right now due to javascript API/limitations
+    return fCurrentMonitor->asOpaquePtr();
+  else
+    return nullptr;
 }
 
 //------------------------------------------------------------------------

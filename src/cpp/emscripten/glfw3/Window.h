@@ -79,6 +79,7 @@ public:
     if(oWidth) *oWidth = getFramebufferWidth();
     if(oHeight) *oHeight = getFramebufferHeight();
   }
+  void getWindowPosition(int *oX, int *oY);
 //  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
 //  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
 

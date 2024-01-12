@@ -552,6 +552,9 @@ void Triangle::updateValues()
   glfwGetWindowSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetWindowSize", "%dx%d", xi, yi);
 
+  glfwGetWindowPos(fWindow, &xi, &yi);
+  setHtmlValue(fWindow, "glfwGetWindowPos", "%dx%d", xi, yi);
+
   glfwGetFramebufferSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetFramebufferSize", "%dx%d", xi, yi);
 

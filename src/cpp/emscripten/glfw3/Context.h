@@ -50,11 +50,13 @@ public:
 
   // monitor
   GLFWmonitor** getMonitors(int* oCount);
-  GLFWmonitor* getPrimaryMonitor();
-  void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos);
-  void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight);
+  GLFWmonitor* getPrimaryMonitor() const;
+  void getMonitorPos(GLFWmonitor* iMonitor, int* oXPos, int* oYPos) const;
+  void getMonitorWorkArea(GLFWmonitor* iMonitor, int* oXPos, int* oYPos, int* oWidth, int* oHeight) const;
+  void getMonitorContentScale(GLFWmonitor* iMonitor, float *oXScale, float* oYScale) const;
   std::shared_ptr<Monitor> getMonitor(GLFWmonitor *iMonitor) const;
   GLFWmonitorfun setMonitorCallback(GLFWmonitorfun iCallback) { return std::exchange(fMonitorCallback, iCallback); }
+  GLFWmonitor *getMonitor(GLFWwindow *iWindow) const;
 
   // cursor
   GLFWcursor *createStandardCursor(int iShape);

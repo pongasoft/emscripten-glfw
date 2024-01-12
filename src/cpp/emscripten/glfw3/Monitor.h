@@ -30,6 +30,7 @@ public:
   // user pointer
   inline void *getUserPointer() const { return fUserPointer; }
   inline void setUserPointer(void *iPointer) { fUserPointer = iPointer; }
+  char const *getName() const { return "N/A"; }
 
 private:
   void *fUserPointer{};

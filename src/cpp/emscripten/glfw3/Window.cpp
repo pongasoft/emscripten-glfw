@@ -27,6 +27,7 @@
 extern "C" {
 void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emscripten_glfw3_window_get_position(GLFWwindow *iWindow, int *oX, int *oY);
 void emscripten_glfw3_window_focus(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
 float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
@@ -168,7 +169,7 @@ Vec2<int> Window::maybeApplySizeConstraints(Vec2<int> const &iSize) const
   {
     auto aspectRatio = static_cast<float>(fAspectRatioNumerator) / static_cast<float>(fAspectRatioDenominator);
     auto imageAspectRatio = static_cast<float>(size.width) / static_cast<float>(size.height);
-    if(imageAspectRatio > aspectRatio)
+    if(imageAspectRatio < aspectRatio)
       size.width = static_cast<int>(std::round(static_cast<float>(size.height) * aspectRatio));
     else
       size.height = static_cast<int>(std::round(static_cast<float>(size.width) / aspectRatio));
@@ -226,6 +227,19 @@ void Window::setAspectRatio(int iNumerator, int iDenominator)
   auto newSize = maybeApplySizeConstraints(fSize);
   if(newSize != fSize)
     setSize(newSize);
+}
+
+//------------------------------------------------------------------------
+// Window::getWindowPosition
+//------------------------------------------------------------------------
+void Window::getWindowPosition(int *oX, int *oY)
+{
+  int x,y;
+  emscripten_glfw3_window_get_position(asOpaquePtr(), &x, &y);
+  if(oX)
+    *oX = x;
+  if(oY)
+    *oY = y;
 }
 
 //------------------------------------------------------------------------

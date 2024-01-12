@@ -295,6 +295,14 @@ let impl = {
     ctx.setCSSValue("height", height + "px", "important");
   },
 
+  //! emscripten_glfw3_window_get_position
+  emscripten_glfw3_window_get_position: (glfwWindow, x, y) => {
+    const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
+    const rect = getBoundingClientRect(canvas);
+    {{{ makeSetValue('x', '0', 'rect.x', 'i32') }}};
+    {{{ makeSetValue('y', '0', 'rect.y', 'i32') }}};
+  },
+
   //! emscripten_glfw3_window_set_cursor
   emscripten_glfw3_window_set_cursor: (glfwWindow, cursor) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
