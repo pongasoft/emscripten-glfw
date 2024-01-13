@@ -756,3 +756,14 @@ void Triangle::toggleAspectRatio()
     glfwSetWindowAspectRatio(fWindow, 3, 2);
   fHasAspectRatio = !fHasAspectRatio;
 }
+
+//------------------------------------------------------------------------
+// Triangle::updateTitle
+//------------------------------------------------------------------------
+void Triangle::updateTitle()
+{
+  static int kId = 1;
+  static std::array<char, 256> kTitle;
+  fmt(kTitle, "%s | Update %d", getName(), kId++);
+  glfwSetWindowTitle(fWindow, kTitle.data());
+}

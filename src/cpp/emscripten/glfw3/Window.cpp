@@ -25,6 +25,7 @@
 #include <algorithm>
 
 extern "C" {
+void emscripten_glfw3_context_set_title(char const *iTitle);
 void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_window_get_position(GLFWwindow *iWindow, int *oX, int *oY);
@@ -65,10 +66,11 @@ const Cursor Cursor::kCursorHidden{0, "none"};
 //------------------------------------------------------------------------
 // Window::Window
 //------------------------------------------------------------------------
-Window::Window(Context *iContext, Config iConfig, float iMonitorScale) :
+Window::Window(Context *iContext, Config iConfig, float iMonitorScale, char const *iTitle) :
   fContext{iContext},
   fConfig{std::move(iConfig)},
-  fMonitorScale{iMonitorScale}
+  fMonitorScale{iMonitorScale},
+  fTitle{iTitle ? std::optional<std::string>{iTitle} : std::nullopt}
 {
   printf("Window(%p)\n", asOpaquePtr());
 }
@@ -85,7 +87,10 @@ void Window::init(int iWidth, int iHeight)
     setVisibility(false);
 
   if(fConfig.fFocused)
+  {
     focus();
+    emscripten_glfw3_context_set_title(getTitle());
+  }
 
   setCanvasSize({iWidth, iHeight});
 }
@@ -230,9 +235,9 @@ void Window::setAspectRatio(int iNumerator, int iDenominator)
 }
 
 //------------------------------------------------------------------------
-// Window::getWindowPosition
+// Window::getPosition
 //------------------------------------------------------------------------
-void Window::getWindowPosition(int *oX, int *oY)
+void Window::getPosition(int *oX, int *oY)
 {
   int x,y;
   emscripten_glfw3_window_get_position(asOpaquePtr(), &x, &y);
@@ -659,7 +664,10 @@ bool Window::onFocusChange(bool iFocus)
   if(!isFocused())
     fKeyboard.resetAllKeys(asOpaquePtr());
   else
+  {
     fContext->onFocus(asOpaquePtr());
+    emscripten_glfw3_context_set_title(getTitle());
+  }
   if(fFocusCallback)
     fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
   return true;

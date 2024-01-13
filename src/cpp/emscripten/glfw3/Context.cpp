@@ -31,6 +31,7 @@ void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, WindowResi
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
+void emscripten_glfw3_context_set_title(char const *iTitle);
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
@@ -448,7 +449,18 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare)
 {
-  auto window = std::make_shared<Window>(this, fConfig, fScale);
+  if(iWidth == 0 || iHeight == 0)
+  {
+    if(iMonitor)
+      kErrorHandler.logError(GLFW_INVALID_VALUE, "Due to security and restrictions of the browser API, for this platform, "
+                                                 "you cannot create a full screen window: create a window with a fixed size, "
+                                                 "then from a user event call Module.glfwRequestFullscreen (javascript)");
+    else
+      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid width or height (cannot be 0)");
+    return nullptr;
+  }
+
+  auto window = std::make_shared<Window>(this, fConfig, fScale, iTitle);
 
   auto const canvasSelector = fConfig.fCanvasSelector.data();
 
@@ -496,6 +508,21 @@ void Context::destroyWindow(GLFWwindow *iWindow)
     if(fLastKnownFocusedWindow == iWindow)
       fLastKnownFocusedWindow = nullptr;
     fWindows.erase(iter);
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::setWindowTitle
+//------------------------------------------------------------------------
+void Context::setWindowTitle(GLFWwindow *iWindow, char const *iTitle)
+{
+  if(auto window = getWindow(iWindow); window)
+  {
+    window->setTitle(iTitle);
+
+    // do we need to update the browser title?
+    if(window->isFocused() || window == findFocusedOrSingleWindow())
+      emscripten_glfw3_context_set_title(iTitle);
   }
 }
 

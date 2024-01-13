@@ -661,11 +661,21 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 {
   auto w = getWindow(window);
   if(w)
-    w->getWindowPosition(xpos, ypos);
+    w->getPosition(xpos, ypos);
 }
 
 //! glfwSetWindowPos (there is no generic way to set a canvas position)
 GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos) { logNotImplemented("glfwSetWindowPos"); }
+
+//------------------------------------------------------------------------
+// glfwSetWindowTitle
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title)
+{
+  auto context = getContext();
+  if(context)
+    context->setWindowTitle(window, title);
+}
 
 //------------------------------------------------------------------------
 // glfwSetWindowPosCallback
@@ -1071,7 +1081,6 @@ GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor) { logNotImplemented("glfwDest
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma) { logNotImplemented("glfwSetGamma"); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor) { logNotImplemented("glfwGetGammaRamp"); return nullptr; }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp) { logNotImplemented("glfwSetGammaRamp"); }
-GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title) { logNotImplemented("glfwSetWindowTitle"); }
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images) { logNotImplemented("glfwSetWindowIcon"); }
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window) { logNotImplemented("glfwIconifyWindow"); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window) { logNotImplemented("glfwRestoreWindow"); }

@@ -198,6 +198,12 @@ let impl = {
     return false;
   },
 
+  //! emscripten_glfw3_context_set_title
+  emscripten_glfw3_context_set_title: (title) => {
+    if(title)
+      document.title = UTF8ToString(title);
+  },
+
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
     console.log("emscripten_glfw3_context_destroy()");

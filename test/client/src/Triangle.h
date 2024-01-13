@@ -43,6 +43,7 @@ public:
   void toggleResizable();
   void toggleSizeLimits();
   void toggleAspectRatio();
+  void updateTitle();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;

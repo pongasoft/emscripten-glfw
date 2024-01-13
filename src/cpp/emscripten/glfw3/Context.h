@@ -47,6 +47,7 @@ public:
   GLFWwindow* createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare);
   void destroyWindow(GLFWwindow *iWindow);
   std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
+  void setWindowTitle(GLFWwindow *iWindow, char const *iTitle);
 
   void makeContextCurrent(GLFWwindow* iWindow);
   GLFWwindow* getCurrentContext() const;

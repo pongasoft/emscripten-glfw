@@ -237,6 +237,11 @@
       <td>-</td>
       <td><input class="canvas2" type="button" value="Toggle Aspect Ratio" onclick="Module.toggleAspectRatio('#canvas2')"></td>
     </tr>
+    <tr class="glfwSetWindowTitle">
+      <td class="action">glfwSetWindowTitle</td>
+      <td><input class="canvas1" type="button" value="Update title" onclick="Module.pushEvent('update_title', '#canvas1')"></td>
+      <td><input class="canvas2" type="button" value="Update title" onclick="Module.pushEvent('update_title', '#canvas2')"></td>
+    </tr>
     <tr>
       <td class="action">glfwSetWindowShouldClose</td>
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas1')"></td>
@@ -329,7 +334,8 @@
     eventTypes: {
       exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5,
       opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10,
-      toggle_resizable: 11, toggle_size_limits: 12, toggle_aspect_ratio: 13
+      toggle_resizable: 11, toggle_size_limits: 12, toggle_aspect_ratio: 13,
+      update_title: 14
     },
     events: [],
     hasEvents: () => { return Module.events.length > 0; },

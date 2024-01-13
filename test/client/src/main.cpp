@@ -49,7 +49,8 @@ struct Event
     toggleHiDPIAware,
     toggleResizable,
     toggleSizeLimits,
-    toggleAspectRatio
+    toggleAspectRatio,
+    updateTitle
   };
 
   Type fType;
@@ -106,6 +107,7 @@ bool handleEvents()
       case Event::Type::toggleResizable: if(triangle) triangle->toggleResizable(); break;
       case Event::Type::toggleSizeLimits: if(triangle) triangle->toggleSizeLimits(); break;
       case Event::Type::toggleAspectRatio: if(triangle) triangle->toggleAspectRatio(); break;
+      case Event::Type::updateTitle: if(triangle) triangle->updateTitle(); break;
       default: break;
     }
   }
@@ -130,7 +132,7 @@ int main()
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas1");
-    window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+    window1 = glfwCreateWindow(300, 200, "hello world | canvas 1", nullptr, nullptr);
     if(!window1)
     {
       glfwTerminate();
@@ -145,7 +147,7 @@ int main()
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR, "#canvas2-container");
-    window2 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
+    window2 = glfwCreateWindow(300, 200, "hello world | canvas 2", nullptr, nullptr);
     if(!window2)
     {
       glfwTerminate();

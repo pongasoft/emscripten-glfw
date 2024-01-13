@@ -79,9 +79,12 @@ public:
     if(oWidth) *oWidth = getFramebufferWidth();
     if(oHeight) *oHeight = getFramebufferHeight();
   }
-  void getWindowPosition(int *oX, int *oY);
+  void getPosition(int *oX, int *oY);
 //  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
 //  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
+
+  constexpr char const *getTitle() const { return fTitle ? fTitle->c_str() : nullptr; }
+  void setTitle(char const *iTitle) { fTitle = iTitle ? std::optional<std::string>(iTitle): std::nullopt; }
 
   constexpr bool isFocused() const { return fFocused; }
   void focus();
@@ -151,7 +154,7 @@ public:
   bool createGLContext();
   void makeGLContextCurrent();
 
-  Window(Context *iContext, Config iConfig, float iMonitorScale);
+  Window(Context *iContext, Config iConfig, float iMonitorScale, char const *iTitle);
   ~Window() override;
   constexpr bool isDestroyed() const { return fDestroyed; }
 
@@ -204,6 +207,7 @@ private:
   int fAspectRatioNumerator{GLFW_DONT_CARE};
   int fAspectRatioDenominator{GLFW_DONT_CARE};
   std::optional<Vec2<int>> fSizeBeforeFullscreen{};
+  std::optional<std::string> fTitle{};
   float fOpacity{1.0f};
   int fShouldClose{}; // GLFW bool
   bool fHasGLContext{};
