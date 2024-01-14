@@ -782,6 +782,22 @@ void Context::pollEvents()
 }
 
 //------------------------------------------------------------------------
+// Context::swapInterval
+//------------------------------------------------------------------------
+void Context::swapInterval(int iInterval) const
+{
+  // Code copied from library_glfw.js
+  // GLFW uses negative values to enable GLX_EXT_swap_control_tear, which we don't have,
+  // so just treat negative and positive the same.
+  iInterval = std::abs(iInterval);
+  if(iInterval == 0)
+    emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
+  else
+    emscripten_set_main_loop_timing(EM_TIMING_RAF, iInterval);
+}
+
+
+//------------------------------------------------------------------------
 // Context::glfwExtensionSupported
 //------------------------------------------------------------------------
 glfw_bool_t Context::isExtensionSupported(char const *extension)

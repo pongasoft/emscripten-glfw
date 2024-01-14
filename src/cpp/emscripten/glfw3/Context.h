@@ -75,6 +75,7 @@ public:
 
   // events
   void pollEvents();
+  void swapInterval(int iInterval) const;
 
   // opengl
   glfw_bool_t isExtensionSupported(const char* extension);

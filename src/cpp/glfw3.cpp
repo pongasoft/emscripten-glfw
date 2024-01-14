@@ -877,6 +877,16 @@ GLFWAPI void glfwPollEvents()
     context->pollEvents();
 }
 
+//------------------------------------------------------------------------
+// glfwSwapInterval
+//------------------------------------------------------------------------
+GLFWAPI void glfwSwapInterval(int interval)
+{
+  auto context = getContext();
+  if(context)
+    context->swapInterval(interval);
+}
+
 //! glfwWaitEvents no access to even loop in emscripten/javascript
 GLFWAPI void glfwWaitEvents(void) { logNotImplemented("glfwWaitEvents"); }
 
@@ -1087,6 +1097,7 @@ GLFWAPI void glfwRestoreWindow(GLFWwindow* window) { logNotImplemented("glfwRest
 GLFWAPI void glfwMaximizeWindow(GLFWwindow* window) { logNotImplemented("glfwMaximizeWindow"); }
 GLFWAPI void glfwRequestWindowAttention(GLFWwindow* window) { logNotImplemented("glfwRequestWindowAttention"); }
 GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate) { logNotImplemented("glfwSetWindowMonitor"); }
+// per documentation: The close callback is not triggered by glfwDestroyWindow so this callback can never be called on this platform since there is no "user attempts to close the window" action
 GLFWAPI GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow* window, GLFWwindowclosefun callback) { logNotImplemented("glfwSetWindowCloseCallback"); return callback; }
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback) { logNotImplemented("GLFWwindowrefreshfun"); return callback; }
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback) { logNotImplemented("glfwSetWindowIconifyCallback"); return callback; }
@@ -1095,7 +1106,6 @@ GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback
 GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string) { logNotImplemented("glfwSetClipboardString"); }
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window) { logNotImplemented("glfwGetClipboardString"); return nullptr; }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window) { logNotImplemented("glfwSwapBuffers"); }
-GLFWAPI void glfwSwapInterval(int interval) { logNotImplemented("glfwSwapInterval"); }
 // GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname) { logNotImplemented("glfwGetProcAddress"); } implemented by emscripten GL
 GLFWAPI int glfwVulkanSupported(void) { return GLFW_FALSE; }
 GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count) { logNotImplemented("glfwGetRequiredInstanceExtensions"); *count = 0; return nullptr; }
