@@ -17,6 +17,7 @@
  */
 
 #include "Triangle.h"
+#include <GLFW/emscripten_glfw3.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
 #include <emscripten/html5.h>
@@ -44,11 +45,35 @@ void main() {
   triangleColor = vec4(0.294, 0.0, 0.51, 1.0);
 })FST";
 
+//------------------------------------------------------------------------
+// Triangle::Triangle
+//------------------------------------------------------------------------
+Triangle::Triangle(GLFWwindow *iWindow,
+                   char const *iName,
+                   char const *iResizeContainerSelector,
+                   char const *iResizeHandleSelector,
+                   GLuint iProgram,
+                   GLint iVertexPositionAttribLocation,
+                   GLuint iTriangleGeoVAO) :
+  fWindow{iWindow},
+  fName{iName},
+  fResizeContainerSelector{iResizeContainerSelector},
+  fResizeHandleSelector{iResizeHandleSelector},
+  fProgram{iProgram},
+  fVertexPositionAttribLocation{iVertexPositionAttribLocation},
+  fTriangleGeoVAO{iTriangleGeoVAO}
+{
+  if(fResizeContainerSelector)
+    emscripten_glfw_make_canvas_resizable(fWindow, fResizeContainerSelector, fResizeHandleSelector);
+}
 
 //------------------------------------------------------------------------
 // Triangle::init
 //------------------------------------------------------------------------
-std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow, char const *iName)
+std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow,
+                                         char const *iName,
+                                         char const *iResizeContainerSelector,
+                                         char const *iResizeHandleSelector)
 {
   glfwMakeContextCurrent(iWindow);
 
@@ -128,6 +153,8 @@ std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow, char const *iName)
 
   return std::unique_ptr<Triangle>(new Triangle(iWindow,
                                                 iName,
+                                                iResizeContainerSelector,
+                                                iResizeHandleSelector,
                                                 helloTriangleProgram,
                                                 vertexPositionAttribLocation,
                                                 triangleGeoVAO));
@@ -339,7 +366,6 @@ void onContentScaleChange(GLFWwindow *window, float xScale, float yScale)
 void onWindowSizeChange(GLFWwindow* window, int width, int height)
 {
   setHtmlValue(window, "glfwSetWindowSizeCallback", "%dx%d", width, height);
-  EM_ASM({ Module.onWindowSizeChanged($0, $1, $2); }, window, width, height);
 }
 void onFramebufferSizeChange(GLFWwindow* window, int width, int height)
 {
@@ -711,10 +737,12 @@ void Triangle::close()
 //------------------------------------------------------------------------
 // toggleWindowAttrib
 //------------------------------------------------------------------------
-static void toggleWindowAttrib(GLFWwindow *iWindow, int iAttrib)
+static int toggleWindowAttrib(GLFWwindow *iWindow, int iAttrib)
 {
   auto value = glfwGetWindowAttrib(iWindow, iAttrib);
-  glfwSetWindowAttrib(iWindow, iAttrib, value == GLFW_FALSE ? GLFW_TRUE : GLFW_FALSE);
+  auto newValue = value == GLFW_FALSE ? GLFW_TRUE : GLFW_FALSE;
+  glfwSetWindowAttrib(iWindow, iAttrib, newValue);
+  return newValue;
 }
 
 //------------------------------------------------------------------------
@@ -730,7 +758,14 @@ void Triangle::toggleHiDPIAware()
 //------------------------------------------------------------------------
 void Triangle::toggleResizable()
 {
-  toggleWindowAttrib(fWindow, GLFW_RESIZABLE);
+  auto isResizable = toggleWindowAttrib(fWindow, GLFW_RESIZABLE) == GLFW_TRUE;
+  if(fResizeContainerSelector)
+  {
+    if(isResizable)
+      emscripten_glfw_make_canvas_resizable(fWindow, fResizeContainerSelector, fResizeHandleSelector);
+    else
+      emscripten_glfw_unmake_canvas_resizable(fWindow);
+  }
 }
 
 //------------------------------------------------------------------------

@@ -170,9 +170,8 @@ protected:
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);
-  bool setResizable(bool iResizable);
+  inline void setResizable(bool iResizable) { fConfig.fResizable = toGlfwBool(iResizable); }
   inline bool isResizable() const { return toCBool(fConfig.fResizable); }
-  inline bool isResizableByUser() const { return isResizable() && fConfig.fCanvasResizeSelector; }
   void setCanvasSize(Vec2<int> const &iSize);
   void resize(Vec2<int> const &iSize);
   Vec2<int> maybeApplySizeConstraints(Vec2<int> const &iSize) const;

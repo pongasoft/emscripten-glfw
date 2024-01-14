@@ -7,7 +7,8 @@ let impl = {
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
     Module["glfwGetWindow"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.glfwWindow : null; };
     Module["glfwGetCanvasSelector"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.selector : null; };
-    Module["glfwSetCanvasResizableSelector"] = GLFW3.glfwSetCanvasResizableSelector;
+    Module["glfwMakeCanvasResizable"] = GLFW3.glfwMakeCanvasResizable;
+    Module["glfwUnmakeCanvasResizable"] = GLFW3.glfwUnmakeCanvasResizable;
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
@@ -73,16 +74,16 @@ let impl = {
       }
     },
 
-    //! setCanvasResizableSelector
-    setCanvasResizableSelector__deps: ['$findEventTarget'],
-    setCanvasResizableSelector: (any, canvasResizeSelector) => {
+    //! setCanvasResizeSelector
+    setCanvasResizeSelector__deps: ['$findEventTarget'],
+    setCanvasResizeSelector: (any, canvasResizeSelector) => {
       const ctx = GLFW3.findContext(any);
       if(!ctx)
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
 
       if(ctx.fCanvasResize)
       {
-        ctx.fCanvasResize.observer.disconnect();
+        ctx.fCanvasResize.destroy();
         delete ctx.fCanvasResize;
       }
 
@@ -94,7 +95,11 @@ let impl = {
 
         const glfwWindow = ctx.glfwWindow;
 
-        ctx.fCanvasResize = { target: canvasResize };
+        ctx.fCanvasResize = { target: canvasResize, destructors: [] };
+        ctx.fCanvasResize.destroy = () => {
+          for(let destructor of ctx.fCanvasResize.destructors)
+            destructor();
+        }
 
         if(canvasResize === window) {
           ctx.fCanvasResize.computeSize = () => { return { width: window.innerWidth, height: window.innerHeight }; };
@@ -123,6 +128,7 @@ let impl = {
             }
           });
         }
+        ctx.fCanvasResize.destructors.push(() => { ctx.fCanvasResize.observer.disconnect(); });
         ctx.fCanvasResize.observer.observe(canvasResize);
         const size = ctx.fCanvasResize.computeSize();
         GLFW3.onWindowResize(glfwWindow, size.width, size.height);
@@ -131,9 +137,100 @@ let impl = {
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     },
 
-    //! glfwSetCanvasResizableSelector
-    glfwSetCanvasResizableSelector: (any, canvasResizeSelector) => {
-      return GLFW3.setCanvasResizableSelector(any, canvasResizeSelector) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+    //! makeCanvasResizable
+    makeCanvasResizable__deps: ['$findEventTarget'],
+    makeCanvasResizable: (any, resizableSelector, handleSelector) => {
+      if(!resizableSelector)
+        return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+
+      // first we set the canvas resize selector
+      const res = GLFW3.setCanvasResizeSelector(any, resizableSelector);
+      if(res != {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}})
+        return res;
+
+      // no handle, no need to continue
+      if(!handleSelector)
+        return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+
+      const ctx = GLFW3.findContext(any);
+      const resizable = findEventTarget(resizableSelector);
+      const handle = findEventTarget(handleSelector);
+
+      if(!handle)
+        return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+
+      var lastDownX = 0;
+      var lastDownY = 0;
+      var size = undefined;
+
+      ctx.fCanvasResize.onSizeChanged = (width, height) => {
+        if (!size) { // while not resizing (otherwise it conflicts)
+          resizable.style.width = width + 'px';
+          resizable.style.height = height + 'px';
+        }
+      }
+
+      function computeSize(element) {
+        const style = getComputedStyle(element);
+        return { width: parseFloat(style.width), height: parseFloat(style.height) };
+      }
+
+      // mouse down (target handle) => record size + location
+      const onMouseDown = (e) => {
+        size = computeSize(resizable);
+        lastDownX = e.clientX;
+        lastDownY = e.clientY;
+      };
+
+      handle.addEventListener('mousedown', onMouseDown);
+      ctx.fCanvasResize.destructors.push(() => { handle.removeEventListener('mousedown', onMouseDown); });
+
+      // mouse move (target window) => if resizing, compute new size and make resizable this size
+      const onMouseMove = (e) => {
+        if (!size) {
+          return;
+        }
+        var offsetX = lastDownX - e.clientX;
+        var offsetY = lastDownY - e.clientY;
+        size.width -= offsetX;
+        size.height -= offsetY;
+        if (size.width < 0)
+          size.width = 0;
+        if (size.height < 0)
+          size.height = 0;
+        resizable.style.width = size.width + 'px';
+        resizable.style.height = size.height + 'px';
+        lastDownX = e.clientX;
+        lastDownY = e.clientY;
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('mousemove', onMouseMove); });
+
+      // mouse up (target window) => if resizing, compute canvas size and adjust resizable accordingly
+      const onMouseUp = (e) => {
+        if (size) {
+          const canvasSize = computeSize(ctx.canvas);
+          resizable.style.width = canvasSize.width + 'px';
+          resizable.style.height = canvasSize.height + 'px';
+          size = undefined;
+        }
+      };
+
+      window.addEventListener('mouseup', onMouseUp);
+      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('mouseup', onMouseUp); });
+
+      return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+    },
+
+    //! glfwMakeCanvasResizable
+    glfwMakeCanvasResizable: (any, resizableSelector, handleSelector) => {
+      return GLFW3.makeCanvasResizable(any, resizableSelector, handleSelector) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+    },
+
+    //! glfwUnmakeCanvasResizable
+    glfwUnmakeCanvasResizable: (any) => {
+      return GLFW3.setCanvasResizeSelector(any, null) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     }
   },
 
@@ -288,7 +385,7 @@ let impl = {
 
       if(ctx.fCanvasResize)
       {
-        ctx.fCanvasResize.observer.disconnect();
+        ctx.fCanvasResize.destroy();
         delete ctx.fCanvasResize;
       }
 
@@ -313,6 +410,9 @@ let impl = {
     // this will (on purpose) override any css setting
     ctx.setCSSValue("width",   width + "px", "important");
     ctx.setCSSValue("height", height + "px", "important");
+
+    if(ctx.fCanvasResize && ctx.fCanvasResize.onSizeChanged)
+      ctx.fCanvasResize.onSizeChanged(width, height);
   },
 
   //! emscripten_glfw3_window_get_position
@@ -357,11 +457,6 @@ let impl = {
       ctx.restoreCSSValue("display");
   },
 
-  //! emscripten_glfw3_window_set_canvas_resizable_selector
-  emscripten_glfw3_window_set_canvas_resizable_selector: (glfwWindow, canvasResizeSelector) => {
-    return GLFW3.setCanvasResizableSelector(glfwWindow, UTF8ToString(canvasResizeSelector));
-  },
-
   //! emscripten_glfw3_context_gl_init
   emscripten_glfw3_context_gl_init: (glfwWindow) => {
     const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
@@ -404,8 +499,22 @@ let impl = {
     else
       return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
   },
+}
 
+// Javascript public api that is called from cpp (see emscripten_glfw3.h)
+let api = {
+  //! emscripten_glfw_make_canvas_resizable
+  emscripten_glfw_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
+    return GLFW3.glfwMakeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
+  },
+
+  //! emscripten_glfw_unmake_canvas_resizable
+  emscripten_glfw_unmake_canvas_resizable: (glfwWindow) => {
+    return GLFW3.glfwUnmakeCanvasResizable(glfwWindow);
+  }
 }
 
 autoAddDeps(impl, '$GLFW3')
+autoAddDeps(api, '$GLFW3')
 mergeInto(LibraryManager.library, impl);
+mergeInto(LibraryManager.library, api);

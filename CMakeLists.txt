@@ -36,7 +36,7 @@ target_sources(${target} PUBLIC
     FILE_SET headers TYPE HEADERS BASE_DIRS src/cpp/emscripten/glfw3 FILES ${glfw3_headers}
 )
 
-target_include_directories(${target} PUBLIC external)
+target_include_directories(${target} PUBLIC external include)
 #target_compile_definitions(${target} PUBLIC EMSCRIPTEN_GLFW3_DISABLE_WARNING)
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 

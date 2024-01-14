@@ -16,7 +16,7 @@
  * @author Yan Pujante
  */
 
-#include <GLFW/glfw3.h>
+#include <GLFW/emscripten_glfw3.h>
 #include <cstdio>
 #include <emscripten/html5.h>
 #include "Triangle.h"
@@ -26,9 +26,6 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 {
   printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);
 }
-
-#define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
-#define GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR  0x00027002
 
 std::vector<std::shared_ptr<Triangle>> kTriangles{};
 
@@ -146,7 +143,6 @@ int main()
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
     glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_SELECTOR, "#canvas2");
-    glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR, "#canvas2-container");
     window2 = glfwCreateWindow(300, 200, "hello world | canvas 2", nullptr, nullptr);
     if(!window2)
     {
@@ -169,7 +165,7 @@ int main()
 
   if(window2)
   {
-    std::shared_ptr<Triangle> window2Triangle = Triangle::init(window2, "canvas2");
+    std::shared_ptr<Triangle> window2Triangle = Triangle::init(window2, "canvas2", "#canvas2-container", "#canvas2-handle");
     if(!window2Triangle)
     {
       glfwTerminate();

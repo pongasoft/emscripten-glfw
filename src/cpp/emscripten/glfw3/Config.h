@@ -48,7 +48,6 @@ struct Config
   glfw_bool_t fFocused{GLFW_TRUE};         // GLFW_FOCUSED
 
   std::string fCanvasSelector{kDefaultCanvasSelector}; // GLFW_EMSCRIPTEN_CANVAS_SELECTOR
-  std::optional<std::string> fCanvasResizeSelector{};  // GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR
 
   // Framebuffer
   int fAlphaBits   {8};  // GLFW_ALPHA_BITS

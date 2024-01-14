@@ -19,6 +19,7 @@
 #include "Window.h"
 #include "Context.h"
 #include <emscripten/em_types.h>
+#include "../../../../include/GLFW/emscripten_glfw3.h"
 #include <utility>
 #include "ErrorHandler.h"
 #include "Cursor.h"
@@ -35,7 +36,6 @@ float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
 bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
-int emscripten_glfw3_window_set_canvas_resizable_selector(GLFWwindow *iWindow, char const *iCanvasResizeSelector);
 void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
@@ -289,32 +289,6 @@ void Window::resize(Vec2<int> const &iSize)
 {
   if(isResizable())
     setSize(maybeApplySizeConstraints(iSize));
-}
-
-//------------------------------------------------------------------------
-// Window::setResizable
-//------------------------------------------------------------------------
-bool Window::setResizable(bool iResizable)
-{
-  fConfig.fResizable = toGlfwBool(iResizable);
-
-  if(isResizableByUser())
-  {
-    if(emscripten_glfw3_window_set_canvas_resizable_selector(asOpaquePtr(),
-                                                             fConfig.fCanvasResizeSelector->c_str()) != EMSCRIPTEN_RESULT_SUCCESS)
-    {
-      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid canvas resize selector [%s]", fConfig.fCanvasResizeSelector->c_str());
-      fConfig.fCanvasResizeSelector = std::nullopt;
-      return false;
-    }
-  }
-  else
-  {
-    // we remove the callback (noop if there was none)
-    emscripten_glfw3_window_set_canvas_resizable_selector(asOpaquePtr(), nullptr);
-  }
-
-  return true;
 }
 
 //------------------------------------------------------------------------

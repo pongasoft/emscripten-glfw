@@ -225,7 +225,7 @@
       <td class="action">glfwSetWindowAttrib(GLFW_RESIZABLE)</td>
       <td>-</td>
       <td><input class="canvas2" type="button" value="Toggle Resizable"
-                 onclick="Module.toggleCSSClass('#canvas2-container', 'bordered'); Module.toggleHTMLElement('#canvas2-handle'); Module.pushEvent('toggle_resizable', '#canvas2')"></td>
+                 onclick="Module.toggleResizable('#canvas2')"></td>
     </tr>
     <tr class="glfwSetWindowSizeLimits">
       <td class="action">glfwSetWindowSizeLimits(150x100, 300x200)</td>
@@ -325,12 +325,6 @@
     })(),
     canvas1Enabled: isCanvasEnabled("canvas1"),
     canvas2Enabled: isCanvasEnabled("canvas2"),
-    onCanvasSizeChanged: {},
-    onWindowSizeChanged: (window, width, height) => {
-      const canvasSelector = Module.glfwGetCanvasSelector(window);
-      if(Module.onCanvasSizeChanged[canvasSelector])
-        Module.onCanvasSizeChanged[canvasSelector](width, height);
-    },
     eventTypes: {
       exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5,
       opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10,
@@ -370,6 +364,11 @@
           element.classList.add('hidden');
       }
     },
+    toggleResizable: (canvas) => {
+      Module.toggleCSSClass(canvas + '-container', 'bordered');
+      Module.toggleHTMLElement(canvas + '-handle');
+      Module.pushEvent('toggle_resizable', canvas)
+    },
     toggleSizeLimits: (canvas) => {
       Module.pushEvent('toggle_size_limits', canvas);
       Module.toggleHTMLElement(canvas + '-caption .size-limit');
@@ -399,63 +398,6 @@
 
   const c2EnableAction = document.getElementById('canvas2-enable-action');
   c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable"
-
-  function makeResizable(canvasSelector, resizableSelector, handleSelector) {
-    const canvas = document.querySelector(canvasSelector);
-    const resizable = document.querySelector(resizableSelector);
-    const handle = document.querySelector(handleSelector);
-    var lastDownX = 0;
-    var lastDownY = 0;
-    var size = undefined;
-
-    Module.onCanvasSizeChanged[canvasSelector] = (width, height) => {
-      if(!size) { // while not resizing (otherwise it conflicts)
-        resizable.style.width = width + 'px';
-        resizable.style.height = height + 'px';
-      }
-    }
-
-    function computeSize(element) {
-      const style = getComputedStyle(element);
-      return { width: parseFloat(style.width), height: parseFloat(style.height) };
-    }
-
-    handle.addEventListener('mousedown', function(e) {
-      size = computeSize(resizable);
-      lastDownX = e.clientX;
-      lastDownY = e.clientY;
-    });
-
-    window.addEventListener('mousemove', function(e) {
-      if (!size) {
-        return;
-      }
-      var offsetX = lastDownX - e.clientX;
-      var offsetY = lastDownY - e.clientY;
-      size.width -= offsetX;
-      size.height -= offsetY;
-      if(size.width < 0)
-        size.width = 0;
-      if(size.height < 0)
-        size.height = 0;
-      resizable.style.width = size.width + 'px';
-      resizable.style.height = size.height + 'px';
-      lastDownX = e.clientX;
-      lastDownY = e.clientY;
-    });
-
-    window.addEventListener('mouseup', function(e) {
-      if(size)
-      {
-        const canvasSize = computeSize(canvas);
-        resizable.style.width = canvasSize.width + 'px';
-        resizable.style.height = canvasSize.height + 'px';
-        size = undefined;
-      }
-    });
-  }
-
-  makeResizable("#canvas2", "#canvas2-container", "#canvas2-handle");
 
   // var debug = (key, message) => {
   //   var elt = document.querySelector("#debug ." + key.toString());

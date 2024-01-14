@@ -27,7 +27,10 @@ struct GLFWwindow;
 class Triangle
 {
 public:
-  static std::unique_ptr<Triangle> init(GLFWwindow *iWindow, char const *iName);
+  static std::unique_ptr<Triangle> init(GLFWwindow *iWindow,
+                                        char const *iName,
+                                        char const *iResizeContainerSelector = nullptr,
+                                        char const *iResizeHandleSelector = nullptr);
   ~Triangle();
 
   inline GLFWwindow *getWindow() const { return fWindow; }
@@ -56,17 +59,17 @@ public:
   static void updateNoWindowValues();
 
 private:
-  Triangle(GLFWwindow *iWindow, char const *iName, GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO) :
-    fWindow{iWindow},
-    fName{iName},
-    fProgram{iProgram},
-    fVertexPositionAttribLocation{iVertexPositionAttribLocation},
-    fTriangleGeoVAO{iTriangleGeoVAO}
-  {}
+  Triangle(GLFWwindow *iWindow,
+           char const *iName,
+           char const *iResizeContainerSelector,
+           char const *iResizeHandleSelector,
+           GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO);
 
 private:
   GLFWwindow *fWindow;
   char const *fName;
+  char const *fResizeContainerSelector;
+  char const *fResizeHandleSelector;
   GLuint fProgram;
   GLint fVertexPositionAttribLocation;
   GLuint fTriangleGeoVAO;

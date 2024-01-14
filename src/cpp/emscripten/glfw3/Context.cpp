@@ -22,6 +22,7 @@
 
 #include "ErrorHandler.h"
 #include "Joystick.h"
+#include "../../../../include/GLFW/emscripten_glfw3.h"
 
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
@@ -482,9 +483,6 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   window->registerEventListeners();
 
-  if(window->isResizableByUser())
-    window->setResizable(true);
-
   emscripten_glfw3_window_on_created(window->asOpaquePtr());
 
   return window->asOpaquePtr();
@@ -602,10 +600,6 @@ void Context::setWindowHint(int iHint, int iValue)
   }
 }
 
-// Making up a hint that is not currently used: TODO how to add to glfw???
-#define GLFW_EMSCRIPTEN_CANVAS_SELECTOR  0x00027001
-#define GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR  0x00027002
-
 //------------------------------------------------------------------------
 // Context::setWindowHint
 //------------------------------------------------------------------------
@@ -616,11 +610,6 @@ void Context::setWindowHint(int iHint, char const *iValue)
     // canvas selector
     case GLFW_EMSCRIPTEN_CANVAS_SELECTOR:
       fConfig.fCanvasSelector = iValue ? iValue : Config::kDefaultCanvasSelector;
-      break;
-
-    // canvas resize selector
-    case GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR:
-      fConfig.fCanvasResizeSelector = iValue ? std::optional<std::string>(iValue) : std::nullopt;
       break;
 
     default:
