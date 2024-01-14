@@ -111,6 +111,51 @@ bool handleEvents()
 }
 
 //------------------------------------------------------------------------
+// one iteration of the loop
+//------------------------------------------------------------------------
+bool iter()
+{
+  glfwPollEvents();
+
+  if(!handleEvents())
+    return false;
+
+  for(auto it = kTriangles.begin(); it != kTriangles.end();)
+  {
+    if((*it)->shouldClose())
+      it = kTriangles.erase(it);
+    else
+      ++it;
+  }
+
+  for(auto &v: kTriangles)
+  {
+    if(!v->render())
+      return false;
+  }
+
+  for(auto &v: kTriangles)
+    v->updateValues();
+
+  Triangle::updateNoWindowValues();
+
+  return !kTriangles.empty();
+}
+
+//------------------------------------------------------------------------
+// loop
+//------------------------------------------------------------------------
+void loop()
+{
+  if(!iter())
+  {
+    kTriangles.clear();
+    glfwTerminate();
+    emscripten_cancel_main_loop();
+  }
+}
+
+//------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------
 int main()
@@ -183,39 +228,5 @@ int main()
 
   Triangle::registerNoWindowCallbacks();
 
-  while(!kTriangles.empty())
-  {
-    if(!handleEvents())
-      break;
-
-    for(auto it = kTriangles.begin(); it != kTriangles.end();)
-    {
-      if((*it)->shouldClose())
-        it = kTriangles.erase(it);
-      else
-        ++it;
-    }
-    bool exitWhile = false;
-    for(auto &v: kTriangles)
-      exitWhile |= !v->render();
-    if(exitWhile)
-      break;
-
-    glfwPollEvents();
-
-    for(auto &v: kTriangles)
-      v->updateValues();
-
-    Triangle::updateNoWindowValues();
-
-    emscripten_sleep(33); // ~30 fps
-    glfwPollEvents();
-  }
-
-  kTriangles.clear();
-
-  if(window1)
-    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, window1, 1, nullptr);
-
-  glfwTerminate();
+  emscripten_set_main_loop(loop, 0, GLFW_FALSE);
 }
