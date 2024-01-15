@@ -34,9 +34,6 @@ constexpr inline char const *boolToString(bool b) { return b ? "true" : "false";
 
 struct Config
 {
-  // For backward compatibility with emscripten, defaults to getting the canvas from Module
-  static constexpr char const *kDefaultCanvasSelector = "Module['canvas']";
-
   // GL Context
   int fClientAPI{GLFW_OPENGL_API}; // GLFW_CLIENT_API
 
@@ -46,8 +43,6 @@ struct Config
   glfw_bool_t fResizable{GLFW_TRUE};       // GLFW_RESIZABLE
   glfw_bool_t fVisible{GLFW_TRUE};         // GLFW_VISIBLE
   glfw_bool_t fFocused{GLFW_TRUE};         // GLFW_FOCUSED
-
-  std::string fCanvasSelector{kDefaultCanvasSelector}; // GLFW_EMSCRIPTEN_CANVAS_SELECTOR
 
   // Framebuffer
   int fAlphaBits   {8};  // GLFW_ALPHA_BITS

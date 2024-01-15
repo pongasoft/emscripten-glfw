@@ -35,7 +35,7 @@ bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
 void emscripten_glfw3_context_set_title(char const *iTitle);
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
-int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
+int emscripten_glfw3_window_init(GLFWwindow *iWindow, char *oCanvasSelector, int iCanvasSelectorSize);
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 }
 
@@ -463,18 +463,17 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   auto window = std::make_shared<Window>(this, fConfig, fScale, iTitle);
 
-  auto const canvasSelector = fConfig.fCanvasSelector.data();
-
-  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector);
+  std::array<char, 256> canvasSelector{};
+  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector.data(), canvasSelector.size());
   if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
     if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector);
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector.data());
     if(res == EMSCRIPTEN_RESULT_INVALID_TARGET)
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector);
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector.data());
     return nullptr;
   }
-  window->init(iWidth, iHeight);
+  window->init(iWidth, iHeight, canvasSelector.data());
 
   if(!window->createGLContext())
     return nullptr;
@@ -605,16 +604,7 @@ void Context::setWindowHint(int iHint, int iValue)
 //------------------------------------------------------------------------
 void Context::setWindowHint(int iHint, char const *iValue)
 {
-  switch(iHint)
-  {
-    // canvas selector
-    case GLFW_EMSCRIPTEN_CANVAS_SELECTOR:
-      fConfig.fCanvasSelector = iValue ? iValue : Config::kDefaultCanvasSelector;
-      break;
-
-    default:
-      kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
-  }
+  kErrorHandler.logWarning("Hint %d not currently supported on this platform.", iHint);
 }
 
 //------------------------------------------------------------------------
