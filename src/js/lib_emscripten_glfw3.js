@@ -296,6 +296,11 @@ let impl = {
     return false;
   },
 
+  //! emscripten_glfw3_context_get_now
+  emscripten_glfw3_context_get_now: () => {
+    return performance.now();
+  },
+
   //! emscripten_glfw3_context_set_title
   emscripten_glfw3_context_set_title: (title) => {
     if(title)

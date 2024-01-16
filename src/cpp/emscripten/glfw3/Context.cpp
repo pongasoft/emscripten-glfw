@@ -33,6 +33,7 @@ void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
 void emscripten_glfw3_context_set_title(char const *iTitle);
+double emscripten_glfw3_context_get_now();
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char *oCanvasSelector, int iCanvasSelectorSize);
@@ -577,6 +578,10 @@ void Context::setWindowHint(int iHint, int iValue)
       fConfig.fFocused = toGlfwBool(iValue);
       break;
 
+    case GLFW_RESIZABLE:
+      fConfig.fResizable = toGlfwBool(iValue);
+      break;
+
       // Framebuffer
     case GLFW_ALPHA_BITS:
       fConfig.fAlphaBits = iValue;
@@ -749,7 +754,7 @@ void Context::setTimeInSeconds(double iValue)
 //------------------------------------------------------------------------
 double Context::getPlatformTimerValue()
 {
-  return emscripten_get_now();
+  return emscripten_glfw3_context_get_now();
 }
 
 //------------------------------------------------------------------------
