@@ -22,6 +22,10 @@
 #include "Triangle.h"
 #include <map>
 
+/**
+ * This program acts both as a demo and as a test of many of the features of the implementation. As a result it is
+ * probably not a good starting point. Please check the `examples` folder for more concise examples. */
+
 static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 {
   printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);

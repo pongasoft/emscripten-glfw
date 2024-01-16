@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(emscripten_glfw_example_minimal LANGUAGES CXX)
+
+set(target "example-minimal")
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1")
+
+add_executable(${target} main.cpp)
+set_target_properties(${target} PROPERTIES OUTPUT_NAME "main")
+set_target_properties(${target} PROPERTIES SUFFIX ".html")
+target_link_libraries(${target} PRIVATE glfw3)

@@ -270,6 +270,22 @@ Module = {
 };
 ```
 
+## Implementation size
+
+This implementation being in C++ and implementing far more features than the `library_glfw.js` emscripten 
+implementation, it has an impact on size. As of this writing, I ran the following experiment on both implementations 
+using [`example_minimal`](../examples/example_minimal)
+
+| Mode    | `library_glfw.js`                      | This implementation                      | Delta |
+|---------|----------------------------------------|------------------------------------------|-------|
+| Debug   | js: 170775, wasm: 75789, total: 246564 | js: 99559, wasm: 4492007, total: 4591566 | 18.8x |
+| Release | js: 135433, wasm: 8448, total: 143881  | js: 81285, wasm: 80506, total: 161791    | 1.12x |
+
+From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation (which
+is a good thing).
+Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release` 
+mode it is actually only a 12% increase which shows that wasm optimizes quite well :)
+
 ## Supported functions
 
 This table contains the list of all the functions supported by this implementation with a few relevant notes

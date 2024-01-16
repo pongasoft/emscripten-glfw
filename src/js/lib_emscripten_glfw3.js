@@ -313,6 +313,8 @@ let impl = {
 
     GLFW3.fWindowContexts = null;
     GLFW3.fScaleChangeCallback = null;
+    GLFW3.fWindowResizeCallback = null;
+    GLFW3.fRequestFullscreen = null;
     if(GLFW3.fScaleMQL) {
       GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
     }
