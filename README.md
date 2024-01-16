@@ -8,7 +8,7 @@ Goal
 
 The main goal of this project is to provide as many features from glfw as possible (in a browser context).
 
-Since this project is targeting the web/wasm platform, which runs in more recent web browsers, it is also trying
+Since this project is targeting the web/webassembly platform, which runs in more recent web browsers, it is also trying
 to focus on using the most recent features and not use deprecated features (for example, uses `keyboardEvent.key` 
 vs `keyboardEvent.charcode`). As a result, this implementation will most likely not work in older browsers.
 
@@ -20,7 +20,7 @@ is successful, or most likely, offer it as an option.
 Status
 ------
 
-This project is currently a work in progress, but I decided to release it early in case there is interest at this moment.
+The project is now mature enough and has reached 1.0.0 status.
 
 Main supported features:
 * can create as many windows as you want, each one associated to a different canvas (use 
@@ -38,9 +38,6 @@ Main supported features:
 * visibility
 * focus
 * timer
-
-You can check [glfw3.cpp](src/cpp/glfw3.cpp) for what is currently not implemented. APIs that do not have an implementation for this
-platform will display a warning (can be turned off with `EMSCRIPTEN_GLFW3_DISABLE_WARNING` define).
 
 Demo
 ----
@@ -70,108 +67,14 @@ You can enable/disable each window/canvas independently:
 
 The demo uses webgl to render a triangle (the hellow world of gpu rendering...).
 
-Using
+Usage
 -----
 
-Because it is currently a work in progress, the instructions to use will be minimal.
-
-In order to support multiple windows/canvases, the library need to know which canvas to use for which window. You use
-the function `emscripten_glfw_set_next_window_canvas_selector` to specify this association.
-
-```cpp
-#include <GLFW/emscripten_glfw3.h> // contains the definitions
-
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
-auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-```
-
-To be backward compatible with the current emscripten/glfw/javascript implementation, the default canvas selector is 
-set to `Module['canvas']` so you don't need to call this function if you use this method.
-
-To trigger fullscreen, you use `Module.glfwRequestFullscreen(target, lockPointer, resizeCanvas)` with
-* `target` being which canvas need to be fullscreen
-* `lockPointer`: boolean to enable/disable grabbing the mouse pointer (equivalent to calling `glfwSetInputMode(GLFW_CURSOR, xxx)`)
-* `resizeCanvas`: boolean to resize (or not) the canvas to the fullscreen size
-
-To be backward compatible with the current emscripten/glfw/javascript implementation, you can also call 
-`Module.requestFullscreen(lockPointer, resizeCanvas)` and the library does its best to determine which
-canvas to target.
-
-### `emscripten_glfw_make_canvas_resizable`
-
-If you want the canvas (= window) size to be adjusted dynamically by the user you can call the
-convenient function `emscripten_glfw_make_canvas_resizable`. Although you can implement this functionality yourself, 
-the implementation can be tricky to get right.
-
-Since this library takes charge of the size of the canvas, the idea behind this function is to specify which
-other (html) element can dictate the size of the canvas. The parameter `canvasResizeSelector` defines the
-(css path) selector to this element.
-
-The 3 typical uses cases are:
-
-#### 1. Full window
-The canvas fills the entire browser window, in which case the parameter `canvasResizeSelector` should simply
-be set to "window" and the `handleSelector` is `nullptr`. This use case can be found in application like ImGui
-where the canvas is the window.
-    
-Example code:
-```html
-<!-- html -->
-<canvas id="canvas1"></canvas>
-```
-```cpp
-// cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
-auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
-```
-
-#### 2. Container (`div`)
-The canvas is inside a `div`, in which case the `div` acts as a "container" and the `div` size is defined by
-CSS rules, like for example: `width: 85%` so that when the page/browser gets resized, the `div` is resized
-automatically, which then triggers the canvas to be resized. In this case, the parameter `canvasResizeSelector`
-is the (css path) selector to this `div` and `handleSelector` is `nullptr`.
-
-Example code:
-```html
-<!-- html -->
-<style>#canvas1-container { width: 85%; height: 85% }</style>
-<div id="canvas1-container"><canvas id="canvas1"></canvas></div>
-```
-
-```cpp
-// cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
-auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "#canvas1-container", nullptr);
-```
-
-#### 3. Container + handle
-Same as 2. but the `div` is made resizable dynamically via a little "handle" (which ends up behaving like a
-normal desktop window).
-
-Example code:
-
-```html
-<!-- html -->
-<style>#canvas1-container { position: relative; <!-- ... --> }</style>
-<style>#canvas1-handle { position: absolute; bottom: 0; right: 0; background-color: #444444; width: 10px; height: 10px; cursor: nwse-resize; }</style>
-<div id="canvas1-container"><div id="canvas1-handle" class="handle"></div><canvas id="canvas1"></canvas></div>
-```
-
-```cpp
-// cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
-auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "#canvas1-container", "canvas1-handle");
-```
-
-Check the [live demo](https://pongasoft.github.io/emscripten-glfw/demo/main.html) for a complete example.
+Check the [Usage](docs/Usage.md) documentation for details on how to use this implementation. Note that care has been
+taken to backward compatible with the pure javascript implementation built-in in emscripten.
 
 Building
 --------
-
-Because it is currently a work in progress, the instructions to build will be minimal. 
 
 ### CMake
 
