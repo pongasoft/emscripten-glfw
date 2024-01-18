@@ -124,6 +124,7 @@ void Window::destroy()
 //------------------------------------------------------------------------
 void Window::focus()
 {
+  fFocused = true;
   emscripten_glfw3_window_focus(asOpaquePtr());
 }
 

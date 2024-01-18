@@ -481,6 +481,9 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   fWindows.emplace_back(window);
 
+  if(window->isFocused())
+    fLastKnownFocusedWindow = window->asOpaquePtr();
+
   window->registerEventListeners();
 
   emscripten_glfw3_window_on_created(window->asOpaquePtr());
