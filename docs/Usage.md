@@ -246,6 +246,7 @@ As explained previously, 2 C functions are defined in `<GLFW/emscripten_glfw3.h>
 | `emscripten_glfw_set_next_window_canvas_selector` | to specify the association window <-> canvas      |
 | `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                      |
 | `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable` |
+| `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen              |
 
 You can either include this file, or use an `extern "C" {}` section in your own code to define them
 

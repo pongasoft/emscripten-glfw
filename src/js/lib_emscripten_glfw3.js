@@ -13,7 +13,6 @@ let impl = {
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
-    fNextWindowCanvasSelector: "Module['canvas']", // For backward compatibility with emscripten, defaults to getting the canvas from Module
     fWindowContexts: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
@@ -324,10 +323,8 @@ let impl = {
 
   //! emscripten_glfw3_window_init
   emscripten_glfw3_window_init__deps: ['$findEventTarget'],
-  emscripten_glfw3_window_init: (glfwWindow, oCanvasSelector, canvasSelectorSize) => {
-    const canvasSelector = GLFW3.fNextWindowCanvasSelector;
-    GLFW3.fNextWindowCanvasSelector = "Module['canvas']"; // resets to default value
-    stringToUTF8(canvasSelector, oCanvasSelector, canvasSelectorSize);
+  emscripten_glfw3_window_init: (glfwWindow, canvasSelector) => {
+    canvasSelector = UTF8ToString(canvasSelector);
 
     const canvas =  findEventTarget(canvasSelector);
 
@@ -518,17 +515,6 @@ let impl = {
 
 // Javascript public api that is called from cpp (see emscripten_glfw3.h)
 let api = {
-  //! emscripten_glfw_set_next_window_canvas_selector
-  emscripten_glfw_set_next_window_canvas_selector__deps: ['$findEventTarget'],
-  emscripten_glfw_set_next_window_canvas_selector: (canvasSelector) => {
-    if(canvasSelector) {
-      canvasSelector = UTF8ToString(canvasSelector);
-      GLFW3.fNextWindowCanvasSelector = canvasSelector;
-      return findEventTarget(canvasSelector) !== null;
-    }
-    return false;
-  },
-
   //! emscripten_glfw_make_canvas_resizable
   emscripten_glfw_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
     return GLFW3.glfwMakeCanvasResizable(glfwWindow, resizableSelector, handleSelector);

@@ -34,7 +34,7 @@ extern "C" {
  *
  * If you want to create more than one window, you **must** call this function to specify which canvas to associate
  * to the window otherwise you will get a duplicate canvas error when creating the windows. */
-int emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector);
+void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector);
 
 /**
  * If you want the canvas (= window) size to be adjusted dynamically by the user you can call this
@@ -111,6 +111,10 @@ int emscripten_glfw_make_canvas_resizable(GLFWwindow *window,
 /**
  * The opposite of `emscripten_glfw_make_canvas_resizable` */
 int emscripten_glfw_unmake_canvas_resizable(GLFWwindow *window);
+
+/**
+ * Returns `GLFW_TRUE` if the window is fullscreen, `GLFW_FALSE` otherwise */
+int emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
 }
 
 #endif //EMSCRIPTEN_GLFW_EMSCRIPTEN_GLFW3_H

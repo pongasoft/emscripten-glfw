@@ -36,7 +36,7 @@ void emscripten_glfw3_context_set_title(char const *iTitle);
 double emscripten_glfw3_context_get_now();
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
-int emscripten_glfw3_window_init(GLFWwindow *iWindow, char *oCanvasSelector, int iCanvasSelectorSize);
+int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 }
 
@@ -464,17 +464,18 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   auto window = std::make_shared<Window>(this, fConfig, fScale, iTitle);
 
-  std::array<char, 256> canvasSelector{};
-  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector.data(), canvasSelector.size());
+  auto const canvasSelector = std::exchange(fConfig.fCanvasSelector, Config::kDefaultCanvasSelector);
+
+  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector.c_str());
   if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
     if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector.data());
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot find canvas element with selector [%s]", canvasSelector.c_str());
     if(res == EMSCRIPTEN_RESULT_INVALID_TARGET)
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector.data());
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Duplicate canvas element with selector [%s]", canvasSelector.c_str());
     return nullptr;
   }
-  window->init(iWidth, iHeight, canvasSelector.data());
+  window->init(iWidth, iHeight);
 
   if(!window->createGLContext())
     return nullptr;
@@ -525,6 +526,14 @@ void Context::setWindowTitle(GLFWwindow *iWindow, char const *iTitle)
     if(window->isFocused() || window == findFocusedOrSingleWindow())
       emscripten_glfw3_context_set_title(iTitle);
   }
+}
+
+//------------------------------------------------------------------------
+// Context::setNextWindowCanvasSelector
+//------------------------------------------------------------------------
+void Context::setNextWindowCanvasSelector(char const *iCanvasSelector)
+{
+  fConfig.fCanvasSelector = iCanvasSelector ? iCanvasSelector : Config::kDefaultCanvasSelector;
 }
 
 //------------------------------------------------------------------------

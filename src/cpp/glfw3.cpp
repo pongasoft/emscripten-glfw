@@ -16,7 +16,7 @@
  * @author Yan Pujante
  */
 
-#include <GLFW/glfw3.h>
+#include <GLFW/emscripten_glfw3.h>
 #include <cstdio>
 #include "emscripten/glfw3/Context.h"
 #include <memory>
@@ -699,6 +699,28 @@ GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int
   if(top) *top = 0;
   if(right) *right = 0;
   if(bottom) *bottom = 0;
+}
+
+//------------------------------------------------------------------------
+// emscripten_glfw_set_next_window_canvas_selector
+//------------------------------------------------------------------------
+void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector)
+{
+  auto context = getContext();
+  if(context)
+    context->setNextWindowCanvasSelector(canvasSelector);
+}
+
+//------------------------------------------------------------------------
+// emscripten_glfw_is_window_fullscreen
+//------------------------------------------------------------------------
+int emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return toGlfwBool(w->isFullscreen());
+  else
+    return GLFW_FALSE;
 }
 
 //------------------------------------------------------------------------

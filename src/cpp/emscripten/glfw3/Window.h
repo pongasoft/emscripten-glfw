@@ -57,7 +57,7 @@ public:
   };
 
 public:
-  inline char const *getCanvasSelector() const { return fCanvasSelector.data(); }
+  inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
   inline bool isHiDPIAware() const { return fConfig.fScaleToMonitor == GLFW_TRUE; }
   inline int getShouldClose() const { return fShouldClose; }
   inline void setShouldClose(int iShouldClose) { fShouldClose = iShouldClose; }
@@ -161,7 +161,7 @@ public:
   friend class Context;
 
 protected:
-  void init(int iWidth, int iHeight, std::string iCanvasSelector);
+  void init(int iWidth, int iHeight);
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
@@ -193,7 +193,6 @@ private:
 private:
   Context *fContext;
   Config fConfig;
-  std::string fCanvasSelector{};
   float fMonitorScale;
   bool fDestroyed{};
   bool fFocused{};

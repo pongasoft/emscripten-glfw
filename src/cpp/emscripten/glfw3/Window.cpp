@@ -78,10 +78,8 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale, char cons
 //------------------------------------------------------------------------
 // Window::init
 //------------------------------------------------------------------------
-void Window::init(int iWidth, int iHeight, std::string iCanvasSelector)
+void Window::init(int iWidth, int iHeight)
 {
-  fCanvasSelector = std::move(iCanvasSelector);
-
   fOpacity = emscripten_glfw3_window_get_computed_opacity(asOpaquePtr());
   fVisible = emscripten_glfw3_window_get_computed_visibility(asOpaquePtr());
 
