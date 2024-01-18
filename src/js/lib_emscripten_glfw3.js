@@ -6,6 +6,7 @@ let impl = {
     // exports
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
     Module["glfwGetWindow"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.glfwWindow : null; };
+    Module["glfwGetCanvas"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.canvas : null; };
     Module["glfwGetCanvasSelector"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.selector : null; };
     Module["glfwMakeCanvasResizable"] = GLFW3.glfwMakeCanvasResizable;
     Module["glfwUnmakeCanvasResizable"] = GLFW3.glfwUnmakeCanvasResizable;

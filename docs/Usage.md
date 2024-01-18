@@ -201,6 +201,13 @@ implementations.
 This implementation uses the javascript `Gamepad` API as defined in the [specification](https://w3c.github.io/gamepad/)
 which is widely supported by most current browsers.
 
+> #### Important
+> Due to the nature of the `Gamepad` API, polling is required, so you must ensure to call `glfwPollEvents` on each
+> loop iteration.
+> 
+> If you want to disable joystick support entirely (and save some resources), you can set the 
+> `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define.
+
 The mapping returned by this API (as defined [here](https://w3c.github.io/gamepad/#remapping)), is represented by this
 image:
 
@@ -251,6 +258,7 @@ This implementation adds the following functions to the `Module`:
 | `requestFullscreen(lockPointer, resizeCanvas)`                    | Same function added by the other emscripten implementations (for backward compatibility purposes)                                                     |
 | `glfwRequestFullscreen(target, lockPointer, resizeCanvas)`        | The version specific to this implementation with the additional `target` argument (can be a canvas selector, a `HTMLCanvasElement` or a `GLFWwindow`) |
 | `glfwGetWindow(any)`                                              | Returns the `GLFWwindow` pointer associated to the canvas (`any` can be a canvas selector or a `HTMLCanvasElement`)                                   |
+| `glfwGetCanvas(any)`                                              | Returns the canvas associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                                        |
 | `glfwGetCanvasSelector(any)`                                      | Returns the canvas selector associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                               |
 | `glfwMakeCanvasResizable(any, resizableSelector, handleSelector)` | Same functionality as `emscripten_glfw_make_canvas_resizable` (`any` can be a canvas selector or a `GLFWwindow` or a `HTMLCanvasElement`              |
 | `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwGetCanvasSelector`                                                                                                              |
