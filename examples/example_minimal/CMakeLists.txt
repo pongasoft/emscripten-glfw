@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(emscripten_glfw_example_minimal LANGUAGES CXX)
 
+if(NOT EMSCRIPTEN)
+  message(FATAL_ERROR "This example must be compiled with emscripten")
+endif()
+
 set(target "example-minimal")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1")

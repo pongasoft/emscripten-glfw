@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="EN-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <title>emscripten glfw</title>
+
+  <style>
+    body { margin: 0; background-color: black }
+    .emscripten {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      border: 0;
+      overflow: hidden;
+      display: block;
+    }
+
+    #canvas:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<script>
+  var Module = {
+    renderFrame: (glfwWindow, w, h, r, g, b) => {
+      const canvas = Module.glfwGetCanvas(glfwWindow);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = `rgb(${255 - r}, ${255 - g}, ${255- b})`;
+      ctx.fillText(`${w}x${h} | Ctrl + Q to terminate`, 10 + r, 10 + g);
+    }
+  };
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(emscripten_glfw LANGUAGES CXX)
 
+if(NOT EMSCRIPTEN)
+  message(FATAL_ERROR "This library must be compiled with emscripten")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(target "glfw3")
@@ -43,4 +47,6 @@ target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_minimal" EXCLUDE_FROM_ALL)
+  add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
+  add_custom_target("examples-all" DEPENDS "example-minimal" "example-resizable-full-window")
 endif()
