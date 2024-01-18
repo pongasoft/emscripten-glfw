@@ -25,17 +25,9 @@
 </head>
 <body>
 <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<input id="fullscreen" type="button" name="fs" onclick="Module.glfwRequestFullscreen('#canvas', false, true);">
 <script>
-  var Module = {
-    renderFrame: (glfwWindow, w, h, r, g, b) => {
-      const canvas = Module.glfwGetCanvas(glfwWindow);
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = `rgb(${255 - r}, ${255 - g}, ${255- b})`;
-      ctx.fillText(`${w}x${h} | Ctrl + Q to terminate`, 10 + r, 10 + g);
-    }
-  };
+  var Module = {};
 </script>
 {{{ SCRIPT }}}
 </body>

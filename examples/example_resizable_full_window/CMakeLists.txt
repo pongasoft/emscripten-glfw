@@ -8,8 +8,7 @@ endif()
 
 set(target "example-resizable-full-window")
 
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1 --shell-file ${CMAKE_CURRENT_LIST_DIR}/shell.html")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --profiling-funcs -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1 --shell-file ${CMAKE_CURRENT_LIST_DIR}/shell.html")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1 --shell-file ${CMAKE_CURRENT_LIST_DIR}/shell.html")
 
 add_executable(${target} main.cpp)
 set_target_properties(${target} PROPERTIES OUTPUT_NAME "main")

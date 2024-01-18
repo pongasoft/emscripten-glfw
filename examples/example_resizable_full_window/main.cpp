@@ -19,6 +19,7 @@
 #include <GLFW/emscripten_glfw3.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
+#include <cmath>
 
 /**
  * The purpose of this example is to demonstrate how to make the canvas resizable and occupy the full window. */
@@ -29,29 +30,38 @@ void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
   printf("glfwError: %d | %s\n", iErrorCode, iErrorMessage);
 }
 
+//! jsRenderFrame: for the sake of this example, uses the canvas2D api to change the color of the screen / display a message
+EM_JS(void, jsRenderFrame, (GLFWwindow *glfwWindow, int w, int h, int fw, int fh, double mx, double my, int color, bool isFullscreen), {
+  const ctx = Module.glfwGetCanvas(glfwWindow).getContext('2d');
+  ctx.fillStyle = `rgb(${color}, ${color}, ${color})`; ctx.fillRect(0, 0, fw, fh); // using framebuffer width/height
+  const text = `${w}x${h} | ${mx}x${my} | CTRL+Q to terminate ${isFullscreen ? "" : '| CTRL+F for fullscreen'}`;
+  ctx.font = '15px monospace'; ctx.fillStyle = `rgb(${255 - color}, 0, 0)`; ctx.fillText(text, 10 + color, 20 + color);
+})
+
 //! Called for each frame
-bool renderFrame(GLFWwindow *iWindow)
+void renderFrame(GLFWwindow *iWindow)
 {
   static int frameCount = 0;
 
   // poll events
   glfwPollEvents();
 
-  // for the sake of this example, uses the canvas2D api to change the color of the screen / display a message
-  int w,h;
-  glfwGetFramebufferSize(iWindow, &w, &h);
-  int grey = frameCount++ % 255;
-  EM_ASM(Module.renderFrame($0, $1, $2, $3, $4, $5), iWindow, w, h, grey, grey, grey);
-
-  // shall we continue?
-  return !glfwWindowShouldClose(iWindow);
+  int w,h; glfwGetWindowSize(iWindow, &w, &h);
+  int fw,fh; glfwGetFramebufferSize(iWindow, &fw, &fh);
+  double mx,my; glfwGetCursorPos(iWindow, &mx, &my);
+  auto color = 127.0f + 127.0f * std::sin((float) frameCount++ / 120.f);
+  jsRenderFrame(iWindow, w, h, fw, fh, mx, my, (int) color, emscripten_glfw_is_window_fullscreen(iWindow));
 }
 
 //! The main loop (called by emscripten for each frame)
 void main_loop(void *iUserData)
 {
-  auto window = reinterpret_cast<GLFWwindow *>(iUserData);
-  if(!renderFrame(window))
+  if(auto window = reinterpret_cast<GLFWwindow *>(iUserData); !glfwWindowShouldClose(window))
+  {
+    // not done => renderFrame
+    renderFrame(window);
+  }
+  else
   {
     // done => terminating
     glfwTerminate();
@@ -59,17 +69,22 @@ void main_loop(void *iUserData)
   }
 }
 
-//! Handle key events => on CTRL+Q sets "window should close" flag
+//! Handle key events => on CTRL+Q sets "window should close" flag, CTRL+F for fullscreen
 void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-  if(action == GLFW_PRESS && key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL))
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  if(action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL)) {
+    switch(key) {
+      case GLFW_KEY_Q: glfwSetWindowShouldClose(window, GLFW_TRUE); break;
+      case GLFW_KEY_F: EM_ASM({ document.getElementById("fullscreen").click(); }); break;
+      default: break;
+    }
+  }
 }
 
 //! main
 int main()
 {
-  // set a callback for errors otherwise it is silent
+  // set a callback for errors otherwise if there is a problem, we won't know
   glfwSetErrorCallback(consoleErrorHandler);
 
   // initialize the library
@@ -90,7 +105,7 @@ int main()
   // makes the canvas resizable and match the full window size
   emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
 
-  // set callback for exit (CTRL+Q)
+  // set callback for exit (CTRL+Q) and fullscreen (CTRL+F)
   glfwSetKeyCallback(window, onKeyChange);
 
   // tell emscripten to use "main_loop" as the main loop (window is user data)
