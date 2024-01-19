@@ -126,9 +126,11 @@ GLFWAPI int glfwInit()
 //------------------------------------------------------------------------
 GLFWAPI void glfwTerminate(void)
 {
-  kContext = nullptr;
   kLastRequestedGLFWWindow = nullptr;
   kLastRequestedWindow = nullptr;
+  if(kContext)
+    kContext->terminate();
+  kContext = nullptr;
   printf("glfwTerminate()\n");
 }
 

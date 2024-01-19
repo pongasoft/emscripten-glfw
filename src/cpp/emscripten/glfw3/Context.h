@@ -40,6 +40,7 @@ public:
   ~Context();
 
 public:
+  void terminate();
   void defaultWindowHints() { fConfig = {}; }
   void setWindowHint(int iHint, int iValue);
   void setWindowHint(int iHint, char const *iValue);

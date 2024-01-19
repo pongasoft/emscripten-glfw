@@ -101,8 +101,23 @@ Context::Context()
 //------------------------------------------------------------------------
 Context::~Context()
 {
+  terminate();
   addOrRemoveEventListeners(false);
   emscripten_glfw3_context_destroy();
+}
+
+
+//------------------------------------------------------------------------
+// Context::terminate
+//------------------------------------------------------------------------
+void Context::terminate()
+{
+  fCurrentWindow = nullptr;
+
+  for(auto &w: fWindows)
+    w->destroy();
+
+  fWindows.clear();
 }
 
 //------------------------------------------------------------------------
