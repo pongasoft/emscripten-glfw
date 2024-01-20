@@ -22,7 +22,9 @@
 #include <cmath>
 
 /**
- * The purpose of this example is to demonstrate how to make the canvas resizable and occupy the full window. */
+ * The purpose of this example is to demonstrate how to make the canvas resizable with a container that has a handle.
+ * The handle can be dragged around (left mouse drag) and the div is resized accordingly which in turn resizes the
+ * canvas, making the canvas truly resizable like a window. */
 
 //! Display error message in the Console
 void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)

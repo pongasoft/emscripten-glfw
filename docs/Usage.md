@@ -194,6 +194,37 @@ At this moment, this implementation does not support creating a window in fullsc
 restrictions mentioned previously. If you want to create a fullscreen window, create a window with a fixed size,
 then from a user event call `Module.glfwRequestFullscreen`.
 
+## Hi DPI support
+
+This implementation supports Hi DPI awareness. What this means is that if the browser window is on a screen that is
+Hi DPI/4k then it will properly adjust the dimension of the canvas to match the scale of the screen. If the window gets
+moved to a screen that is lower resolution, it will automatically change the scaling. You can set a callback to be 
+notified of the changes (`glfwSetWindowContentScaleCallback`) or call the direct API `glfwGetWindowContentScale`.
+
+By default, this feature is not enabled and must be turned on like this:
+
+```cpp
+// before creating a window
+glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+auto window = glfwCreateWindow(...);
+
+// after window creation, it can be dynamically changed
+glfwSetWindowAttrib(window, GLFW_SCALE_TO_MONITOR, GLFW_TRUE); // for enabling Hi DPI awareness
+glfwSetWindowAttrib(window, GLFW_SCALE_TO_MONITOR, GLFW_FALSE); // for disabling Hi DPI awareness
+```
+
+> #### Best practice
+> Almost all GLFW apis deal with screen coordinates which are independent of scaling. The only one which doesn't 
+> is `glfwGetFramebufferSize` which returns the actual size of the surface which takes into account the scaling factor. 
+> As a result, for most low level APIs (like OpenGL/webgl) you would use this call to set the viewport size. 
+> 
+> Here is an example:
+> ```cpp
+> int width = 0, height = 0;
+> glfwGetFramebufferSize(fWindow, &width, &height);
+> glViewport(0, 0, width, height);
+> ```
+
 ## Keyboard support
 
 This implementation supports the keyboard and uses the same mapping defined in emscripten for scancodes. You can check

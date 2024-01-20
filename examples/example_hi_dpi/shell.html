@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="EN-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <title>emscripten glfw</title>
+
+  <style>
+    body { margin: 0; background-color: black }
+    .emscripten {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      border: 0;
+      overflow: hidden;
+      display: block;
+    }
+
+    #canvas:focus {
+      outline: none;
+    }
+
+  </style>
+</head>
+<body>
+<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<script>
+  var Module = {};
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
