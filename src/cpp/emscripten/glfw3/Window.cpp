@@ -253,6 +253,10 @@ void Window::getPosition(int *oX, int *oY)
 //------------------------------------------------------------------------
 void Window::setCanvasSize(Vec2<int> const &iSize)
 {
+  // ignoring
+  if(iSize.width <= 0 || iSize.height <= 0)
+    return;
+
   auto sizeChanged = fSize != iSize;
   fSize = iSize;
 
@@ -288,7 +292,7 @@ void Window::setCanvasSize(Vec2<int> const &iSize)
 //------------------------------------------------------------------------
 void Window::resize(Vec2<int> const &iSize)
 {
-  if(isResizable())
+  if(!isFullscreen() && isResizable())
     setSize(maybeApplySizeConstraints(iSize));
 }
 

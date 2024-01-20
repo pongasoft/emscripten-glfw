@@ -466,14 +466,14 @@ std::shared_ptr<Window> Context::getWindow(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, GLFWmonitor* iMonitor, GLFWwindow* iShare)
 {
-  if(iWidth == 0 || iHeight == 0)
+  if(iWidth <= 0 || iHeight <= 0)
   {
     if(iMonitor)
       kErrorHandler.logError(GLFW_INVALID_VALUE, "Due to security and restrictions of the browser API, for this platform, "
                                                  "you cannot create a full screen window: create a window with a fixed size, "
                                                  "then from a user event call Module.glfwRequestFullscreen (javascript)");
     else
-      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid width or height (cannot be 0)");
+      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid width or height (cannot be <= 0)");
     return nullptr;
   }
 
