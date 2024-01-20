@@ -25,10 +25,13 @@
 #include "../../../../include/GLFW/emscripten_glfw3.h"
 
 extern "C" {
-using ScaleChangeCallback = void (*)(void *);
-using WindowResizeCallback = void (*)(void *, GLFWwindow *, int, int);
-using RequestFullscreen = void (*)(GLFWwindow *, bool, bool);
-void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, void *iUserData);
+using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
+using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
+using RequestFullscreen = int (*)(GLFWwindow *, bool, bool);
+using ErrorHandler = void (*)(int, char const *);
+void emscripten_glfw3_context_init(emscripten::glfw3::Context *iContext,
+                                   float iScale,
+                                   ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, ErrorHandler);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
@@ -55,20 +58,25 @@ std::unique_ptr<Context> Context::init()
 //------------------------------------------------------------------------
 // ContextScaleChangeCallback
 //------------------------------------------------------------------------
-void ContextScaleChangeCallback(void *iUserData)
+void ContextScaleChangeCallback(Context *iContext)
 {
-  printf("Detected content scale change! %p\n", iUserData);
-  auto context = reinterpret_cast<Context *>(iUserData);
-  context->onScaleChange();
+  iContext->onScaleChange();
 }
 
 //------------------------------------------------------------------------
 // ContextWindowResizeCallback
 //------------------------------------------------------------------------
-void ContextWindowResizeCallback(void *iUserData, GLFWwindow *iWindow, int iWidth, int iHeight)
+void ContextWindowResizeCallback(Context *iContext, GLFWwindow *iWindow, int iWidth, int iHeight)
 {
-  auto context = reinterpret_cast<Context *>(iUserData);
-  context->onWindowResize(iWindow, iWidth, iHeight);
+  iContext->onWindowResize(iWindow, iWidth, iHeight);
+}
+
+//------------------------------------------------------------------------
+// ContextErrorHandler
+//------------------------------------------------------------------------
+void ContextErrorHandler(int iErrorCode, char const *iErrorMessage)
+{
+  kErrorHandler.logError(iErrorCode, iErrorMessage);
 }
 
 //------------------------------------------------------------------------
@@ -78,11 +86,12 @@ Context::Context()
 {
   printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  emscripten_glfw3_context_init(fScale,
+  emscripten_glfw3_context_init(this,
+                                fScale,
                                 ContextScaleChangeCallback,
                                 ContextWindowResizeCallback,
                                 emscripten_glfw_request_fullscreen,
-                                this);
+                                ContextErrorHandler);
   addOrRemoveEventListeners(true);
 }
 
@@ -232,41 +241,58 @@ void Context::onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight)
 //------------------------------------------------------------------------
 // Context::requestFullscreen
 //------------------------------------------------------------------------
-void Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
+int Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
 {
   // Per spec: If calling requestPointerLock() with requestFullscreen(), the requestPointerLock() must be
   // called first, because the requestFullscreen() will consume the state of transient activation.
   if(iLockPointer)
-    requestPointerLock(iWindow);
+  {
+    if(auto res = requestPointerLock(iWindow); res != EMSCRIPTEN_RESULT_SUCCESS)
+      return res;
+  }
 
   auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
 
   if(window)
   {
     fFullscreenRequest = {window->asOpaquePtr(), iResizeCanvas};
-    if(emscripten_request_fullscreen(window->getCanvasSelector(), false) != EMSCRIPTEN_RESULT_SUCCESS)
+    auto res = emscripten_request_fullscreen(window->getCanvasSelector(), false);
+    if(res != EMSCRIPTEN_RESULT_SUCCESS)
     {
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting fullscreen (make sure you call this API from a user initiated event, like a mouse click)");
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting fullscreen on [%s] (make sure you call this API from a user initiated event, like a mouse click)", window->getCanvasSelector());
       fFullscreenRequest = std::nullopt;
     }
+    return res;
+  }
+  else
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "Error while requesting fullscreen: no window");
+    return EMSCRIPTEN_RESULT_INVALID_TARGET;
   }
 }
 
 //------------------------------------------------------------------------
 // Context::requestPointerLock
 //------------------------------------------------------------------------
-void Context::requestPointerLock(GLFWwindow *iWindow)
+int Context::requestPointerLock(GLFWwindow *iWindow)
 {
   auto window = iWindow ? getWindow(iWindow) : findFocusedOrSingleWindow();
 
   if(window)
   {
     fPointerLockRequest = {iWindow};
-    if(emscripten_request_pointerlock(window->getCanvasSelector(), false) != EMSCRIPTEN_RESULT_SUCCESS)
+    if(auto res = emscripten_request_pointerlock(window->getCanvasSelector(), false); res != EMSCRIPTEN_RESULT_SUCCESS)
     {
-      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting pointerLock (make sure you call this API from a user initiated event, like a mouse click)");
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Error while requesting pointerLock for [%s] (make sure you call this API from a user initiated event, like a mouse click)", window->getCanvasSelector());
       fPointerLockRequest = std::nullopt;
+      return res;
     }
+    return EMSCRIPTEN_RESULT_SUCCESS;
+  }
+  else
+  {
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "Error while requesting pointerLock: no window");
+    return EMSCRIPTEN_RESULT_INVALID_TARGET;
   }
 }
 

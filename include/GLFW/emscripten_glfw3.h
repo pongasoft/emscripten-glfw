@@ -20,6 +20,7 @@
 #define EMSCRIPTEN_GLFW_EMSCRIPTEN_GLFW3_H
 
 #include <GLFW/glfw3.h>
+#include <emscripten/em_types.h>
 
 extern "C" {
 
@@ -101,20 +102,22 @@ void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector)
  * Note that there is an equivalent call added to `Module` that can be invoked from javascript:
  * `Module.glfwMakeCanvasResizable(...)`.
  *
- * @return `GLFW_TRUE` if there was no issue setting everything up, `GLFW_FALSE` otherwise (ex: a selector not
- *         referring to an existing element)
- */
+ * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code
+ *          otherwise (ex: a selector not referring to an existing element) */
 int emscripten_glfw_make_canvas_resizable(GLFWwindow *window,
                                           char const *canvasResizeSelector,
                                           char const *handleSelector);
 
 /**
- * The opposite of `emscripten_glfw_make_canvas_resizable` */
+ * The opposite of `emscripten_glfw_make_canvas_resizable`
+ *
+ * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code
+ *          otherwise (ex: not a valid window) */
 int emscripten_glfw_unmake_canvas_resizable(GLFWwindow *window);
 
 /**
- * Returns `GLFW_TRUE` if the window is fullscreen, `GLFW_FALSE` otherwise */
-int emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
+ * Returns `EM_TRUE` if the window is fullscreen, `EM_FALSE` otherwise */
+EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
 
 /**
  * Requests the window to go fullscreen. Note that due to browser restrictions, this function should only
@@ -125,9 +128,9 @@ int emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
  *
  * @param window which window to go fullscreen
  * @param lockPointer whether to lock the pointer or not
- * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not */
-void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
-
+ * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not
+ * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
+int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 }
 
 #endif //EMSCRIPTEN_GLFW_EMSCRIPTEN_GLFW3_H

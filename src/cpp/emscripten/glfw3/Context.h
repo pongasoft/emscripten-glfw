@@ -86,8 +86,8 @@ public:
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
-  void requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
-  void requestPointerLock(GLFWwindow *iWindow);
+  int requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
+  int requestPointerLock(GLFWwindow *iWindow);
   void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);
   void onFocus(GLFWwindow *iWindow) { fLastKnownFocusedWindow = iWindow; }
 

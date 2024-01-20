@@ -720,19 +720,21 @@ int emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 {
   auto w = getWindow(window);
   if(w)
-    return toGlfwBool(w->isFullscreen());
+    return toEMBool(w->isFullscreen());
   else
-    return GLFW_FALSE;
+    return EM_FALSE;
 }
 
 //------------------------------------------------------------------------
 // emscripten_glfw_request_fullscreen
 //------------------------------------------------------------------------
-void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
+int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
 {
   auto context = getContext();
   if(context)
-    context->requestFullscreen(window, lockPointer, resizeCanvas);
+    return context->requestFullscreen(window, lockPointer, resizeCanvas);
+  else
+    return EMSCRIPTEN_RESULT_FAILED;
 }
 
 //------------------------------------------------------------------------

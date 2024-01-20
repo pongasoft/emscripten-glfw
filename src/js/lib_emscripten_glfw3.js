@@ -1,15 +1,15 @@
 // Javascript implementation called from cpp. These functions are considered
 // implementation details and should NOT be used outside.
 let impl = {
-  $GLFW3__deps: ['$GL'],
+  $GLFW3__deps: ['$GL', '$stringToNewUTF8', 'free'],
   $GLFW3__postset: `
     // exports
     Module["requestFullscreen"] = (lockPointer, resizeCanvas) => { GLFW3.requestFullscreen(null, lockPointer, resizeCanvas); }
     Module["glfwGetWindow"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.glfwWindow : null; };
     Module["glfwGetCanvas"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.canvas : null; };
     Module["glfwGetCanvasSelector"] = (any) => { const ctx = GLFW3.findContext(any); return ctx ? ctx.selector : null; };
-    Module["glfwMakeCanvasResizable"] = GLFW3.glfwMakeCanvasResizable;
-    Module["glfwUnmakeCanvasResizable"] = GLFW3.glfwUnmakeCanvasResizable;
+    Module["glfwMakeCanvasResizable"] = (any, resizableSelector, handleSelector) => { GLFW3.makeCanvasResizable(any, resizableSelector, handleSelector); };
+    Module["glfwUnmakeCanvasResizable"] = (any) => { GLFW3.unmakeCanvasResizable(any); };
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
@@ -19,6 +19,16 @@ let impl = {
     fWindowResizeCallback: null,
     fRequestFullscreen: null,
     fContext: null,
+    fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004},
+
+    //! onError
+    onError(errorCode, errorMessage) {
+      if(GLFW3.fErrorHandler) {
+        const ptr = stringToNewUTF8(errorMessage);
+        {{{ makeDynCall('vip', 'GLFW3.fErrorHandler') }}}(GLFW3.fErrorCodes[errorCode], ptr);
+        _free(ptr);
+      }
+    },
 
     //! onScaleChange
     onScaleChange() {
@@ -79,8 +89,10 @@ let impl = {
     setCanvasResizeSelector__deps: ['$findEventTarget'],
     setCanvasResizeSelector: (any, canvasResizeSelector) => {
       const ctx = GLFW3.findContext(any);
-      if(!ctx)
+      if(!ctx) {
+        GLFW3.onError('GLFW_INVALID_VALUE', `Cannot find canvas [${any !== null ? any.toString() : 'nullptr'}]`);
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+      }
 
       if(ctx.fCanvasResize)
       {
@@ -91,8 +103,10 @@ let impl = {
       if(canvasResizeSelector) {
         const canvasResize =  findEventTarget(canvasResizeSelector);
 
-        if(!canvasResize)
+        if(!canvasResize) {
+          GLFW3.onError('GLFW_INVALID_VALUE', `Cannot find canvas resize selector [${canvasResizeSelector}]`);
           return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+        }
 
         const glfwWindow = ctx.glfwWindow;
 
@@ -141,12 +155,14 @@ let impl = {
     //! makeCanvasResizable
     makeCanvasResizable__deps: ['$findEventTarget'],
     makeCanvasResizable: (any, resizableSelector, handleSelector) => {
-      if(!resizableSelector)
+      if(!resizableSelector) {
+        GLFW3.onError('GLFW_INVALID_VALUE', `canvas resize selector is required`);
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+      }
 
       // first we set the canvas resize selector
       const res = GLFW3.setCanvasResizeSelector(any, resizableSelector);
-      if(res != {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}})
+      if(res !== {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}})
         return res;
 
       // no handle, no need to continue
@@ -157,8 +173,10 @@ let impl = {
       const resizable = findEventTarget(resizableSelector);
       const handle = findEventTarget(handleSelector);
 
-      if(!handle)
+      if(!handle) {
+        GLFW3.onError('GLFW_INVALID_VALUE', `Cannot find handle element with selector [${handleSelector}]`);
         return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
+      }
 
       var lastDownX = 0;
       var lastDownY = 0;
@@ -224,14 +242,9 @@ let impl = {
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     },
 
-    //! glfwMakeCanvasResizable
-    glfwMakeCanvasResizable: (any, resizableSelector, handleSelector) => {
-      return GLFW3.makeCanvasResizable(any, resizableSelector, handleSelector) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
-    },
-
-    //! glfwUnmakeCanvasResizable
-    glfwUnmakeCanvasResizable: (any) => {
-      return GLFW3.setCanvasResizeSelector(any, null) === {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
+    //! unmakeCanvasResizable
+    unmakeCanvasResizable: (any) => {
+      return GLFW3.setCanvasResizeSelector(any, null);
     }
   },
 
@@ -250,7 +263,7 @@ let impl = {
 
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (scale, scaleChangeCallback, windowResizeCallback, requestFullscreen, context) => {
+  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, requestFullscreen, errorHandler) => {
     console.log("emscripten_glfw3_context_init()");
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
@@ -260,6 +273,7 @@ let impl = {
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
     GLFW3.fRequestFullscreen = requestFullscreen;
+    GLFW3.fErrorHandler = errorHandler;
     GLFW3.fContext = context;
     GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + scale + 'dppx)');
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
@@ -517,12 +531,14 @@ let impl = {
 let api = {
   //! emscripten_glfw_make_canvas_resizable
   emscripten_glfw_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
-    return GLFW3.glfwMakeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
+    resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
+    handleSelector = handleSelector ? UTF8ToString(handleSelector) : null;
+    return GLFW3.makeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
   },
 
   //! emscripten_glfw_unmake_canvas_resizable
   emscripten_glfw_unmake_canvas_resizable: (glfwWindow) => {
-    return GLFW3.glfwUnmakeCanvasResizable(glfwWindow);
+    return GLFW3.unmakeCanvasResizable(glfwWindow);
   }
 }
 
