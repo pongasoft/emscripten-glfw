@@ -98,12 +98,12 @@ int main()
   emscripten_glfw_set_next_window_canvas_selector("#canvas");
 
   // create the only window
-  auto window = glfwCreateWindow(320, 200, "Resizable Full Window | emscripten-glfw", nullptr, nullptr);
+  auto window = glfwCreateWindow(600, 400, "Resizable Container | emscripten-glfw", nullptr, nullptr);
   if(!window)
     return -1;
 
-  // makes the canvas resizable and match the full window size
-  emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
+  // makes the canvas resizable to the size of its div container
+  emscripten_glfw_make_canvas_resizable(window, "#canvas-container", nullptr);
 
   // set callback for exit (CTRL+Q) and fullscreen (CTRL+F)
   glfwSetKeyCallback(window, onKeyChange);
