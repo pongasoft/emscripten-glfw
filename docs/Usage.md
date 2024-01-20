@@ -174,6 +174,12 @@ To be backward compatible with the current emscripten/glfw/javascript implementa
 `Module.requestFullscreen(lockPointer, resizeCanvas)` and the library does its best to determine which
 canvas to target.
 
+This implementation also offers a C version of this API:
+
+```cpp
+void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
+```
+
 > #### Best practice
 > To avoid any error while switching to fullscreen, you should always trigger this api via a user event like a mouse
 > click. The recommended approach is to define a button
@@ -239,7 +245,7 @@ This implementation offers a few extensions to the normal GLFW api necessary for
 
 ### C extensions
 
-As explained previously, 2 C functions are defined in `<GLFW/emscripten_glfw3.h>`:
+As explained previously, some C functions are defined in `<GLFW/emscripten_glfw3.h>`:
 
 | Function                                          | Notes                                             |
 |---------------------------------------------------|---------------------------------------------------|

@@ -27,7 +27,7 @@
 extern "C" {
 using ScaleChangeCallback = void (*)(void *);
 using WindowResizeCallback = void (*)(void *, GLFWwindow *, int, int);
-using RequestFullscreen = void (*)(void *, GLFWwindow *, bool, bool);
+using RequestFullscreen = void (*)(GLFWwindow *, bool, bool);
 void emscripten_glfw3_context_init(float iScale, ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, void *iUserData);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
@@ -72,16 +72,6 @@ void ContextWindowResizeCallback(void *iUserData, GLFWwindow *iWindow, int iWidt
 }
 
 //------------------------------------------------------------------------
-// ContextRequestFullscreen
-//------------------------------------------------------------------------
-void ContextRequestFullscreen(void *iUserData, GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas)
-{
-  printf("ContextRequestFullscreen(%p, %s, %s)\n", iWindow, boolToString(iLockPointer), boolToString(iResizeCanvas));
-  auto context = reinterpret_cast<Context *>(iUserData);
-  context->requestFullscreen(iWindow, iLockPointer, iResizeCanvas);
-}
-
-//------------------------------------------------------------------------
 // Context::Context
 //------------------------------------------------------------------------
 Context::Context()
@@ -91,7 +81,7 @@ Context::Context()
   emscripten_glfw3_context_init(fScale,
                                 ContextScaleChangeCallback,
                                 ContextWindowResizeCallback,
-                                ContextRequestFullscreen,
+                                emscripten_glfw_request_fullscreen,
                                 this);
   addOrRemoveEventListeners(true);
 }

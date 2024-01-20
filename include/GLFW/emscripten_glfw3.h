@@ -115,6 +115,19 @@ int emscripten_glfw_unmake_canvas_resizable(GLFWwindow *window);
 /**
  * Returns `GLFW_TRUE` if the window is fullscreen, `GLFW_FALSE` otherwise */
 int emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
+
+/**
+ * Requests the window to go fullscreen. Note that due to browser restrictions, this function should only
+ * be called from a user generated event (like a keyboard event or a mouse button press).
+ *
+ * Note that there is an equivalent call added to `Module` that can be invoked from javascript:
+ * `Module.glfwRequestFullscreen(...)`.
+ *
+ * @param window which window to go fullscreen
+ * @param lockPointer whether to lock the pointer or not
+ * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not */
+void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
+
 }
 
 #endif //EMSCRIPTEN_GLFW_EMSCRIPTEN_GLFW3_H

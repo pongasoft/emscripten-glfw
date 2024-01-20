@@ -71,7 +71,7 @@ let impl = {
     requestFullscreen(target, lockPointer, resizeCanvas) {
       if(GLFW3.fRequestFullscreen) {
         const ctx = GLFW3.findContext(target);
-        {{{ makeDynCall('vppii', 'GLFW3.fRequestFullscreen') }}}(GLFW3.fContext, ctx ? ctx.glfwWindow : 0, lockPointer, resizeCanvas);
+        {{{ makeDynCall('vpii', 'GLFW3.fRequestFullscreen') }}}(ctx ? ctx.glfwWindow : 0, lockPointer, resizeCanvas);
       }
     },
 

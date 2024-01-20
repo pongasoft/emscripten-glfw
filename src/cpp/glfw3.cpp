@@ -726,6 +726,16 @@ int emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 }
 
 //------------------------------------------------------------------------
+// emscripten_glfw_request_fullscreen
+//------------------------------------------------------------------------
+void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
+{
+  auto context = getContext();
+  if(context)
+    context->requestFullscreen(window, lockPointer, resizeCanvas);
+}
+
+//------------------------------------------------------------------------
 // glfwRawMouseMotionSupported
 //------------------------------------------------------------------------
 GLFWAPI int glfwRawMouseMotionSupported()
