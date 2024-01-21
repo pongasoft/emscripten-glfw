@@ -52,7 +52,10 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("examples/example_resizable_container" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container_with_handle" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
-  add_custom_target("examples-all" DEPENDS
+  add_custom_target("examples-all"
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/examples/index.html ${CMAKE_CURRENT_BINARY_DIR}
+      DEPENDS
+      "demo"
       "example-asyncify"
       "example-hi-dpi"
       "example-minimal"

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>emscripten glfw</title>
+  <style>
+
+    .table-bordered>tbody>tr>td,
+    .table-bordered>tbody>tr>th,
+    .table-bordered>tfoot>tr>td,
+    .table-bordered>tfoot>tr>th,
+    .table-bordered>thead>tr>td,
+    .table-bordered>thead>tr>th {
+      border:1px solid #ddd
+    }
+
+    .table-bordered th, .table-bordered tr, .table-bordered td {
+      padding: 0 12px;
+    }
+
+    .table-bordered tbody tr:nth-of-type(even) {
+      background-color: #f3f3f3;
+    }
+  </style>
+</head>
+<body>
+<h4>emscripten glfw examples / demo</h4>
+<table class="table-bordered">
+  <tbody>
+  <tr><td><a href="test/demo/main.html">Demo</a></td><td>Main test/demo which demonstrates most features of the implementation</td></tr>
+  <tr>
+    <td><a href="examples/example_asyncify/main.html">example_asyncify</a></td>
+    <td>The purpose of this example is to demonstrate how to use asyncify which allows the code to be written like you
+      would for a normal desktop application</td>
+  </tr>
+  <tr>
+    <td><a href="examples/example_hi_dpi/main.html">example_hi_dpi</a></td>
+    <td>The purpose of this example is to demonstrate how to make the window Hi DPI aware</td>
+  </tr>
+  <tr>
+    <td><a href="examples/example_minimal/main.html">example_minimal</a></td>
+    <td>The purpose of this example is to be as minimal as possible: initializes glfw, create window, then destroy it and terminate glfw.
+      Uses the default shell that comes with emscripten</td>
+  </tr>
+  <tr>
+    <td><a href="examples/example_resizable_container/main.html">example_resizable_container</a></td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
+      surrounding div) driving its size. The container width is proportional to the size of the window and so as the
+      window gets resized so does the div and so does the canvas</td>
+  </tr>
+  <tr>
+    <td><a href="examples/example_resizable_container_with_handle/main.html">example_resizable_container_with_handle</a></td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable with a container that has a handle.
+      The handle can be dragged around (left mouse drag) and the div is resized accordingly which in turn resizes the
+      canvas, making the canvas truly resizable like a window</td>
+  </tr>
+  <tr>
+    <td><a href="examples/example_resizable_full_window/main.html">example_resizable_full_window</a></td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable and occupy the full window</td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
