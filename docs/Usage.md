@@ -181,14 +181,9 @@ void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bo
 ```
 
 > #### Best practice
-> To avoid any error while switching to fullscreen, you should always trigger this api via a user event like a mouse
-> click. The recommended approach is to define a button
-> `<input id="fullscreen" type="button" name="fs" onclick="Module.glfwRequestFullscreen('#canvas1', false, true);">`.
-> From C you can trigger it like this:
-> ```cpp
-> if(ImGui::Button("Fullscreen"))
->  EM_ASM({ document.getElementById("fullscreen").click(); });
-> ```
+> To avoid any error while switching to fullscreen, you should always trigger this api from within a user event 
+> like a mouse click (callback set via `glfwSetMouseButtonCallback`) 
+> or a keyboard key press (callback set via `glfwSetKeyCallback`)
 
 At this moment, this implementation does not support creating a window in fullscreen mode due to the same browser
 restrictions mentioned previously. If you want to create a fullscreen window, create a window with a fixed size,

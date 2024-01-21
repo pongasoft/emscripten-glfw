@@ -16,8 +16,7 @@
  * @author Yan Pujante
  */
 
-#include <GLFW/emscripten_glfw3.h>
-#include <cstdio>
+#include "../../include/GLFW/emscripten_glfw3.h"
 #include "emscripten/glfw3/Context.h"
 #include <memory>
 #include "emscripten/glfw3/ErrorHandler.h"

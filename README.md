@@ -148,6 +148,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
+#### 1.0.1 - 2024/01/21
+ 
+- Fixed import
+
 #### 1.0.0 - 2024/01/21
 
 - First 1.0.0 release
