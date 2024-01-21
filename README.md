@@ -42,12 +42,12 @@ Main supported features:
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/wip-0.5.0/emscripten_glfw.png)
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v1.0.0/emscripten_glfw.png)
 
-Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/demo/main.html) of the example code. Note that you
+Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
 
-The [code](test/client/src) for the demo is included in this project.
+The [code](test/demo/src) for the demo is included in this project.
 
 The demo shows 2 canvases each created via a `glfwCreateWindow` and shows how they respond to keyboard and mouse events
 (using direct apis, like `glfwGetMouseButton` or callback apis like `glfwSetMouseButtonCallback`)
@@ -67,6 +67,49 @@ You can enable/disable each window/canvas independently:
 
 The demo uses webgl to render a triangle (the hellow world of gpu rendering...).
 
+Examples
+--------
+
+<table>
+<thead>
+<tr><th>Example</th><th>Note</th></tr>
+</thead>
+  <tbody>
+  <tr><td><a href="https://pongasoft.github.io/emscripten-glfw/test/demo/main.html">Demo</a> (<a href="test/demo">src</a>)</td><td>Main test/demo which demonstrates most features of the implementation</td></tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_asyncify/main.html">example_asyncify</a> (<a href="examples/example_asyncify">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to use asyncify which allows the code to be written like you
+      would for a normal desktop application</td>
+  </tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_hi_dpi/main.html">example_hi_dpi</a> (<a href="examples/example_hi_dpi">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to make the window Hi DPI aware</td>
+  </tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_minimal/main.html">example_minimal</a> (<a href="examples/example_minimal">src</a>)</td>
+    <td>The purpose of this example is to be as minimal as possible: initializes glfw, create window, then destroy it and terminate glfw.
+      Uses the default shell that comes with emscripten</td>
+  </tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container/main.html">example_resizable_container</a> (<a href="examples/example_resizable_container">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
+      surrounding div) driving its size. The container width is proportional to the size of the window and so as the
+      window gets resized so does the div and so does the canvas</td>
+  </tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container_with_handle/main.html">example_resizable_container_with_handle</a> (<a href="examples/example_resizable_container_with_handle">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable with a container that has a handle.
+      The handle can be dragged around (left mouse drag) and the div is resized accordingly which in turn resizes the
+      canvas, making the canvas truly resizable like a window</td>
+  </tr>
+  <tr>
+    <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_full_window/main.html">example_resizable_full_window</a> (<a href="examples/example_resizable_full_window">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to make the canvas resizable and occupy the full window</td>
+  </tr>
+  </tbody>
+</table>
+
+
 Usage
 -----
 
@@ -79,7 +122,7 @@ Building
 ### CMake
 
 If you use CMake, you should be able to simply add this project as a subdirectory. Check 
-[CMakeLists.txt](test/client/CMakeLists.txt) for an example of the build options used. 
+[CMakeLists.txt](test/demo/CMakeLists.txt) for an example of the build options used. 
 
 ### Makefile
 
@@ -105,8 +148,12 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
-#### wip-0.6.0 - TBD
+#### 1.0.0 - 2024/01/21
 
+- First 1.0.0 release
+- Added examples
+- Added documentation
+- Fixed some issues
 - Removed `GLFW_EMSCRIPTEN_CANVAS_SELECTOR` window hint in favor of a new api `emscripten_glfw_set_next_window_canvas_selector`
 - Removed `GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR` and `Module.glfwSetCanvasResizableSelector` in favor of a new 
   api `emscripten_glfw_make_canvas_resizable`
@@ -116,7 +163,7 @@ Release Notes
 - Implemented `glfwExtensionSupported`
 - Implemented `glfwSetWindowTitle` (changes the browser window title)
 
-#### wip-0.5.0 - 2023/01/12
+#### wip-0.5.0 - 2024/01/12
 
 - Added support for resizable canvas (`glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR, "#canvas2-container")` 
   from c/c++ code or `Module.glfwSetCanvasResizableSelector('#canvas2', '#canvas2-container')` from javascript) 
@@ -127,7 +174,7 @@ Release Notes
 - Added support for window size constraints (`glfwSetWindowSizeLimits` and `glfwSetWindowAspectRatio`)
 - Added support for providing a callback function in javascript to be notified when a window is created (`Module.glfwOnWindowCreated`)
 
-#### wip-0.4.0 - 2023/01/03
+#### wip-0.4.0 - 2024/01/03
 
 - Added support for joystick/gamepad
   - Joystick support can be disabled via `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation flag
