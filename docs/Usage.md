@@ -284,6 +284,7 @@ As explained previously, some C functions are defined in `<GLFW/emscripten_glfw3
 | `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                      |
 | `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable` |
 | `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen              |
+| `emscripten_glfw_request_fullscreen`              | to request fullscreen                             |
 
 You can either include this file, or use an `extern "C" {}` section in your own code to define them
 
