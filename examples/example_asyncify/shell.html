@@ -8,17 +8,10 @@
 
   <style>
 
-    #canvas-container {
-      width: 75%;
-      margin: auto;
-      padding: 5px;
-      border: 1px solid black;
-    }
-
     #canvas {
-      margin: 0;
+      margin: auto;
       padding: 0;
-      display: block; /* This is VERY important */
+      display: block;
     }
 
     #canvas:focus {
@@ -32,8 +25,8 @@
   </style>
 </head>
 <body>
-<h4>Welcome to Resizable Container Example</h4>
-<div id="canvas-container"><canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas></div>
+<h4>Welcome to Asyncify Example</h4>
+<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 <div id="canvas-button"><input id="fullscreen" type="button" name="fs" value="Fullscreen" onclick="Module.glfwRequestFullscreen('#canvas', false, true);"></div>
 <h4>Help</h4>
 <ul>

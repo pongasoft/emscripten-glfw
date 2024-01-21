@@ -46,10 +46,18 @@ target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
+  add_subdirectory("examples/example_asyncify" EXCLUDE_FROM_ALL)
+  add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_minimal" EXCLUDE_FROM_ALL)
-  add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container_with_handle" EXCLUDE_FROM_ALL)
-  add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)
-  add_custom_target("examples-all" DEPENDS "example-minimal" "example-resizable-full-window" "example-resizable-container-with-handle" "example-hi-dpi")
+  add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
+  add_custom_target("examples-all" DEPENDS
+      "example-asyncify"
+      "example-hi-dpi"
+      "example-minimal"
+      "example-resizable-container"
+      "example-resizable-container-with-handle"
+      "example-resizable-full-window"
+  )
 endif()

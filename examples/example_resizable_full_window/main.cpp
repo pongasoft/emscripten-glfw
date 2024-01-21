@@ -33,9 +33,12 @@ void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 //! jsRenderFrame: for the sake of this example, uses the canvas2D api to change the color of the screen / display a message
 EM_JS(void, jsRenderFrame, (GLFWwindow *glfwWindow, int w, int h, int fw, int fh, double mx, double my, int color, bool isFullscreen), {
   const ctx = Module.glfwGetCanvas(glfwWindow).getContext('2d');
-  ctx.fillStyle = `rgb(${color}, ${color}, ${color})`; ctx.fillRect(0, 0, fw, fh); // using framebuffer width/height
+  ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
+  ctx.fillRect(0, 0, fw, fh); // using framebuffer width/height
   const text = `${w}x${h} | ${mx}x${my} | CTRL+Q to terminate ${isFullscreen ? "" : '| CTRL+F for fullscreen'}`;
-  ctx.font = '15px monospace'; ctx.fillStyle = `rgb(${255 - color}, 0, 0)`; ctx.fillText(text, 10 + color, 20 + color);
+  ctx.font = '15px monospace';
+  ctx.fillStyle = `rgb(${255 - color}, 0, 0)`;
+  ctx.fillText(text, 10 + color, 20 + color);
 })
 
 //! Called for each frame

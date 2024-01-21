@@ -49,8 +49,10 @@ EM_JS(void, jsRenderFrame, (GLFWwindow *glfwWindow, int w, int h, int sx, int sy
   const ctx = Module.glfwGetCanvas(glfwWindow).getContext('2d');
   ctx.save();
   ctx.scale(sx, sy);
-  ctx.fillStyle = `rgb(${color}, ${color}, ${color})`; ctx.fillRect(0, 0, w, h);
-  ctx.font = '15px monospace'; ctx.fillStyle = `rgb(${255 - color}, 0, 0)`;
+  ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
+  ctx.fillRect(0, 0, w, h);
+  ctx.font = '15px monospace';
+  ctx.fillStyle = `rgb(${255 - color}, 0, 0)`;
   ctx.fillText(`${w}x${h} | ${sx} | ${mx}x${my}`, 10 + color, 20 + color);
   ctx.fillText(`CTRL+H toggle HiDPI | CTRL+Q to terminate ${isFullscreen ? "" : '| CTRL+F for fullscreen'}`, 10 + color, 40 + color);
   ctx.restore();

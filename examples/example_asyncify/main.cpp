@@ -22,9 +22,8 @@
 #include <cmath>
 
 /**
- * The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
- * surrounding div) driving its size. The container width is proportional to the size of the window and so as the
- * window gets resized so does the div and so does the canvas. */
+ * The purpose of this example is to demonstrate how to use asyncify which allows the code to be written like you
+ * would for a normal desktop application. */
 
 //! Display error message in the Console
 void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
@@ -37,42 +36,14 @@ EM_JS(void, jsRenderFrame, (GLFWwindow *glfwWindow, int w, int h, int fw, int fh
   const ctx = Module.glfwGetCanvas(glfwWindow).getContext('2d');
   ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
   ctx.fillRect(0, 0, fw, fh); // using framebuffer width/height
+  ctx.save();
+  ctx.scale(fw/w, fh/h);
   const text = `${w}x${h} | ${mx}x${my} | CTRL+Q to terminate ${isFullscreen ? "" : '| CTRL+F for fullscreen'}`;
   ctx.font = '15px monospace';
   ctx.fillStyle = `rgb(${255 - color}, 0, 0)`;
   ctx.fillText(text, 10 + color, 20 + color);
+  ctx.restore();
 })
-
-//! Called for each frame
-void renderFrame(GLFWwindow *iWindow)
-{
-  static int frameCount = 0;
-
-  // poll events
-  glfwPollEvents();
-
-  int w,h; glfwGetWindowSize(iWindow, &w, &h);
-  int fw,fh; glfwGetFramebufferSize(iWindow, &fw, &fh);
-  double mx,my; glfwGetCursorPos(iWindow, &mx, &my);
-  auto color = 127.0f + 127.0f * std::sin((float) frameCount++ / 120.f);
-  jsRenderFrame(iWindow, w, h, fw, fh, mx, my, (int) color, emscripten_glfw_is_window_fullscreen(iWindow));
-}
-
-//! The main loop (called by emscripten for each frame)
-void main_loop(void *iUserData)
-{
-  if(auto window = reinterpret_cast<GLFWwindow *>(iUserData); !glfwWindowShouldClose(window))
-  {
-    // not done => renderFrame
-    renderFrame(window);
-  }
-  else
-  {
-    // done => terminating
-    glfwTerminate();
-    emscripten_cancel_main_loop();
-  }
-}
 
 //! Handle key events => on CTRL+Q sets "window should close" flag, CTRL+F for fullscreen
 void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -84,6 +55,22 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
       default: break;
     }
   }
+}
+
+//! computeSleepTime
+unsigned int computeSleepTime(unsigned int iFrameStart)
+{
+  // this commented code represents the real math accounting for timer frequency
+//  constexpr auto kFrameDurationInSeconds = 1.0f / 60.f;
+//  auto frameEnd = glfwGetTimerValue();
+//  auto frameDurationInSeconds = static_cast<float>(frameEnd - iFrameStart) / static_cast<float>(glfwGetTimerFrequency());
+//  auto remaining = kFrameDurationInSeconds - frameDurationInSeconds;
+//  if(remaining < 0)
+//    remaining = 0;
+//  return static_cast<unsigned int>(remaining * 1000.f);
+
+   // For the sake of this example
+   return 16; // ~60fps as the work done is almost nothing
 }
 
 //! main
@@ -99,20 +86,41 @@ int main()
   // no OpenGL (use canvas2D)
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
+  // Make hi dpi aware
+  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+
   // setting the association window <-> canvas
   emscripten_glfw_set_next_window_canvas_selector("#canvas");
 
   // create the only window
-  auto window = glfwCreateWindow(600, 400, "Resizable Container | emscripten-glfw", nullptr, nullptr);
+  auto window = glfwCreateWindow(600, 400, "Asyncify | emscripten-glfw", nullptr, nullptr);
   if(!window)
     return -1;
-
-  // makes the canvas resizable to the size of its div container
-  emscripten_glfw_make_canvas_resizable(window, "#canvas-container", nullptr);
 
   // set callback for exit (CTRL+Q) and fullscreen (CTRL+F)
   glfwSetKeyCallback(window, onKeyChange);
 
-  // tell emscripten to use "main_loop" as the main loop (window is user data)
-  emscripten_set_main_loop_arg(main_loop, window, 0, GLFW_FALSE);
+  int frameCount = 0;
+
+  while(!glfwWindowShouldClose(window))
+  {
+    auto frameStart = glfwGetTimerValue();
+
+    glfwPollEvents();
+
+    int w,h;
+    glfwGetWindowSize(window, &w, &h);
+    int fw,fh;
+    glfwGetFramebufferSize(window, &fw, &fh);
+    double mx,my;
+    glfwGetCursorPos(window, &mx, &my);
+    auto color = 127.0f + 127.0f * std::sin((float) frameCount++ / 120.f);
+    jsRenderFrame(window, w, h, fw, fh, mx, my, (int) color, emscripten_glfw_is_window_fullscreen(window));
+
+    // This is very important when using ASYNCIFY: you must sleep at least some otherwise it would be an
+    // infinite loop and the UI would never refresh
+    emscripten_sleep(computeSleepTime(frameStart));
+  }
+
+  glfwTerminate();
 }
