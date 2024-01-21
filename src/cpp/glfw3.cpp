@@ -114,7 +114,6 @@ extern "C" {
 //------------------------------------------------------------------------
 GLFWAPI int glfwInit()
 {
-  printf("glfwInit()\n");
   if(kContext)
     return GLFW_TRUE;
   kContext = Context::init();
@@ -131,7 +130,6 @@ GLFWAPI void glfwTerminate(void)
   if(kContext)
     kContext->terminate();
   kContext = nullptr;
-  printf("glfwTerminate()\n");
 }
 
 //------------------------------------------------------------------------

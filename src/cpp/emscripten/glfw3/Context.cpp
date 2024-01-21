@@ -84,7 +84,6 @@ void ContextErrorHandler(int iErrorCode, char const *iErrorMessage)
 //------------------------------------------------------------------------
 Context::Context()
 {
-  printf("Context::Context %p\n", this);
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
   emscripten_glfw3_context_init(this,
                                 fScale,
@@ -124,8 +123,6 @@ void Context::terminate()
 //------------------------------------------------------------------------
 void Context::addOrRemoveEventListeners(bool iAdd)
 {
-  printf("Context::addOrRemoveEventListeners(%s)\n", iAdd ? "true" : "false");
-
   if(iAdd)
   {
     fOnMouseButtonUp
@@ -220,7 +217,6 @@ void Context::addOrRemoveEventListeners(bool iAdd)
 //------------------------------------------------------------------------
 void Context::onScaleChange()
 {
-  printf("Context::onScaleChange\n");
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
   for(auto &w: fWindows)
   {
@@ -319,8 +315,6 @@ void Context::requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCurs
 //------------------------------------------------------------------------
 bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
 {
-  printf("onEnterFullscreen %s\n", iEvent->id);
-
   auto fullscreenRequest = std::exchange(fFullscreenRequest, std::nullopt);
 
   // which window is being targeted
@@ -347,8 +341,6 @@ bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
 //------------------------------------------------------------------------
 bool Context::onExitFullscreen()
 {
-  printf("onExitFullscreen\n");
-
   bool res = false;
 
   // only 1 window should be in fullscreen
@@ -363,8 +355,6 @@ bool Context::onExitFullscreen()
 //------------------------------------------------------------------------
 bool Context::onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent)
 {
-  printf("onPointerLock %s\n", iEvent->id);
-
   auto lockPointerRequest = std::exchange(fPointerLockRequest, std::nullopt);
 
   if(auto window = findWindow(emscripten_glfw3_context_get_pointer_lock_window()); window)
@@ -387,8 +377,6 @@ bool Context::onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent)
 //------------------------------------------------------------------------
 bool Context::onPointerUnlock()
 {
-  printf("onPointerUnlock\n");
-
   // this async callback does not contain any information, so we assume it is the one coming from the request
   if(auto unlockPointerRequest = std::exchange(fPointerUnlockRequest, std::nullopt); unlockPointerRequest)
   {
@@ -422,7 +410,6 @@ bool Context::onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent)
     fPresentJoystickCount = Joystick::computePresentJoystickCount();
     if(fJoystickCallback)
       fJoystickCallback(joystick->fId, joystick->isPresent() ? GLFW_CONNECTED : GLFW_DISCONNECTED);
-    printf("fPresentJoystickCount = %d\n", fPresentJoystickCount);
     return true;
   }
   return false;

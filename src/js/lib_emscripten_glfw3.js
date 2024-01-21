@@ -264,7 +264,6 @@ let impl = {
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
   emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, requestFullscreen, errorHandler) => {
-    console.log("emscripten_glfw3_context_init()");
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
@@ -323,8 +322,6 @@ let impl = {
 
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
-    console.log("emscripten_glfw3_context_destroy()");
-
     GLFW3.fWindowContexts = null;
     GLFW3.fScaleChangeCallback = null;
     GLFW3.fWindowResizeCallback = null;

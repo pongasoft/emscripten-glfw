@@ -72,7 +72,6 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale, char cons
   fMonitorScale{iMonitorScale},
   fTitle{iTitle ? std::optional<std::string>{iTitle} : std::nullopt}
 {
-  printf("Window(%p)\n", asOpaquePtr());
 }
 
 //------------------------------------------------------------------------
@@ -100,7 +99,6 @@ void Window::init(int iWidth, int iHeight)
 //------------------------------------------------------------------------
 Window::~Window()
 {
-  printf("~Window(%p)\n", asOpaquePtr());
   destroy();
 }
 
@@ -681,7 +679,6 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
 void Window::addOrRemoveEventListeners(bool iAdd)
 {
   auto selector = getCanvasSelector();
-  printf("Window::addOrRemoveEventListeners(%s, %s)\n", selector, iAdd ? "true" : "false");
 
   if(iAdd)
   {
