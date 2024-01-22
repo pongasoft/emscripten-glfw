@@ -123,10 +123,11 @@ Building
 
 The following defines are used in the code:
 
-| Define                              | Description                                                                                    |
-|-------------------------------------|------------------------------------------------------------------------------------------------|
-| `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` | Disable support for joystick entirely, which can be useful if you don't need it due to polling |
-| `EMSCRIPTEN_GLFW3_DISABLE_WARNING`  | Disable warnings emitted by the library (for example when using non supported features)        |
+| Define                                          | Description                                                                                    |
+|-------------------------------------------------|------------------------------------------------------------------------------------------------|
+| `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`             | Disable support for joystick entirely, which can be useful if you don't need it due to polling |
+| `EMSCRIPTEN_GLFW3_DISABLE_WARNING`              | Disable warnings emitted by the library (for example when using non supported features)        |
+| `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` | Disable multi window support which makes the code smaller and faster if you don't need it      |
 
 ### CMake
 
@@ -135,6 +136,9 @@ If you use CMake, you should be able to simply add this project as a subdirector
 
 With CMake, you can set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` if your application does not care about
 supporting joystick as it can be an extra burden on size and runtime polling.
+
+You can also set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` if your application does not need
+multi window support, and you want a smaller code and faster execution.
 
 When compiling in `Release` mode, the compilation flag `EMSCRIPTEN_GLFW3_DISABLE_WARNING` is automatically set.
 
@@ -160,7 +164,8 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 ```
 
 > #### Note
-> See above for the defines that can be added to tweak compilation (joystick support / warnings).
+> See above for the defines that can be added to tweak compilation (joystick support / warnings / 
+> multi window support).
 
 
 Release Notes

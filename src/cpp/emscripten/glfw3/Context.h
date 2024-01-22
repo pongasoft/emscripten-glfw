@@ -23,12 +23,15 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
-#include <vector>
 #include <string>
 #include <optional>
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
 #include "Joystick.h"
+#endif
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+#include <vector>
 #endif
 
 namespace emscripten::glfw3 {
@@ -111,9 +114,13 @@ private:
 #endif
 
 private:
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   std::vector<std::shared_ptr<Window>> fWindows{};
+#else
+  std::shared_ptr<Window> fSingleWindow{};
+#endif
   GLFWwindow *fCurrentWindowOpaquePtr{};
-  std::shared_ptr<Window> fCurrentWindow{};
+  std::shared_ptr<Window> fCurrentWindow{}; // window made current via glfwMakeContextCurrent
   std::shared_ptr<Monitor> fCurrentMonitor{new Monitor{}};
   GLFWwindow *fLastKnownFocusedWindow{};
   Config fConfig{};

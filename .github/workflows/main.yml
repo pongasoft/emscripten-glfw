@@ -41,14 +41,14 @@ jobs:
         working-directory: ${{github.workspace}}/emscripten-glfw/build
         run: ls -l examples/example_minimal
 
-      - name: Configure CMake Project (no joystick)
+      - name: Configure CMake Project (small)
         working-directory: ${{github.workspace}}/emscripten-glfw
-        run: cmake -B build-no-joystick -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/emscripten/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN_GLFW3_DISABLE_JOYSTICK=ON .
+        run: cmake -B build-small -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/emscripten/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN_GLFW3_DISABLE_JOYSTICK=ON -DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT=ON .
 
-      - name: Compile all (no joystick)
-        working-directory: ${{github.workspace}}/emscripten-glfw/build-no-joystick
+      - name: Compile all (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw/build-small
         run: cmake --build . --target examples-all
 
-      - name: Result (no joystick)
-        working-directory: ${{github.workspace}}/emscripten-glfw/build-no-joystick
+      - name: Result (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw/build-small
         run: ls -l examples/example_minimal

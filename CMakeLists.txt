@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD 17)
 # Use this CMake option to disable joystick support
 option(EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK "Disable joystick support" OFF)
 
+# Use this CMake option to disable multi window support
+option(EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT "Disable multi window support" OFF)
+
 set(target "glfw3")
 
 set(glfw3_headers
@@ -50,6 +53,7 @@ target_include_directories(${target} PUBLIC external include)
 target_compile_definitions(${target} PUBLIC
     $<$<CONFIG:Release>:EMSCRIPTEN_GLFW3_DISABLE_WARNING>
     $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK}>:EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK>
+    $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT}>:EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT>
 )
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 

@@ -115,10 +115,16 @@ void Context::terminate()
 {
   fCurrentWindow = nullptr;
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
     w->destroy();
 
   fWindows.clear();
+#else
+  if(fSingleWindow)
+    fSingleWindow->destroy();
+  fSingleWindow = nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -131,10 +137,14 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnMouseButtonUp
       .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
         bool handled = false;
         for(auto &w: fWindows)
           handled |= w->onMouseButtonUp(iEvent);
         return handled;
+#else
+        return fSingleWindow && fSingleWindow->onMouseButtonUp(iEvent);
+#endif
       })
       .add(emscripten_set_mouseup_callback_on_thread);
 
@@ -154,10 +164,14 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnKeyUp
       .target(EMSCRIPTEN_EVENT_TARGET_WINDOW)
       .listener([this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
         bool handled = false;
         for(auto &w: fWindows)
           handled |= w->onKeyUp(iEvent);
         return handled;
+#else
+        return fSingleWindow && fSingleWindow->onKeyUp(iEvent);
+#endif
       })
       .add(emscripten_set_keyup_callback_on_thread);
 
@@ -221,10 +235,15 @@ void Context::addOrRemoveEventListeners(bool iAdd)
 void Context::onScaleChange()
 {
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
   {
     w->setMonitorScale(fScale);
   }
+#else
+  if(fSingleWindow)
+    fSingleWindow->setMonitorScale(fScale);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -347,8 +366,12 @@ bool Context::onExitFullscreen()
   bool res = false;
 
   // only 1 window should be in fullscreen
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
     res |= w->onExitFullscreen();
+#else
+  res = fSingleWindow && fSingleWindow->onExitFullscreen();
+#endif
 
   return res;
 }
@@ -392,8 +415,14 @@ bool Context::onPointerUnlock()
 
   // no request nor window matching the request => send to all windows
   bool res = false;
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
     res |= w->onPointerUnlock(std::nullopt);
+#else
+  res = fSingleWindow && fSingleWindow->onPointerUnlock(std::nullopt);
+#endif
+
 
   return res;
 }
@@ -429,11 +458,16 @@ std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
   if(fCurrentWindowOpaquePtr == iWindow)
     return fCurrentWindow;
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   auto iter = std::find_if(fWindows.begin(), fWindows.end(), [iWindow](auto &w) { return w->asOpaquePtr() == iWindow; });
   if(iter != fWindows.end())
     return *iter;
   else
     return nullptr;
+#else
+  return (fSingleWindow && fSingleWindow->asOpaquePtr() == iWindow) ? fSingleWindow : nullptr;
+#endif
+
 }
 
 //------------------------------------------------------------------------
@@ -441,6 +475,7 @@ std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 std::shared_ptr<Window> Context::findFocusedOrSingleWindow() const
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   if(fWindows.size() == 1)
   {
     return fWindows[0];
@@ -455,6 +490,9 @@ std::shared_ptr<Window> Context::findFocusedOrSingleWindow() const
   }
 
   return findWindow(fLastKnownFocusedWindow);
+#else
+  return fSingleWindow;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -485,6 +523,14 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
     return nullptr;
   }
 
+#ifdef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+  if(fSingleWindow)
+  {
+    kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot create multiple windows when EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT is defined");
+    return nullptr;
+  }
+#endif
+
   auto window = std::make_shared<Window>(this, fConfig, fScale, iTitle);
 
   auto const canvasSelector = std::exchange(fConfig.fCanvasSelector, Config::kDefaultCanvasSelector);
@@ -503,7 +549,11 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
   if(!window->createGLContext())
     return nullptr;
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   fWindows.emplace_back(window);
+#else
+  fSingleWindow = window;
+#endif
 
   if(window->isFocused())
     fLastKnownFocusedWindow = window->asOpaquePtr();
@@ -520,6 +570,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 //------------------------------------------------------------------------
 void Context::destroyWindow(GLFWwindow *iWindow)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   auto iter = std::find_if(fWindows.begin(), fWindows.end(), [iWindow](auto &w) { return w->asOpaquePtr() == iWindow; });
   if(iter != fWindows.end())
   {
@@ -534,6 +585,17 @@ void Context::destroyWindow(GLFWwindow *iWindow)
       fLastKnownFocusedWindow = nullptr;
     fWindows.erase(iter);
   }
+#else
+  if(fSingleWindow && fSingleWindow->asOpaquePtr() == iWindow)
+  {
+    fSingleWindow->destroy();
+    fCurrentWindow = nullptr;
+    fCurrentWindowOpaquePtr = nullptr;
+    fLastKnownFocusedWindow = nullptr;
+    fSingleWindow = nullptr;
+  }
+#endif
+
 }
 
 //------------------------------------------------------------------------
