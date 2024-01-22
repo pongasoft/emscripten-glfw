@@ -8,6 +8,9 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Use this CMake option to disable joystick support
+option(EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK "Disable joystick support" OFF)
+
 set(target "glfw3")
 
 set(glfw3_headers
@@ -16,7 +19,6 @@ set(glfw3_headers
     src/cpp/emscripten/glfw3/Cursor.h
     src/cpp/emscripten/glfw3/ErrorHandler.h
     src/cpp/emscripten/glfw3/Events.h
-    src/cpp/emscripten/glfw3/Joystick.h
     src/cpp/emscripten/glfw3/Keyboard.h
     src/cpp/emscripten/glfw3/KeyboardMapping.h
     src/cpp/emscripten/glfw3/Monitor.h
@@ -30,10 +32,14 @@ set(glfw3_sources
     src/cpp/glfw3.cpp
     src/cpp/emscripten/glfw3/Context.cpp
     src/cpp/emscripten/glfw3/ErrorHandler.cpp
-    src/cpp/emscripten/glfw3/Joystick.cpp
     src/cpp/emscripten/glfw3/Keyboard.cpp
     src/cpp/emscripten/glfw3/Window.cpp
 )
+
+if(NOT EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK)
+  list(APPEND glfw3_headers src/cpp/emscripten/glfw3/Joystick.h)
+  list(APPEND glfw3_sources src/cpp/emscripten/glfw3/Joystick.cpp)
+endif()
 
 add_library(${target} ${glfw3_sources})
 target_sources(${target} PUBLIC
@@ -41,7 +47,10 @@ target_sources(${target} PUBLIC
 )
 
 target_include_directories(${target} PUBLIC external include)
-#target_compile_definitions(${target} PUBLIC EMSCRIPTEN_GLFW3_DISABLE_WARNING)
+target_compile_definitions(${target} PUBLIC
+    $<$<CONFIG:Release>:EMSCRIPTEN_GLFW3_DISABLE_WARNING>
+    $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK}>:EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK>
+)
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)

@@ -95,6 +95,7 @@ static inline std::shared_ptr<Monitor> getMonitor(GLFWmonitor* iMonitor) {
     return kContext->getMonitor(iMonitor);
 }
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
 //! getJoystick
 static inline Joystick *getJoystick(glfw_joystick_id_t id)
 {
@@ -103,6 +104,7 @@ static inline Joystick *getJoystick(glfw_joystick_id_t id)
   else
     return Joystick::findJoystick(id);
 }
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -946,9 +948,11 @@ GLFWAPI int glfwExtensionSupported(const char* extension)
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetJoystickUserPointer(int jid, void* pointer)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     joystick->setUserPointer(pointer);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -956,11 +960,15 @@ GLFWAPI void glfwSetJoystickUserPointer(int jid, void* pointer)
 //------------------------------------------------------------------------
 GLFWAPI void* glfwGetJoystickUserPointer(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getUserPointer();
   else
     return nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -968,11 +976,15 @@ GLFWAPI void* glfwGetJoystickUserPointer(int jid)
 //------------------------------------------------------------------------
 GLFWAPI int glfwJoystickPresent(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->isPresent();
   else
     return GLFW_FALSE;
+#else
+  return GLFW_FALSE;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -980,11 +992,15 @@ GLFWAPI int glfwJoystickPresent(int jid)
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetJoystickName(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getName();
   else
     return nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -992,11 +1008,15 @@ GLFWAPI const char* glfwGetJoystickName(int jid)
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetJoystickGUID(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getMapping();
   else
     return nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1016,14 +1036,22 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun callback)
 //------------------------------------------------------------------------
 GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getAxes(count);
   else
   {
-    *count = 0;
+    if(count)
+      *count = 0;
     return nullptr;
   }
+#else
+  if(count)
+    *count = 0;
+  return nullptr;
+#endif
+
 }
 
 //------------------------------------------------------------------------
@@ -1031,14 +1059,21 @@ GLFWAPI const float* glfwGetJoystickAxes(int jid, int* count)
 //------------------------------------------------------------------------
 GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getDigitalButtons(count);
   else
   {
-    *count = 0;
+    if(count)
+      *count = 0;
     return nullptr;
   }
+#else
+  if(count)
+    *count = 0;
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1046,14 +1081,21 @@ GLFWAPI const unsigned char* glfwGetJoystickButtons(int jid, int* count)
 //------------------------------------------------------------------------
 GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getHats(count);
   else
   {
-    *count = 0;
+    if(count)
+      *count = 0;
     return nullptr;
   }
+#else
+  if(count)
+    *count = 0;
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1061,11 +1103,15 @@ GLFWAPI const unsigned char* glfwGetJoystickHats(int jid, int* count)
 //------------------------------------------------------------------------
 GLFWAPI int glfwJoystickIsGamepad(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->isGamepad();
   else
     return GLFW_FALSE;
+#else
+  return GLFW_FALSE;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1082,10 +1128,14 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetGamepadName(int jid)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick && joystick->isGamepad())
     return joystick->getName();
   return nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1093,11 +1143,15 @@ GLFWAPI const char* glfwGetGamepadName(int jid)
 //------------------------------------------------------------------------
 GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state)
 {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   auto joystick = getJoystick(jid);
   if(joystick)
     return joystick->getGamepadState(state);
   else
     return GLFW_FALSE;
+#else
+  return GLFW_FALSE;
+#endif
 }
 
 //------------------------------------------------------------------------

@@ -21,8 +21,11 @@
 #include <emscripten/html5.h>
 
 #include "ErrorHandler.h"
-#include "Joystick.h"
 #include "../../../../include/GLFW/emscripten_glfw3.h"
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+#include "Joystick.h"
+#endif
 
 extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
@@ -185,7 +188,7 @@ void Context::addOrRemoveEventListeners(bool iAdd)
       })
       .add(emscripten_set_pointerlockerror_callback_on_thread);
 
-    // gamepad
+    // gamepad/joystick
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
     fOnGamepadConnected
       .listener([this](int iEventType, EmscriptenGamepadEvent const *iEvent) { return onGamepadConnectionChange(iEvent); })
@@ -395,6 +398,7 @@ bool Context::onPointerUnlock()
   return res;
 }
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
 //------------------------------------------------------------------------
 // Context::onGamepadConnectionChange
 //------------------------------------------------------------------------
@@ -414,6 +418,7 @@ bool Context::onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent)
   }
   return false;
 }
+#endif
 
 //------------------------------------------------------------------------
 // Context::findWindow

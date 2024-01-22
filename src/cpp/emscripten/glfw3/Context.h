@@ -23,10 +23,13 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
-#include "Joystick.h"
 #include <vector>
 #include <string>
 #include <optional>
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+#include "Joystick.h"
+#endif
 
 namespace emscripten::glfw3 {
 
@@ -100,9 +103,12 @@ private:
   bool onExitFullscreen();
   bool onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent);
   bool onPointerUnlock();
-  bool onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent);
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
   static double getPlatformTimerValue();
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+  bool onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent);
+#endif
 
 private:
   std::vector<std::shared_ptr<Window>> fWindows{};
@@ -113,7 +119,6 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTime{getPlatformTimerValue()};
-  int fPresentJoystickCount{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};
@@ -128,8 +133,12 @@ private:
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
+
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+  int fPresentJoystickCount{};
   EventListener<EmscriptenGamepadEvent> fOnGamepadConnected{};
   EventListener<EmscriptenGamepadEvent> fOnGamepadDisconnected{};
+#endif
 };
 
 }
