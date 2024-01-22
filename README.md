@@ -171,6 +171,14 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
+#### 1.0.2 - 2024/01/22
+
+- Added `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` as a CMake option
+- Made joystick code truly conditional on `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define
+- Added `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` as a CMake option and made the multi window code conditional
+  on `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` define
+- Misc: added github workflow to compile the code/display badge
+
 #### 1.0.1 - 2024/01/21
  
 - Fixed import
