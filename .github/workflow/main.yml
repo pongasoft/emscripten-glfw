@@ -1,0 +1,34 @@
+name: Emscripten Build
+
+on: [push]
+
+jobs:
+  build:
+    runs_on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: 'emscripten-glfw'
+
+      - name: Install Emscripten
+        working-directory: ${{github.workspace}}
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+          source ./emsdk_env.sh
+          emcc -v
+
+      - name: Setup prerequisites for CMake
+        run: sudo apt-get install build-essential
+
+      - name: Configure CMake Project
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release .
+
+      - name: Compile all
+        working-directory: ${{github.workspace}}/emscripten-glfw/build
+        run: cmake --build . --target examples-all
