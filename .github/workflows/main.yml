@@ -8,15 +8,19 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          path: 'emscripten-glfw'
+          path: emscripten-glfw
+
+      - name: Checkout emscripten
+        uses: actions/checkout@v4
+        with:
+          repository: emscripten-core/emsdk
+          path: emscripten
 
       - name: Install Emscripten
-        working-directory: ${{github.workspace}}
+        working-directory: ${{github.workspace}}/emsdk
         run: |
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
           source ./emsdk_env.sh
@@ -27,7 +31,7 @@ jobs:
 
       - name: Configure CMake Project
         working-directory: ${{github.workspace}}/emscripten-glfw
-        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release .
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release .
 
       - name: Compile all
         working-directory: ${{github.workspace}}/emscripten-glfw/build
