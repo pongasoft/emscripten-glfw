@@ -20,6 +20,8 @@ is successful, or most likely, offer it as an option.
 Status
 ------
 
+![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
+
 The project is now mature enough and has reached 1.0.0 status.
 
 Main supported features:
