@@ -727,7 +727,7 @@ int emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 //------------------------------------------------------------------------
 // emscripten_glfw_request_fullscreen
 //------------------------------------------------------------------------
-int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
+int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas)
 {
   auto context = getContext();
   if(context)

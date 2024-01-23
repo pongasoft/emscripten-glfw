@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(emscripten_glfw LANGUAGES CXX)
+set(emscripten-glfw_VERSION_MAJOR 1)
+set(emscripten-glfw_VERSION_MINOR 0)
+set(emscripten-glfw_VERSION_PATCH 3)
+set(emscripten-glfw_VERSION "${emscripten-glfw_VERSION_MAJOR}.${emscripten-glfw_VERSION_MINOR}.${emscripten-glfw_VERSION_PATCH}")
+
+project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
 
 if(NOT EMSCRIPTEN)
   message(FATAL_ERROR "This library must be compiled with emscripten")
@@ -58,6 +63,14 @@ target_compile_definitions(${target} PUBLIC
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(ARCHIVE_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive")
+  add_custom_target("create-archive"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_DIR}/emscripten-glfw3.v${emscripten-glfw_VERSION}.zip" "--format=zip" "external" "include" "src"
+  )
+
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_asyncify" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)

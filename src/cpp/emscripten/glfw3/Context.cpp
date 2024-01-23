@@ -30,7 +30,7 @@
 extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
-using RequestFullscreen = int (*)(GLFWwindow *, bool, bool);
+using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
 void emscripten_glfw3_context_init(emscripten::glfw3::Context *iContext,
                                    float iScale,

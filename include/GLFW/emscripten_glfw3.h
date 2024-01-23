@@ -22,7 +22,9 @@
 #include <GLFW/glfw3.h>
 #include <emscripten/em_types.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 /**
  * Before calling `glfwCreateWindow` you can communicate to the library which canvas to use by calling this function.
@@ -130,7 +132,10 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
  * @param lockPointer whether to lock the pointer or not
  * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not
  * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
-int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
+int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas);
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif //EMSCRIPTEN_GLFW_EMSCRIPTEN_GLFW3_H

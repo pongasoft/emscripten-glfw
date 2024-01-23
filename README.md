@@ -171,6 +171,11 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
+#### 1.0.3 - 2024/01/23
+
+- Fixed `emscripten_glfw3.h` to work as a C file
+- Added `create-archive` target
+
 #### 1.0.2 - 2024/01/22
 
 - Added `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` as a CMake option
