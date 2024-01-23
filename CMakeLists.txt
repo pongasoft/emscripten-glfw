@@ -68,7 +68,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
-      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_DIR}/emscripten-glfw3.v${emscripten-glfw_VERSION}.zip" "--format=zip" "external" "include" "src"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip" "--format=zip" "external" "include" "src"
   )
 
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
