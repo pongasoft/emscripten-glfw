@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 set(emscripten-glfw_VERSION_MAJOR 1)
 set(emscripten-glfw_VERSION_MINOR 0)
-set(emscripten-glfw_VERSION_PATCH 3)
+set(emscripten-glfw_VERSION_PATCH 4)
 set(emscripten-glfw_VERSION "${emscripten-glfw_VERSION_MAJOR}.${emscripten-glfw_VERSION_MINOR}.${emscripten-glfw_VERSION_PATCH}")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)

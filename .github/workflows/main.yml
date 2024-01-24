@@ -1,6 +1,11 @@
 name: Emscripten Build
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'master'
+    tags-ignore:
+      - '*'
 
 jobs:
   build:

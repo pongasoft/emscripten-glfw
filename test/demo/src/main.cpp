@@ -166,6 +166,8 @@ int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
 
+  printf("%s\n", glfwGetVersionString());
+
   if(!glfwInit())
     return -1;
 

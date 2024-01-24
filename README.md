@@ -171,6 +171,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
+#### 1.0.4 - 2024/01/24
+
+- Fixed version string
+
 #### 1.0.3 - 2024/01/23
 
 - Fixed `emscripten_glfw3.h` to work as a C file

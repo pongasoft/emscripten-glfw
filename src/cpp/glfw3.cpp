@@ -148,7 +148,8 @@ GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev)
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetVersionString(void)
 {
-#define mkstr(s) #s
+#define mkstr_inner(s) #s
+#define mkstr(s) mkstr_inner(s)
   constexpr char const *kVersionString =
     "Emscripten/WebAssembly GLFW " mkstr(GLFW_VERSION_MAJOR) "." mkstr(GLFW_VERSION_MINOR) "." mkstr(GLFW_VERSION_REVISION);
   return kVersionString;
