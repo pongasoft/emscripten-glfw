@@ -121,52 +121,29 @@ taken to backward compatible with the pure javascript implementation built-in in
 Building
 --------
 
-The following defines are used in the code:
+### Using emscripten port
 
-| Define                                          | Description                                                                                    |
-|-------------------------------------------------|------------------------------------------------------------------------------------------------|
-| `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`             | Disable support for joystick entirely, which can be useful if you don't need it due to polling |
-| `EMSCRIPTEN_GLFW3_DISABLE_WARNING`              | Disable warnings emitted by the library (for example when using non supported features)        |
-| `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` | Disable multi window support which makes the code smaller and faster if you don't need it      |
+Since emscripten 3.1.54, using this port is really easy via the `--use-port=contrib.glfw3` option.
 
-### CMake
+Example:
 
-If you use CMake, you should be able to simply add this project as a subdirectory. Check 
-[CMakeLists.txt](test/demo/CMakeLists.txt) for an example of the build options used.
-
-With CMake, you can set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` if your application does not care about
-supporting joystick as it can be an extra burden on size and runtime polling.
-
-You can also set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` if your application does not need
-multi window support, and you want a smaller code and faster execution.
-
-When compiling in `Release` mode, the compilation flag `EMSCRIPTEN_GLFW3_DISABLE_WARNING` is automatically set.
-
-### Makefile
-
-I am successfully building ImGui (`examples/example_emscripten_wgpu`) against this implementation with the following section in the `Makefile`:
-
-```Makefile
-# local glf3 port
-EMS_GLFW3_DIR = /Volumes/Development/github/org.pongasoft/emscripten-glfw
-SOURCES += $(EMS_GLFW3_DIR)/src/cpp/glfw3.cpp
-SOURCES += $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Context.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/ErrorHandler.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Keyboard.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Joystick.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Window.cpp
-
-# ("EMS" options gets added to both CPPFLAGS and LDFLAGS, whereas some options are for linker only)
-#EMS += -s DISABLE_EXCEPTION_CATCHING=1
-#LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
-LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_glfw3.js
-#LDFLAGS += -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
+```sh
+emcc --use-port=contrib.glfw3 main.cpp -o build/index.html
 ```
 
-> #### Note
-> See above for the defines that can be added to tweak compilation (joystick support / warnings / 
-> multi window support).
+The port can be configured with the following options:
 
+| Option               | Description                                                                                               |
+|----------------------|-----------------------------------------------------------------------------------------------------------|
+| `disableJoystick`    | Boolean to disable support for joystick entirely, which can be useful if you don't need it due to polling |
+| `disableWarning`     | Boolean to disable warnings emitted by the library (for example when using non supported features)        |
+| `disableMultiWindow` | Boolean to disable multi window support which makes the code smaller and faster if you don't need it      |
+
+Example using `disableWarning` and `disableMultiWindow`:
+
+```sh
+emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.cpp -o build
+```
 
 Release Notes
 -------------
