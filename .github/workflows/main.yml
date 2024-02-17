@@ -57,3 +57,17 @@ jobs:
       - name: Result (small)
         working-directory: ${{github.workspace}}/emscripten-glfw/build-small
         run: ls -l examples/example_minimal
+
+      - name: Compile with port
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: | 
+          mkdir build-with-port
+          emcc --use-port=contrib.glfw3 examples/example_minimal main.cpp -o build-with-port/index.html
+          ls -l build-with-port
+
+      - name: Compile with port (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          mkdir build-with-port-small
+          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal main.cpp -o build-with-port-small/index.html
+          ls -l build-with-port-small
