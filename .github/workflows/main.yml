@@ -63,7 +63,7 @@ jobs:
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           mkdir build-with-port
-          emcc --use-port=contrib.glfw3 examples/example_minimal main.cpp -o build-with-port/index.html
+          emcc --use-port=contrib.glfw3 examples/example_minimal/main.cpp -o build-with-port/index.html
           ls -l build-with-port
 
       - name: Compile with port (small)
@@ -71,5 +71,5 @@ jobs:
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           mkdir build-with-port-small
-          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal main.cpp -o build-with-port-small/index.html
+          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal/main.cpp -o build-with-port-small/index.html
           ls -l build-with-port-small
