@@ -21,6 +21,7 @@
 #include <memory>
 #include "emscripten/glfw3/ErrorHandler.h"
 #include "emscripten/glfw3/Keyboard.h"
+#include "emscripten/glfw3/version.h"
 
 using namespace emscripten::glfw3;
 
@@ -151,7 +152,12 @@ GLFWAPI const char* glfwGetVersionString(void)
 #define mkstr_inner(s) #s
 #define mkstr(s) mkstr_inner(s)
   constexpr char const *kVersionString =
-    "Emscripten/WebAssembly GLFW " mkstr(GLFW_VERSION_MAJOR) "." mkstr(GLFW_VERSION_MINOR) "." mkstr(GLFW_VERSION_REVISION);
+    "Emscripten/WebAssembly GLFW "
+    mkstr(GLFW_VERSION_MAJOR) "."
+    mkstr(GLFW_VERSION_MINOR) "."
+    mkstr(GLFW_VERSION_REVISION) " | pongasoft/emscripten-glfw@v"
+    D_EMSCRIPTEN_GLFW_VERSION_STR
+    ;
   return kVersionString;
 }
 

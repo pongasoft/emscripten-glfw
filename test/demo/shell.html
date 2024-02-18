@@ -114,9 +114,18 @@
     }
 
     #debug {
-      position: absolute;
+      position: fixed;
       top: 0;
       right: 0;
+    }
+
+    #version {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      font-family: monospace;
+      font-size: x-small;
+      color: lightgray;
     }
   </style>
 </head>
@@ -307,6 +316,7 @@
   <tbody>
   </tbody>
 </table>
+<div id="version"></div>
 <p>
 
 <script>

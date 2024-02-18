@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 set(emscripten-glfw_VERSION_MAJOR 1)
 set(emscripten-glfw_VERSION_MINOR 0)
-set(emscripten-glfw_VERSION_PATCH 4)
+set(emscripten-glfw_VERSION_PATCH 5)
 set(emscripten-glfw_VERSION "${emscripten-glfw_VERSION_MAJOR}.${emscripten-glfw_VERSION_MINOR}.${emscripten-glfw_VERSION_PATCH}")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
@@ -48,6 +48,8 @@ if(NOT EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK)
   list(APPEND glfw3_headers src/cpp/emscripten/glfw3/Joystick.h)
   list(APPEND glfw3_sources src/cpp/emscripten/glfw3/Joystick.cpp)
 endif()
+
+configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_LIST_DIR}/src/cpp/emscripten/glfw3/version.h")
 
 add_library(${target} ${glfw3_sources})
 target_sources(${target} PUBLIC

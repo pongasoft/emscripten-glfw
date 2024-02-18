@@ -33,6 +33,7 @@ static void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
 
 std::vector<std::shared_ptr<Triangle>> kTriangles{};
 
+void setHtmlValue(std::string_view iElementSelector, std::string_view iValue);
 
 struct Event
 {
@@ -167,6 +168,7 @@ int main()
   glfwSetErrorCallback(consoleErrorHandler);
 
   printf("%s\n", glfwGetVersionString());
+  setHtmlValue("#version", glfwGetVersionString());
 
   if(!glfwInit())
     return -1;

@@ -80,7 +80,7 @@ void Joystick::disconnect(EmscriptenGamepadEvent const *iEvent)
 //------------------------------------------------------------------------
 void Joystick::populate(EmscriptenGamepadEvent const *iEvent)
 {
-  fNumButtons = std::clamp(iEvent->numButtons, 0, static_cast<int>(fAxes.size()));
+  fNumButtons = std::clamp(iEvent->numButtons, 0, static_cast<int>(fDigitalButtons.size()));
   for(auto i = 0; i < fNumButtons; i++)
   {
     fDigitalButtons[i] = iEvent->digitalButton[i];
@@ -158,7 +158,10 @@ int Joystick::getGamepadState(GLFWgamepadstate *oState) const
   if(isGamepad() && fNumAxes >= 4 && fNumButtons >= 16)
   {
     // axes
-    std::copy(fAxes.begin(), fAxes.end(), oState->axes);
+    oState->axes[GLFW_GAMEPAD_AXIS_LEFT_X] = fAxes[0];
+    oState->axes[GLFW_GAMEPAD_AXIS_LEFT_Y] = fAxes[1];
+    oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_X] = fAxes[2];
+    oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] = fAxes[3];
     oState->axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER]  = fDigitalButtons[10] ? 1.0f : 0;
     oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] = fDigitalButtons[11] ? 1.0f : 0;
 
