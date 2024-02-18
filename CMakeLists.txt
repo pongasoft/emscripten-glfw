@@ -66,11 +66,13 @@ target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(ARCHIVE_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive")
+  set(ARCHIVE_NAME "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip")
   add_custom_target("create-archive"
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
-      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip" "--format=zip" "external" "include" "src"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "external" "include" "src"
+      COMMAND ${CMAKE_COMMAND} -E sha512sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha512"
   )
 
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
