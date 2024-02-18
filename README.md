@@ -123,6 +123,11 @@ Building
 
 ### Using emscripten port
 
+> #### Warning
+> At this time, the contrib port contains a critical issue (if your application use the gamepad API) 
+> which won't be available until the next version of emscripten is officially released. You can use the port that is 
+> checked-in under `port` instead: `--use-port=port/glw3.py`
+
 Since emscripten 3.1.54, using this port is really easy via the `--use-port=contrib.glfw3` option 
 (no need to clone this repo at all!). This is the recommended method to use this project.
 
@@ -193,6 +198,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+
+#### 1.0.5 - 2024/02/18
+
+- Fixed memory corruption with joystick
 
 #### 1.0.4 - 2024/01/24
 
