@@ -29,7 +29,7 @@ opts: Dict[str, bool] = {
 
 
 def get_lib_name(settings):
-  return ('lib_contrib.glfw3' +
+  return (f'lib_{name}_{TAG}' +
           ('-nw' if opts['disableWarning'] else '') +
           ('-nj' if opts['disableJoystick'] else '') +
           ('-sw' if opts['disableMultiWindow'] else '') +
@@ -38,12 +38,12 @@ def get_lib_name(settings):
 
 def get(ports, settings, shared):
   # get the port
-  ports.fetch_project('contrib.glfw3',
+  ports.fetch_project(name,
                       f'https://github.com/pongasoft/emscripten-glfw/releases/download/v{TAG}/emscripten-glfw3-{TAG}.zip',
                       sha512hash=HASH)
 
   def create(final):
-    root_path = os.path.join(ports.get_dir(), 'contrib.glfw3')
+    root_path = os.path.join(ports.get_dir(), name)
     source_path = os.path.join(root_path, 'src', 'cpp')
     source_include_paths = [os.path.join(root_path, 'external', 'GLFW'), os.path.join(root_path, 'include', 'GLFW')]
     for source_include_path in source_include_paths:
@@ -60,17 +60,20 @@ def get(ports, settings, shared):
     if opts['disableMultiWindow']:
       flags += ['-DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT']
 
-    ports.build_port(source_path, final, 'contrib.glfw3', includes=source_include_paths, flags=flags)
+    ports.build_port(source_path, final, name, includes=source_include_paths, flags=flags)
 
-  return [shared.cache.get_lib(get_lib_name(settings), create, what='port')]
-
+  lib = shared.cache.get_lib(get_lib_name(settings), create, what='port')
+  if os.path.getmtime(lib) < os.path.getmtime(__file__):
+      clear(ports, settings, shared)
+      lib = shared.cache.get_lib(get_lib_name(settings), create, what='port')
+  return [lib]
 
 def clear(ports, settings, shared):
   shared.cache.erase_lib(get_lib_name(settings))
 
 
 def linker_setup(ports, settings):
-  root_path = os.path.join(ports.get_dir(), 'contrib.glfw3')
+  root_path = os.path.join(ports.get_dir(), name)
   source_js_path = os.path.join(root_path, 'src', 'js', 'lib_emscripten_glfw3.js')
   settings.JS_LIBRARIES += [source_js_path]
 
@@ -79,7 +82,7 @@ def linker_setup(ports, settings):
 # so that we don't conflict with the builtin GLFW headers that emscripten
 # includes
 def process_args(ports):
-  return ['-isystem', ports.get_include_dir('contrib.glfw3')]
+  return ['-isystem', ports.get_include_dir(name)]
 
 
 def handle_options(options, error_handler):
