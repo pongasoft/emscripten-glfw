@@ -29,8 +29,14 @@ using namespace emscripten::glfw3;
 inline static void logNotImplemented(char const *iFunction)
 {
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_WARNING
-  ErrorHandler::instance().logWarning("%s is not implemented ont this platform\n", iFunction);
+  ErrorHandler::instance().logWarning("%s is not implemented on this platform\n", iFunction);
 #endif
+}
+
+//! logNotAvailable
+inline static void logNotAvailable(char const *iFunction)
+{
+  ErrorHandler::instance().logError(GLFW_FEATURE_UNAVAILABLE, "%s is not available for this platform\n", iFunction);
 }
 
 //! Unique context
@@ -440,7 +446,7 @@ GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos)
 }
 
 //! glfwSetCursorPos can't move the mouse pointer in javascript
-GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos) { logNotImplemented("glfwSetCursorPos"); }
+GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos) { logNotAvailable("glfwSetCursorPos"); }
 
 //------------------------------------------------------------------------
 // glfwSetCursorPosCallback
@@ -699,7 +705,7 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 }
 
 //! glfwSetWindowPos (there is no generic way to set a canvas position)
-GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos) { logNotImplemented("glfwSetWindowPos"); }
+GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos) { logNotAvailable("glfwSetWindowPos"); }
 
 //------------------------------------------------------------------------
 // glfwSetWindowTitle
@@ -1221,10 +1227,10 @@ GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
   return nullptr;
 }
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor) { logNotImplemented("glfwDestroyCursor"); }
-GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma) { logNotImplemented("glfwSetGamma"); }
-GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor) { logNotImplemented("glfwGetGammaRamp"); return nullptr; }
-GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp) { logNotImplemented("glfwSetGammaRamp"); }
-GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images) { logNotImplemented("glfwSetWindowIcon"); }
+GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma) { logNotAvailable("glfwSetGamma"); }
+GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor) { logNotAvailable("glfwGetGammaRamp"); return nullptr; }
+GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp) { logNotAvailable("glfwSetGammaRamp"); }
+GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* images) { logNotAvailable("glfwSetWindowIcon"); }
 GLFWAPI void glfwIconifyWindow(GLFWwindow* window) { logNotImplemented("glfwIconifyWindow"); }
 GLFWAPI void glfwRestoreWindow(GLFWwindow* window) { logNotImplemented("glfwRestoreWindow"); }
 GLFWAPI void glfwMaximizeWindow(GLFWwindow* window) { logNotImplemented("glfwMaximizeWindow"); }

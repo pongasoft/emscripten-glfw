@@ -570,7 +570,7 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
 
   if(iCursorMode == GLFW_CURSOR_CAPTURED)
   {
-    kErrorHandler.logWarning("glfwSetInputMode: GLFW_CURSOR/GLFW_CURSOR_CAPTURED [%d] not supported", iCursorMode);
+    kErrorHandler.logError(GLFW_FEATURE_UNAVAILABLE, "glfwSetInputMode: GLFW_CURSOR/GLFW_CURSOR_CAPTURED [%d] not supported", iCursorMode);
     return;
   }
 
