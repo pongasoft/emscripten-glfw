@@ -614,6 +614,19 @@ void Context::setWindowTitle(GLFWwindow *iWindow, char const *iTitle)
 }
 
 //------------------------------------------------------------------------
+// Context::getWindowTitle
+//------------------------------------------------------------------------
+char const *Context::getWindowTitle(GLFWwindow *iWindow) const
+{
+  if(auto window = getWindow(iWindow); window)
+  {
+    return window->getTitle();
+  }
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // Context::setNextWindowCanvasSelector
 //------------------------------------------------------------------------
 void Context::setNextWindowCanvasSelector(char const *iCanvasSelector)

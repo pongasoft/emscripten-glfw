@@ -56,6 +56,7 @@ public:
   void destroyWindow(GLFWwindow *iWindow);
   std::shared_ptr<Window> getWindow(GLFWwindow *iWindow) const;
   void setWindowTitle(GLFWwindow *iWindow, char const *iTitle);
+  char const *getWindowTitle(GLFWwindow *iWindow) const;
   void setNextWindowCanvasSelector(char const *iCanvasSelector);
 
   void makeContextCurrent(GLFWwindow* iWindow);

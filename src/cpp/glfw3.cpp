@@ -712,6 +712,19 @@ GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title)
 }
 
 //------------------------------------------------------------------------
+// glfwGetWindowTitle
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetWindowTitle(GLFWwindow* window)
+{
+  auto context = getContext();
+  if(context)
+    return context->getWindowTitle(window);
+  else
+    return nullptr;
+}
+
+
+//------------------------------------------------------------------------
 // glfwSetWindowPosCallback
 //------------------------------------------------------------------------
 GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback)

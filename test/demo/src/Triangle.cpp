@@ -607,6 +607,8 @@ void Triangle::updateValues()
 
   setHtmlValue(fWindow, "glfwGetWindowOpacity", "%.2f", glfwGetWindowOpacity(fWindow));
 
+  setHtmlValue(fWindow, "glfwGetWindowTitle", "%s", glfwGetWindowTitle(fWindow));
+
   bool visible = glfwGetWindowAttrib(fWindow, GLFW_VISIBLE) == GLFW_TRUE;
   setHtmlValue(fWindow, "glfwGetWindowAttrib-visible", "%s", visible ? "visible" : "hidden");
   setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
