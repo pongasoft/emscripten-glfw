@@ -98,7 +98,7 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
       case GLFW_KEY_Q: glfwSetWindowShouldClose(window, GLFW_TRUE); break;
       case GLFW_KEY_H:
         hiDPIAware = !hiDPIAware;
-        glfwSetWindowAttrib(window, GLFW_SCALE_TO_MONITOR, hiDPIAware);
+        glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, hiDPIAware);
         glfwSetWindowTitle(window, hiDPIAware ? "Hi DPI Aware" : "NOT Hi Dpi Aware");
         break;
       case GLFW_KEY_F: emscripten_glfw_request_fullscreen(window, false, true); break; // ok from a keyboard event
@@ -121,7 +121,7 @@ int main()
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
   // Make hi dpi aware
-  glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+  glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
 
   // setting the association window <-> canvas
   emscripten_glfw_set_next_window_canvas_selector("#canvas");

@@ -54,7 +54,7 @@ The [code](test/demo/src) for the demo is included in this project.
 The demo shows 2 canvases each created via a `glfwCreateWindow` and shows how they respond to keyboard and mouse events
 (using direct apis, like `glfwGetMouseButton` or callback apis like `glfwSetMouseButtonCallback`)
 
-- canvas1 is hi dpi aware (`glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)`)
+- canvas1 is hi dpi aware (`glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE)`)
 - canvas2 is **not** hi dpi aware (but can be made so with the "Enable" Hi DPI Aware button)
 - canvas2 is fully resizable (use the square handle to resize) (`emscripten_glfw_make_canvas_resizable(window2, "#canvas2-container", "#canvas2-handle")`)
 
@@ -199,6 +199,12 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
+#### 1.1.0 - TBD
+
+- Implemented GLFW 3.4 new features
+- Use `GLFW_SCALE_FRAMEBUFFER` (new with GLFW 3.4) to enable (resp. disable) Hi DPI support (note that 
+  `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
+
 #### 1.0.5 - 2024/02/18
 
 - Fixed memory corruption with joystick
@@ -245,7 +251,7 @@ Release Notes
   from c/c++ code or `Module.glfwSetCanvasResizableSelector('#canvas2', '#canvas2-container')` from javascript) 
 - Added support fo visibility (`glfwShowWindow` and `glfwHideWindow`)
 - Added support for `GLFW_FOCUS_ON_SHOW` window hint/attribute
-- Added support for dynamic Hi DPI Awareness (`GLFW_SCALE_TO_MONITOR` can be used in `glfwSetWindowAttrib`)
+- Added support for dynamic Hi DPI Awareness (`GLFW_SCALE_FRAMEBUFFER` can be used in `glfwSetWindowAttrib`)
 - Added support for "sticky" mouse button and keyboard
 - Added support for window size constraints (`glfwSetWindowSizeLimits` and `glfwSetWindowAspectRatio`)
 - Added support for providing a callback function in javascript to be notified when a window is created (`Module.glfwOnWindowCreated`)

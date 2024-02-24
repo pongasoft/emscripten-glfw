@@ -615,9 +615,9 @@ void Triangle::updateValues()
 
   setHtmlValue(fWindow, "glfwGetWindowAttrib-resizable", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_RESIZABLE)));
 
-  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
-  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", glfwBoolToString(hiDPIAware));
-  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", hiDPIAware ? "Disable" : "Enable");
+  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(hiDPIAware));
+  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_framebuffer", "%s", hiDPIAware ? "Disable" : "Enable");
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
@@ -750,7 +750,7 @@ static int toggleWindowAttrib(GLFWwindow *iWindow, int iAttrib)
 //------------------------------------------------------------------------
 void Triangle::toggleHiDPIAware()
 {
-  toggleWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
+  toggleWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
 }
 
 //------------------------------------------------------------------------

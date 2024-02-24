@@ -41,11 +41,11 @@ struct Config
   int fClientAPI{GLFW_OPENGL_API}; // GLFW_CLIENT_API
 
   // Window
-  glfw_bool_t fScaleToMonitor{GLFW_FALSE}; // GLFW_SCALE_TO_MONITOR
-  glfw_bool_t fFocusOnShow{GLFW_TRUE};     // GLFW_FOCUS_ON_SHOW
-  glfw_bool_t fResizable{GLFW_TRUE};       // GLFW_RESIZABLE
-  glfw_bool_t fVisible{GLFW_TRUE};         // GLFW_VISIBLE
-  glfw_bool_t fFocused{GLFW_TRUE};         // GLFW_FOCUSED
+  glfw_bool_t fScaleFramebuffer{GLFW_FALSE}; // GLFW_SCALE_FRAMEBUFFER
+  glfw_bool_t fFocusOnShow{GLFW_TRUE};       // GLFW_FOCUS_ON_SHOW
+  glfw_bool_t fResizable{GLFW_TRUE};         // GLFW_RESIZABLE
+  glfw_bool_t fVisible{GLFW_TRUE};           // GLFW_VISIBLE
+  glfw_bool_t fFocused{GLFW_TRUE};           // GLFW_FOCUSED
   std::string fCanvasSelector{kDefaultCanvasSelector}; // GLFW_EMSCRIPTEN_CANVAS_SELECTOR
 
   // Framebuffer

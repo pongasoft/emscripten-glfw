@@ -349,7 +349,8 @@ int Window::getAttrib(int iAttrib)
       return fConfig.fFocusOnShow;
 
     case GLFW_SCALE_TO_MONITOR:
-      return fConfig.fScaleToMonitor;
+    case GLFW_SCALE_FRAMEBUFFER:
+      return fConfig.fScaleFramebuffer;
 
     case GLFW_RESIZABLE:
       return fConfig.fResizable;
@@ -381,7 +382,8 @@ void Window::setAttrib(int iAttrib, int iValue)
       break;
 
     case GLFW_SCALE_TO_MONITOR:
-      maybeRescale([this, iValue]() { fConfig.fScaleToMonitor = toGlfwBool(iValue); });
+    case GLFW_SCALE_FRAMEBUFFER:
+      maybeRescale([this, iValue]() { fConfig.fScaleFramebuffer = toGlfwBool(iValue); });
       break;
 
     case GLFW_RESIZABLE:

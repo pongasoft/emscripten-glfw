@@ -181,8 +181,8 @@ void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bo
 ```
 
 > #### Best practice
-> To avoid any error while switching to fullscreen, you should always trigger this api from within a user event 
-> like a mouse click (callback set via `glfwSetMouseButtonCallback`) 
+> To avoid any error while switching to fullscreen, you should always trigger this api from within a user event
+> like a mouse click (callback set via `glfwSetMouseButtonCallback`)
 > or a keyboard key press (callback set via `glfwSetKeyCallback`)
 
 At this moment, this implementation does not support creating a window in fullscreen mode due to the same browser
@@ -193,26 +193,26 @@ then from a user event call `Module.glfwRequestFullscreen`.
 
 This implementation supports Hi DPI awareness. What this means is that if the browser window is on a screen that is
 Hi DPI/4k then it will properly adjust the dimension of the canvas to match the scale of the screen. If the window gets
-moved to a screen that is lower resolution, it will automatically change the scaling. You can set a callback to be 
+moved to a screen that is lower resolution, it will automatically change the scaling. You can set a callback to be
 notified of the changes (`glfwSetWindowContentScaleCallback`) or call the direct API `glfwGetWindowContentScale`.
 
 By default, this feature is not enabled and must be turned on like this:
 
 ```cpp
 // before creating a window
-glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
 auto window = glfwCreateWindow(...);
 
 // after window creation, it can be dynamically changed
-glfwSetWindowAttrib(window, GLFW_SCALE_TO_MONITOR, GLFW_TRUE); // for enabling Hi DPI awareness
-glfwSetWindowAttrib(window, GLFW_SCALE_TO_MONITOR, GLFW_FALSE); // for disabling Hi DPI awareness
+glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE); // for enabling Hi DPI awareness
+glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disabling Hi DPI awareness
 ```
 
 > #### Best practice
-> Almost all GLFW apis deal with screen coordinates which are independent of scaling. The only one which doesn't 
-> is `glfwGetFramebufferSize` which returns the actual size of the surface which takes into account the scaling factor. 
-> As a result, for most low level APIs (like OpenGL/webgl) you would use this call to set the viewport size. 
-> 
+> Almost all GLFW apis deal with screen coordinates which are independent of scaling. The only one which doesn't
+> is `glfwGetFramebufferSize` which returns the actual size of the surface which takes into account the scaling factor.
+> As a result, for most low level APIs (like OpenGL/webgl) you would use this call to set the viewport size.
+>
 > Here is an example:
 > ```cpp
 > int width = 0, height = 0;
@@ -236,8 +236,8 @@ which is widely supported by most current browsers.
 > #### Important
 > Due to the nature of the `Gamepad` API, polling is required, so you must ensure to call `glfwPollEvents` on each
 > loop iteration.
-> 
-> If you want to disable joystick support entirely (and save some resources), you can set the 
+>
+> If you want to disable joystick support entirely (and save some resources), you can set the
 > `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define.
 
 The mapping returned by this API (as defined [here](https://w3c.github.io/gamepad/#remapping)), is represented by this
@@ -297,7 +297,7 @@ This implementation adds the following functions to the `Module`:
 | `glfwMakeCanvasResizable(any, resizableSelector, handleSelector)` | Same functionality as `emscripten_glfw_make_canvas_resizable` (`any` can be a canvas selector or a `GLFWwindow` or a `HTMLCanvasElement`              |
 | `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwGetCanvasSelector`                                                                                                              |
 
-In addition, this implementation will check if the function `Module.glfwOnWindowCreated(glfwWindow, selector)` is 
+In addition, this implementation will check if the function `Module.glfwOnWindowCreated(glfwWindow, selector)` is
 defined in which case it will be called once the window is created. This allows to write code like this:
 
 ```javascript
@@ -314,8 +314,8 @@ Module = {
 
 ## Implementation size
 
-This implementation being in C++ and implementing far more features than the `library_glfw.js` emscripten 
-implementation, it has an impact on size. As of this writing, I ran the following experiment on both implementations 
+This implementation being in C++ and implementing far more features than the `library_glfw.js` emscripten
+implementation, it has an impact on size. As of this writing, I ran the following experiment on both implementations
 using [`example_minimal`](../examples/example_minimal)
 
 | Mode              | `library_glfw.js`                      | This implementation                      | Delta |
@@ -324,12 +324,13 @@ using [`example_minimal`](../examples/example_minimal)
 | Release           | js: 135433, wasm: 8448, total: 143881  | js: 81285, wasm: 80506, total: 161791    | 1.12x |
 | Release (minimal) | -                                      | js: 79402, wasm: 71195, total: 150197    | 1.04x |
 
-* From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation (which
+* From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation (
+  which
   is a good thing).
-* Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release` 
+* Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release`
   mode it is actually only a 12% increase which shows that wasm optimizes quite well :)
-* The last entry in the table shows the same results when compiling with all _disable_ options turned on 
-  (`EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`, `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` and 
+* The last entry in the table shows the same results when compiling with all _disable_ options turned on
+  (`EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`, `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` and
   `EMSCRIPTEN_GLFW3_DISABLE_WARNING`) for an even smaller footprint
 * Lastly, `.wasm` files compress extremely well, so it is worth serving them compressed
 
@@ -337,95 +338,95 @@ using [`example_minimal`](../examples/example_minimal)
 
 This table contains the list of all the functions supported by this implementation with a few relevant notes
 
-| Function                            | Notes                                                                                                                                                                                         |
-|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `glfwCreateCursor`                  | All GLFW cursors are supported: uses the css style `cursor` on the canvas                                                                                                                     |
-| `glfwCreateStandardCursor`          | All GLFW cursors are supported                                                                                                                                                                |
-| `glfwCreateWindow`                  | Support as many windows as you want: see section describing the association of a window and a canvas                                                                                          |
-| `glfwDefaultWindowHints`            |                                                                                                                                                                                               |
-| `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                     |
-| `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                      |
-| `glfwFocusWindow`                   | Calls javascript `HTMLElement.focus()` on the canvas                                                                                                                                          | 
-| `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                              |
-| `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                  |
-| `glfwGetError`                      |                                                                                                                                                                                               |
-| `glfwGetFramebufferSize`            | Hi DPI aware                                                                                                                                                                                  |
-| `glfwGetGamepadName`                | If gamepad, corresponds to `Gamepad.id` in javascript                                                                                                                                         |
-| `glfwGetGamepadState`               | If gamepad, then `Gamepad.axes` and `Gamepad.buttons` (js) remapped for GLFW                                                                                                                  |
-| `glfwGetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                               |
-| `glfwGetJoystickAxes`               | Corresponds to `Gamepad.axes` in javascript                                                                                                                                                   |
-| `glfwGetJoystickButtons`            | Corresponds to `Gamepad.buttons[x].value` in javascript                                                                                                                                       |
-| `glfwGetJoystickGUID`               | Corresponds to `Gamepad.mapping` in javascript                                                                                                                                                |
-| `glfwGetJoystickHats`               | If gamepad, corresponds to `Gamepad.buttons[x].pressed` in javascript remapped for GLFW                                                                                                       |
-| `glfwGetJoystickName`               | Corresponds to `Gamepad.id` in javascript (limited to 64 characters due to emscripten limitation)                                                                                             |
-| `glfwGetJoystickUserPointer`        |                                                                                                                                                                                               |
-| `glfwGetKey`                        | Support `GLFW_STICKY_KEYS` as well                                                                                                                                                            |
-| `glfwGetKeyName`                    | All names starts with `DOM_PK_`: example `DOM_PK_F1`.                                                                                                                                         |
-| `glfwGetKeyScancode`                | See `KeyboardMapping.h` for actual mapping                                                                                                                                                    |
-| `glfwGetMonitorContentScale`        | Corresponds to `window.devicePixelRatio` in javascript                                                                                                                                        |
-| `glfwGetMonitorName`                | The constant "Browser"                                                                                                                                                                        |
-| `glfwGetMonitorPos`                 | Always 0/0                                                                                                                                                                                    |
-| `glfwGetMonitors`                   | Due to javascript restrictions, always only 1 monitor                                                                                                                                         |
-| `glfwGetMonitorUserPointer`         |                                                                                                                                                                                               |
-| `glfwGetMonitorWorkarea`            | 0x0 for position, `screen.width`x`screen.height` for size                                                                                                                                     |
-| `glfwGetMouseButton`                | Support `GLFW_STICKY_MOUSE_BUTTONS` as well                                                                                                                                                   |
-| `glfwGetPrimaryMonitor`             | The single monitor returned in `glfwGetMonitors`                                                                                                                                              |
-| `glfwGetTime`                       |                                                                                                                                                                                               |
-| `glfwGetTimerFrequency`             | Always 1000                                                                                                                                                                                   |
-| `glfwGetTimerValue`                 | Corresponds to `performance.now()` in javascript                                                                                                                                              |
-| `glfwGetVersion`                    |                                                                                                                                                                                               |
-| `glfwGetVersionString`              | "Emscripten/WebAssembly GLFW " + GLFW version                                                                                                                                                 |
-| `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
-| `glfwGetWindowContentScale`         | If HiDPI aware (`GLFW_SCALE_TO_MONITOR` is `GLFW_TRUE`), then current monitor scale, otherwise `1.0`                                                                                          |
-| `glfwGetWindowFrameSize`            | Because a window is a canvas in this implementation, there is no edge => all 0                                                                                                                |
-| `glfwGetWindowMonitor`              | The single monitor returned in `glfwGetMonitors`                                                                                                                                              |
-| `glfwGetWindowOpacity`              |                                                                                                                                                                                               |
-| `glfwGetWindowPos`                  | The position of the canvas in the page `getBoundingClientRect(canvas).x&y`                                                                                                                    |
-| `glfwGetWindowSize`                 | The size of the window/canvas                                                                                                                                                                 |
-| `glfwGetWindowUserPointer`          |                                                                                                                                                                                               |
-| `glfwHideWindow`                    | Set css property to `display: none` for the canvas                                                                                                                                            |
-| `glfwInit`                          | Set a listener to monitor content scale change (ex: moving browser to different resolution screen)                                                                                            |
-| `glfwInitHint`                      | No hint for this platforms                                                                                                                                                                    |
-| `glfwJoystickIsGamepad`             | Returns `GLFW_TRUE` when the joystick mapping (`Gamepad.mapping`) is "standard"                                                                                                               |
-| `glfwJoystickPresent`               | Listens to `gamepadconnected` and `gamepaddisconnected` events to determine the presence.                                                                                                     |
-| `glfwMakeContextCurrent`            | Since this implementation supports multiple windows, it is important to call this if using OpenGL                                                                                             |
-| `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                    |
-| `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                           |
-| `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                      |
-| `glfwSetCursor`                     | Uses css style `cursor: xxx` for the canvas                                                                                                                                                   |
-| `glfwSetCursorEnterCallback`        | Listeners to `mouseenter` and `mouseleave` events                                                                                                                                             |
-| `glfwSetCursorPosCallback`          | Hi DPI aware                                                                                                                                                                                  |
-| `glfwSetErrorCallback`              |                                                                                                                                                                                               |
-| `glfwSetFramebufferSizeCallback`    | Hi DPI aware                                                                                                                                                                                  |
-| `glfwSetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                               |
-| `glfwSetJoystickCallback`           |                                                                                                                                                                                               |
-| `glfwSetJoystickUserPointer`        |                                                                                                                                                                                               |
-| `glfwSetKeyCallback`                |                                                                                                                                                                                               |
-| `glfwSetMonitorCallback`            | Callback is never called                                                                                                                                                                      |
-| `glfwSetMonitorUserPointer`         |                                                                                                                                                                                               |
-| `glfwSetMouseButtonCallback`        |                                                                                                                                                                                               |
-| `glfwSetScrollCallback`             | Listens to `mousewheel` events                                                                                                                                                                |
-| `glfwSetTime`                       |                                                                                                                                                                                               |
-| `glfwSetWindowAspectRatio`          | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                               |
-| `glfwSetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
-| `glfwSetWindowContentScaleCallback` | Callback only called if Hi DPI aware (`GLFW_SCALE_TO_MONITOR` is `GLFW_TRUE`)                                                                                                                 |
-| `glfwSetWindowFocusCallback`        |                                                                                                                                                                                               |
-| `glfwSetWindowOpacity`              | Uses css style `opacity: xxx` for the canvas                                                                                                                                                  |
-| `glfwSetWindowPosCallback`          | Returns callback provided: callback is never called                                                                                                                                           |
-| `glfwSetWindowRefreshCallback`      | Returns callback provided: callback is never called                                                                                                                                           |
-| `glfwSetWindowShouldClose`          |                                                                                                                                                                                               |
-| `glfwSetWindowSize`                 | Hi DPI Aware: set the size of the canvas (`canvas.width = size * scale`) + css style (`style.width = size`)                                                                                   |
-| `glfwSetWindowSizeCallback`         |                                                                                                                                                                                               |
-| `glfwSetWindowSizeLimits`           | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                               |
-| `glfwSetWindowTitle`                | Corresponds to `document.title` in javascript                                                                                                                                                 |
-| `glfwSetWindowUserPointer`          |                                                                                                                                                                                               |
-| `glfwShowWindow`                    | Removes css style `display: none` for the canvas                                                                                                                                              |
-| `glfwSwapInterval`                  | Uses `emscripten_set_main_loop_timing`                                                                                                                                                        |
-| `glfwTerminate`                     | Tries to properly cleanup everything that was set during the course of the app (listeners, css styles, ...)                                                                                   |
-| `glfwVulkanSupported`               | Always return `GLFW_FALSE`                                                                                                                                                                    |
-| `glfwWindowHint`                    | `GLFW_CLIENT_API`, `GLFW_SCALE_TO_MONITOR`, `GLFW_FOCUS_ON_SHOW`, `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_RESIZABLE`, `GLFW_ALPHA_BITS`, `GLFW_DEPTH_BITS`, `GLFW_STENCIL_BITS`, `GLFW_SAMPLES` |
-| `glfwWindowHintString`              | None                                                                                                                                                                                          |
-| `glfwWindowShouldClose`             |                                                                                                                                                                                               |
+| Function                            | Notes                                                                                                                                                                                                                   |
+|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `glfwCreateCursor`                  | All GLFW cursors are supported: uses the css style `cursor` on the canvas                                                                                                                                               |
+| `glfwCreateStandardCursor`          | All GLFW cursors are supported                                                                                                                                                                                          |
+| `glfwCreateWindow`                  | Support as many windows as you want: see section describing the association of a window and a canvas                                                                                                                    |
+| `glfwDefaultWindowHints`            |                                                                                                                                                                                                                         |
+| `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                                               |
+| `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                                                |
+| `glfwFocusWindow`                   | Calls javascript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
+| `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                                                        |
+| `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                                            |
+| `glfwGetError`                      |                                                                                                                                                                                                                         |
+| `glfwGetFramebufferSize`            | Hi DPI aware                                                                                                                                                                                                            |
+| `glfwGetGamepadName`                | If gamepad, corresponds to `Gamepad.id` in javascript                                                                                                                                                                   |
+| `glfwGetGamepadState`               | If gamepad, then `Gamepad.axes` and `Gamepad.buttons` (js) remapped for GLFW                                                                                                                                            |
+| `glfwGetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                                                         |
+| `glfwGetJoystickAxes`               | Corresponds to `Gamepad.axes` in javascript                                                                                                                                                                             |
+| `glfwGetJoystickButtons`            | Corresponds to `Gamepad.buttons[x].value` in javascript                                                                                                                                                                 |
+| `glfwGetJoystickGUID`               | Corresponds to `Gamepad.mapping` in javascript                                                                                                                                                                          |
+| `glfwGetJoystickHats`               | If gamepad, corresponds to `Gamepad.buttons[x].pressed` in javascript remapped for GLFW                                                                                                                                 |
+| `glfwGetJoystickName`               | Corresponds to `Gamepad.id` in javascript (limited to 64 characters due to emscripten limitation)                                                                                                                       |
+| `glfwGetJoystickUserPointer`        |                                                                                                                                                                                                                         |
+| `glfwGetKey`                        | Support `GLFW_STICKY_KEYS` as well                                                                                                                                                                                      |
+| `glfwGetKeyName`                    | All names starts with `DOM_PK_`: example `DOM_PK_F1`.                                                                                                                                                                   |
+| `glfwGetKeyScancode`                | See `KeyboardMapping.h` for actual mapping                                                                                                                                                                              |
+| `glfwGetMonitorContentScale`        | Corresponds to `window.devicePixelRatio` in javascript                                                                                                                                                                  |
+| `glfwGetMonitorName`                | The constant "Browser"                                                                                                                                                                                                  |
+| `glfwGetMonitorPos`                 | Always 0/0                                                                                                                                                                                                              |
+| `glfwGetMonitors`                   | Due to javascript restrictions, always only 1 monitor                                                                                                                                                                   |
+| `glfwGetMonitorUserPointer`         |                                                                                                                                                                                                                         |
+| `glfwGetMonitorWorkarea`            | 0x0 for position, `screen.width`x`screen.height` for size                                                                                                                                                               |
+| `glfwGetMouseButton`                | Support `GLFW_STICKY_MOUSE_BUTTONS` as well                                                                                                                                                                             |
+| `glfwGetPrimaryMonitor`             | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
+| `glfwGetTime`                       |                                                                                                                                                                                                                         |
+| `glfwGetTimerFrequency`             | Always 1000                                                                                                                                                                                                             |
+| `glfwGetTimerValue`                 | Corresponds to `performance.now()` in javascript                                                                                                                                                                        |
+| `glfwGetVersion`                    |                                                                                                                                                                                                                         |
+| `glfwGetVersionString`              | "Emscripten/WebAssembly GLFW " + GLFW version                                                                                                                                                                           |
+| `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
+| `glfwGetWindowContentScale`         | If HiDPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`), then current monitor scale, otherwise `1.0`                                                                                                                   |
+| `glfwGetWindowFrameSize`            | Because a window is a canvas in this implementation, there is no edge => all 0                                                                                                                                          |
+| `glfwGetWindowMonitor`              | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
+| `glfwGetWindowOpacity`              |                                                                                                                                                                                                                         |
+| `glfwGetWindowPos`                  | The position of the canvas in the page `getBoundingClientRect(canvas).x&y`                                                                                                                                              |
+| `glfwGetWindowSize`                 | The size of the window/canvas                                                                                                                                                                                           |
+| `glfwGetWindowUserPointer`          |                                                                                                                                                                                                                         |
+| `glfwHideWindow`                    | Set css property to `display: none` for the canvas                                                                                                                                                                      |
+| `glfwInit`                          | Set a listener to monitor content scale change (ex: moving browser to different resolution screen)                                                                                                                      |
+| `glfwInitHint`                      | No hint for this platforms                                                                                                                                                                                              |
+| `glfwJoystickIsGamepad`             | Returns `GLFW_TRUE` when the joystick mapping (`Gamepad.mapping`) is "standard"                                                                                                                                         |
+| `glfwJoystickPresent`               | Listens to `gamepadconnected` and `gamepaddisconnected` events to determine the presence.                                                                                                                               |
+| `glfwMakeContextCurrent`            | Since this implementation supports multiple windows, it is important to call this if using OpenGL                                                                                                                       |
+| `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                                              |
+| `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                                                     |
+| `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                                                |
+| `glfwSetCursor`                     | Uses css style `cursor: xxx` for the canvas                                                                                                                                                                             |
+| `glfwSetCursorEnterCallback`        | Listeners to `mouseenter` and `mouseleave` events                                                                                                                                                                       |
+| `glfwSetCursorPosCallback`          | Hi DPI aware                                                                                                                                                                                                            |
+| `glfwSetErrorCallback`              |                                                                                                                                                                                                                         |
+| `glfwSetFramebufferSizeCallback`    | Hi DPI aware                                                                                                                                                                                                            |
+| `glfwSetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                                                         |
+| `glfwSetJoystickCallback`           |                                                                                                                                                                                                                         |
+| `glfwSetJoystickUserPointer`        |                                                                                                                                                                                                                         |
+| `glfwSetKeyCallback`                |                                                                                                                                                                                                                         |
+| `glfwSetMonitorCallback`            | Callback is never called                                                                                                                                                                                                |
+| `glfwSetMonitorUserPointer`         |                                                                                                                                                                                                                         |
+| `glfwSetMouseButtonCallback`        |                                                                                                                                                                                                                         |
+| `glfwSetScrollCallback`             | Listens to `mousewheel` events                                                                                                                                                                                          |
+| `glfwSetTime`                       |                                                                                                                                                                                                                         |
+| `glfwSetWindowAspectRatio`          | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                                                         |
+| `glfwSetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
+| `glfwSetWindowContentScaleCallback` | Callback only called if Hi DPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`)                                                                                                                                          |
+| `glfwSetWindowFocusCallback`        |                                                                                                                                                                                                                         |
+| `glfwSetWindowOpacity`              | Uses css style `opacity: xxx` for the canvas                                                                                                                                                                            |
+| `glfwSetWindowPosCallback`          | Returns callback provided: callback is never called                                                                                                                                                                     |
+| `glfwSetWindowRefreshCallback`      | Returns callback provided: callback is never called                                                                                                                                                                     |
+| `glfwSetWindowShouldClose`          |                                                                                                                                                                                                                         |
+| `glfwSetWindowSize`                 | Hi DPI Aware: set the size of the canvas (`canvas.width = size * scale`) + css style (`style.width = size`)                                                                                                             |
+| `glfwSetWindowSizeCallback`         |                                                                                                                                                                                                                         |
+| `glfwSetWindowSizeLimits`           | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                                                         |
+| `glfwSetWindowTitle`                | Corresponds to `document.title` in javascript                                                                                                                                                                           |
+| `glfwSetWindowUserPointer`          |                                                                                                                                                                                                                         |
+| `glfwShowWindow`                    | Removes css style `display: none` for the canvas                                                                                                                                                                        |
+| `glfwSwapInterval`                  | Uses `emscripten_set_main_loop_timing`                                                                                                                                                                                  |
+| `glfwTerminate`                     | Tries to properly cleanup everything that was set during the course of the app (listeners, css styles, ...)                                                                                                             |
+| `glfwVulkanSupported`               | Always return `GLFW_FALSE`                                                                                                                                                                                              |
+| `glfwWindowHint`                    | `GLFW_CLIENT_API`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_FOCUS_ON_SHOW`, `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_RESIZABLE`, `GLFW_ALPHA_BITS`, `GLFW_DEPTH_BITS`, `GLFW_STENCIL_BITS`, `GLFW_SAMPLES` |
+| `glfwWindowHintString`              | None                                                                                                                                                                                                                    |
+| `glfwWindowShouldClose`             |                                                                                                                                                                                                                         |
 
 ## Non Supported functions
 

@@ -660,7 +660,8 @@ void Context::setWindowHint(int iHint, int iValue)
 
     // Window
     case GLFW_SCALE_TO_MONITOR:
-      fConfig.fScaleToMonitor = toGlfwBool(iValue);
+    case GLFW_SCALE_FRAMEBUFFER:
+      fConfig.fScaleFramebuffer = toGlfwBool(iValue);
       break;
 
     case GLFW_FOCUS_ON_SHOW:

@@ -180,7 +180,7 @@ int main()
   if(canvas1Enabled)
   {
     glfwDefaultWindowHints();
-    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+    glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
     emscripten_glfw_set_next_window_canvas_selector("#canvas1");
     window1 = glfwCreateWindow(300, 200, "hello world | canvas 1", nullptr, nullptr);
     if(!window1)
@@ -194,7 +194,7 @@ int main()
   if(canvas2Enabled)
   {
     glfwDefaultWindowHints();
-    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
+    glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
     emscripten_glfw_set_next_window_canvas_selector("#canvas2");
     window2 = glfwCreateWindow(300, 200, "hello world | canvas 2", nullptr, nullptr);
     if(!window2)

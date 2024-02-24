@@ -178,6 +178,25 @@ GLFWAPI int glfwGetError(const char** description)
 }
 
 //------------------------------------------------------------------------
+// glfwGetPlatform
+//------------------------------------------------------------------------
+GLFWAPI int glfwGetPlatform()
+{
+  if(getContext())
+    return GLFW_PLATFORM_EMSCRIPTEN;
+  else
+    return 0;
+}
+
+//------------------------------------------------------------------------
+// glfwPlatformSupported
+//------------------------------------------------------------------------
+GLFWAPI int glfwPlatformSupported(int platform)
+{
+  return toGlfwBool(platform == GLFW_PLATFORM_EMSCRIPTEN);
+}
+
+//------------------------------------------------------------------------
 // glfwCreateWindow
 //------------------------------------------------------------------------
 GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share)
@@ -274,7 +293,14 @@ GLFWAPI GLFWwindow* glfwGetCurrentContext(void)
 //------------------------------------------------------------------------
 // glfwInitHint
 //------------------------------------------------------------------------
-GLFWAPI void glfwInitHint(int hint, int value) {  /** no init hint applies to this impl **/ }
+GLFWAPI void glfwInitHint(int hint, int value)
+{
+  if(hint == GLFW_PLATFORM)
+  {
+    if(!(value == GLFW_ANY_PLATFORM || value == GLFW_PLATFORM_EMSCRIPTEN))
+      ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "GLFW_PLATFORM can only be GLFW_ANY_PLATFORM|GLFW_PLATFORM_EMSCRIPTEN for this platform.");
+  }
+}
 
 //------------------------------------------------------------------------
 // glfwDefaultWindowHints
