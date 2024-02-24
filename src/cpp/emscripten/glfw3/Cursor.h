@@ -59,7 +59,7 @@ public:
   char const *fCSSValue{};
 
 public:
-  static const std::array<Cursor, 6> kCursors;
+  static const std::array<Cursor, 10> kCursors;
 };
 
 }

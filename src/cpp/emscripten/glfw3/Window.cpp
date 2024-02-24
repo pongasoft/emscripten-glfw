@@ -52,13 +52,17 @@ static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 // cursor property is removed, thus reverting to the "default" which can
 // be overriden in CSS
 //------------------------------------------------------------------------
-const std::array<Cursor, 6> Cursor::kCursors = {
+const std::array<Cursor, 10> Cursor::kCursors = {
   Cursor{GLFW_ARROW_CURSOR, nullptr}, // default
   Cursor{GLFW_IBEAM_CURSOR, "text"},
   Cursor{GLFW_CROSSHAIR_CURSOR, "crosshair"},
-  Cursor{GLFW_HAND_CURSOR, "pointer"},
-  Cursor{GLFW_HRESIZE_CURSOR, "ns-resize"},
-  Cursor{GLFW_VRESIZE_CURSOR, "ew-resize"},
+  Cursor{GLFW_POINTING_HAND_CURSOR, "pointer"},
+  Cursor{GLFW_RESIZE_EW_CURSOR, "ew-resize"},
+  Cursor{GLFW_RESIZE_NS_CURSOR, "ns-resize"},
+  Cursor{GLFW_RESIZE_NWSE_CURSOR, "nwse-resize"},
+  Cursor{GLFW_RESIZE_NESW_CURSOR, "nesw-resize"},
+  Cursor{GLFW_RESIZE_ALL_CURSOR, "all-scroll"},
+  Cursor{GLFW_NOT_ALLOWED_CURSOR, "not-allowed"},
 };
 
 const Cursor Cursor::kCursorHidden{0, "none"};

@@ -629,8 +629,10 @@ static constexpr auto adjust = [](int v, float f) { return static_cast<int>(stat
 //------------------------------------------------------------------------
 void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
 {
-  static std::array<int, 6> kCursors =
-    {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR, GLFW_VRESIZE_CURSOR};
+  static std::array<int, 10> kCursors =
+    {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR,
+     GLFW_VRESIZE_CURSOR, GLFW_RESIZE_NWSE_CURSOR, GLFW_RESIZE_NESW_CURSOR, GLFW_RESIZE_ALL_CURSOR,
+     GLFW_NOT_ALLOWED_CURSOR};
 
   // Handle CTRL + <iKey>
   if(iAction == GLFW_PRESS && (iMods & GLFW_MOD_CONTROL))
