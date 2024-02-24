@@ -568,6 +568,12 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
   if(fMouse.fCursorMode == iCursorMode)
     return;
 
+  if(iCursorMode == GLFW_CURSOR_CAPTURED)
+  {
+    kErrorHandler.logWarning("glfwSetInputMode: GLFW_CURSOR/GLFW_CURSOR_CAPTURED [%d] not supported", iCursorMode);
+    return;
+  }
+
   if(iCursorMode == GLFW_CURSOR_DISABLED)
   {
     // note that this is asynchronous, so we do NOT update fMouse.fCursorMode here
