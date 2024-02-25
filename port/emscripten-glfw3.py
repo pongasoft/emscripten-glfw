@@ -17,12 +17,12 @@
 import os
 from typing import Dict
 
-TAG = '1.0.5'
-HASH = '4ef49ad23bd70a03639df4c8b0fdfe5b8c25bfe4d183c52a7e2d6e7285ab23c09b688b898911f0b9ce0fd014840a73c220592c01bf6e3af5280d927a2718f8aa'
+TAG = '1.1.0'
+HASH = 'ae5e96f20a2eeef3279c09c6eb7ecde08baa1a8555e7fc74b6c2b92e0a3adb3ce0d1a4d2dcab04d7d488120e1c9e230bfbbacaf302421d2bd7a21875d8156001'
 
 # contrib port information (required)
 URL = 'https://github.com/pongasoft/emscripten-glfw'
-DESCRIPTION = 'This project is an emscripten port of GLFW written in C++ for the web/webassembly platform'
+DESCRIPTION = 'This project is an emscripten port of GLFW 3.4 written in C++ for the web/webassembly platform'
 LICENSE = 'Apache 2.0 license'
 
 OPTIONS = {

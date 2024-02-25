@@ -1,6 +1,6 @@
 ## Introduction
 
-This emscripten/webassembly port of glfw tries to implement as much as possible of the API. See the list of [supported
+This emscripten/webassembly port of GLFW tries to implement as much as possible of the API. See the list of [supported
 functions](#supported-functions) with some notes for details. This page documents the most important aspects
 of the library.
 
@@ -20,7 +20,7 @@ is the css style `opacity`, etc...
 
 ### How to associate the window to the canvas?
 
-Natively, glfw doesn't know anything about the concept of a canvas. So there needs to be a way to make this association.
+Natively, GLFW doesn't know anything about the concept of a canvas. So there needs to be a way to make this association.
 This library offers 2 ways depending on your needs:
 
 #### 1. Using javascript/Module
@@ -93,7 +93,7 @@ emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
 #### 2. Container (`div`)
 
 The canvas is inside a `div`, in which case the `div` acts as a "container" and the `div` size is defined by
-CSS rules, like for example: `width: 85%` so that when the page/browser gets resized, the `div` is resized
+CSS rules, like for example: `width: 75vw` so that when the page/browser gets resized, the `div` is resized
 automatically, which then triggers the canvas to be resized. In this case, the parameter `canvasResizeSelector`
 is the (css path) selector to this `div` and `handleSelector` is `nullptr`.
 
@@ -101,10 +101,12 @@ Example code:
 
 ```html
 <!-- html -->
-<style>#canvas1-container {
-  width: 85%;
-  height: 85%
-}</style>
+<style>
+#canvas1-container {
+  width: 75vw;
+  height: 50vh;
+}
+</style>
 <div id="canvas1-container">
   <canvas id="canvas1"></canvas>
 </div>
@@ -126,11 +128,12 @@ Example code:
 
 ```html
 <!-- html -->
-<style>#canvas1-container {
+<style>
+#canvas1-container {
   position: relative;
 <!-- . . . -->
-}</style>
-<style>#canvas1-handle {
+}
+#canvas1-handle {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -138,7 +141,8 @@ Example code:
   width: 10px;
   height: 10px;
   cursor: nwse-resize;
-}</style>
+}
+</style>
 <div id="canvas1-container">
   <div id="canvas1-handle" class="handle"></div>
   <canvas id="canvas1"></canvas>
@@ -237,8 +241,8 @@ which is widely supported by most current browsers.
 > Due to the nature of the `Gamepad` API, polling is required, so you must ensure to call `glfwPollEvents` on each
 > loop iteration.
 >
-> If you want to disable joystick support entirely (and save some resources), you can set the
-> `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define.
+> If you want to disable joystick support entirely (and save some resources), you can use the `disableJoystick=true` 
+> option if you use the port (or set the `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define).
 
 The mapping returned by this API (as defined [here](https://w3c.github.io/gamepad/#remapping)), is represented by this
 image:
@@ -324,9 +328,8 @@ using [`example_minimal`](../examples/example_minimal)
 | Release           | js: 135433, wasm: 8448, total: 143881  | js: 81285, wasm: 80506, total: 161791    | 1.12x |
 | Release (minimal) | -                                      | js: 79402, wasm: 71195, total: 150197    | 1.04x |
 
-* From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation (
-  which
-  is a good thing).
+* From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation
+  (which is a good thing).
 * Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release`
   mode it is actually only a 12% increase which shows that wasm optimizes quite well :)
 * The last entry in the table shows the same results when compiling with all _disable_ options turned on

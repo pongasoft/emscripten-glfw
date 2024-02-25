@@ -7,7 +7,7 @@ GLFW API is 3.4.
 Goal
 ----
 
-The main goal of this project is to provide as many features from GLFW as possible (in a browser context).
+The main goal of this project is to implement as much as the GLFW API possible (in a browser context).
 
 Since this project is targeting the web/webassembly platform, which runs in more recent web browsers, it is also trying
 to focus on using the most recent features and not use deprecated features (for example, uses `keyboardEvent.key` 
@@ -19,8 +19,6 @@ Status
 ------
 
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
-
-The project is now mature enough and has reached 1.0.0 status.
 
 Main supported features:
 * can create as many windows as you want, each one associated to a different canvas (use 
@@ -194,19 +192,28 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 #LDFLAGS += -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
 ```
 
+> ### Note
+> The previous `Makefile` is shown as an illustration of what a `Makefile` to compile this project 
+> would look like. The actual changes required for ImGui are actually much simpler:
+> ```Makefile
+> #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
+> LDFLAGS += --use-port=contrib.glfw3 -s USE_WEBGPU=1
+> ```
+
 Release Notes
 -------------
 
 #### 1.1.0 - TBD
 
-- Implemented GLFW 3.4 new features
-  - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_WEB` defined in `emscripten-glfw3.h` 
+- GLFW 3.4 features implemented
+  - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_WEB` constant defined in `emscripten-glfw3.h` 
     (non-official) 
   - Supports all 10 cursors
   - Implemented `glfwGetWindowTitle`
   - Use `GLFW_SCALE_FRAMEBUFFER` to enable (resp. disable) Hi DPI support (note that 
     `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
-- Not implemented GLFW 3.4 features 
+  - Changed the functions that can report `GLFW_FEATURE_UNAVAILABLE` failure to report this error instead of a warning
+- GLFW 3.4 features not implemented 
   - `GLFW_MOUSE_PASSTHROUGH` is not supported
   - `GLFW_CURSOR_CAPTURED` cursor input mode is not supported (not possible in a browser context)
   - `glfwInitAllocator` is not supported (could be supported for the C++ part only if there is demand, not javascript)
