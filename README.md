@@ -1,21 +1,19 @@
 Introduction
 ------------
 
-This project is an emscripten port of glfw written in C++ for the web/wasm platform.
+This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
+GLFW API is 3.4.
 
 Goal
 ----
 
-The main goal of this project is to provide as many features from glfw as possible (in a browser context).
+The main goal of this project is to provide as many features from GLFW as possible (in a browser context).
 
 Since this project is targeting the web/webassembly platform, which runs in more recent web browsers, it is also trying
 to focus on using the most recent features and not use deprecated features (for example, uses `keyboardEvent.key` 
 vs `keyboardEvent.charcode`). As a result, this implementation will most likely not work in older browsers.
 
 Since the code is written in C++, it is trying to minimize the amount of javascript code to remain clean and lean.
-
-A wishful goal would be to potentially replace the built-in emscripten/glfw code in the future if this effort 
-is successful, or most likely, offer it as an option.
 
 Status
 ------
@@ -202,8 +200,18 @@ Release Notes
 #### 1.1.0 - TBD
 
 - Implemented GLFW 3.4 new features
-- Use `GLFW_SCALE_FRAMEBUFFER` (new with GLFW 3.4) to enable (resp. disable) Hi DPI support (note that 
-  `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
+  - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_WEB` defined in `emscripten-glfw3.h` 
+    (non-official) 
+  - Supports all 10 cursors
+  - Implemented `glfwGetWindowTitle`
+  - Use `GLFW_SCALE_FRAMEBUFFER` to enable (resp. disable) Hi DPI support (note that 
+    `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
+- Not implemented GLFW 3.4 features 
+  - `GLFW_MOUSE_PASSTHROUGH` is not supported
+  - `GLFW_CURSOR_CAPTURED` cursor input mode is not supported (not possible in a browser context)
+  - `glfwInitAllocator` is not supported (could be supported for the C++ part only if there is demand, not javascript)
+  - `GLFW_POSITION_X` and `GLFW_POSITION_Y` are not supported (same as `glfwSetWindowPos`)
+  - `GLFW_ANGLE_PLATFORM_TYPE` is not supported (no direct access in browser, but implementation is most likely using it anyway)
 
 #### 1.0.5 - 2024/02/18
 
