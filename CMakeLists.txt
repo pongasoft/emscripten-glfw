@@ -4,6 +4,7 @@ set(emscripten-glfw_VERSION_MAJOR 1)
 set(emscripten-glfw_VERSION_MINOR 1)
 set(emscripten-glfw_VERSION_PATCH 0)
 set(emscripten-glfw_VERSION "${emscripten-glfw_VERSION_MAJOR}.${emscripten-glfw_VERSION_MINOR}.${emscripten-glfw_VERSION_PATCH}")
+set(emscripten-glfw_RELEASE_DATE "2024-02-25")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
 
@@ -74,6 +75,7 @@ target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(FILES_TO_ARCHIVE "${CMAKE_CURRENT_BINARY_DIR}/files_to_archives.txt")
   file(GLOB_RECURSE FILES_TO_ARCHIVE_LIST
+      RELATIVE "${CMAKE_CURRENT_LIST_DIR}"
       LIST_DIRECTORIES false
       CONFIGURE_DEPENDS
       "external/*.h"
@@ -90,7 +92,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
-      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--files-from=${FILES_TO_ARCHIVE}"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--mtime=${emscripten-glfw_RELEASE_DATE}" "--files-from=${FILES_TO_ARCHIVE}"
       COMMAND ${CMAKE_COMMAND} -E sha512sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha512"
       COMMAND cat "${ARCHIVE_NAME}.sha512"
   )
