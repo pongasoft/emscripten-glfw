@@ -123,7 +123,8 @@ int main()
   // no OpenGL (use canvas2D)
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  // Make hi dpi aware
+  // Make hi dpi aware (note that GLFW_SCALE_FRAMEBUFFER already defaults to GLFW_TRUE
+  // so technically this is not necessary)
   glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
 
   // setting the association window <-> canvas

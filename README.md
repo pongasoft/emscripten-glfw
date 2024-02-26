@@ -208,8 +208,7 @@ Release Notes
 - GLFW 3.4 features implemented
   - Supports all 10 cursors
   - Implemented `glfwGetWindowTitle`
-  - Use `GLFW_SCALE_FRAMEBUFFER` to enable (resp. disable) Hi DPI support (note that 
-    `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
+  - Use `GLFW_SCALE_FRAMEBUFFER` to enable (resp. disable) Hi DPI support
   - Changed the functions that can report `GLFW_FEATURE_UNAVAILABLE` failure to report this error instead of a warning
 - GLFW 3.4 features not implemented
   - `glfwGetPlatform` and `glfwPlatformSupported` as there is no define that matches the emscripten/web platform 
@@ -218,7 +217,12 @@ Release Notes
   - `GLFW_CURSOR_CAPTURED` cursor input mode is not supported (not possible in a browser context)
   - `glfwInitAllocator` is implemented as noop (could be supported for the C++ part only if there is demand, not javascript)
   - `GLFW_POSITION_X` and `GLFW_POSITION_Y` are not supported (same as `glfwSetWindowPos`)
-  - `GLFW_ANGLE_PLATFORM_TYPE` is not supported (no direct access in browser, but implementation is most likely using it anyway)
+  - `GLFW_ANGLE_PLATFORM_TYPE` is not supported (no direct access in browser, but implementation is most likely using it anyway) 
+- Since GLFW 3.4 introduces a proper constant to handle Hi DPI Awareness (`GLFW_SCALE_FRAMEBUFFER`), the prior
+  constant used by this port (`GLFW_SCALE_TO_MONITOR`) is still accepted, but it is now deprecated. In addition,
+  due to the fact that `GLFW_SCALE_FRAMEBUFFER` defaults to `GLFW_TRUE`, this port is now Hi DPI aware by default and
+  needs to be explicitly turned off (`glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE)`) if this is the desired
+  behavior.
 
 #### 1.0.5 - 2024/02/18
 

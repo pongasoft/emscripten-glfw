@@ -100,6 +100,9 @@ int main()
   // no OpenGL (use canvas2D)
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
+  // make it not Hi DPI Aware (simplify rendering code a bit)
+  glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
+
   // setting the association window <-> canvas
   emscripten_glfw_set_next_window_canvas_selector("#canvas");
 

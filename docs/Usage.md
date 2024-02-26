@@ -201,17 +201,23 @@ Hi DPI/4k then it will properly adjust the dimension of the canvas to match the 
 moved to a screen that is lower resolution, it will automatically change the scaling. You can set a callback to be
 notified of the changes (`glfwSetWindowContentScaleCallback`) or call the direct API `glfwGetWindowContentScale`.
 
-By default, this feature is not enabled and must be turned on like this:
+By default, this feature is enabled and can be turned off like this:
 
 ```cpp
-// before creating a window
-glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
+// before creating a window (to turn Hi DPI Awareness OFF)
+glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
 auto window = glfwCreateWindow(...);
 
 // after window creation, it can be dynamically changed
 glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE); // for enabling Hi DPI awareness
 glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disabling Hi DPI awareness
 ```
+
+> #### Note
+> The constant `GLFW_SCALE_FRAMEBUFFER` was introduced in GLFW 3.4. The constant `GLFW_SCALE_TO_MONITOR` which was 
+> used prior to GLFW 3.4, can still be used to trigger Hi DPI Awareness, but is less descriptive and as a result it 
+> is deprecated, and it is preferable to use `GLFW_SCALE_FRAMEBUFFER`.
+
 
 > #### Best practice
 > Almost all GLFW apis deal with screen coordinates which are independent of scaling. The only one which doesn't
