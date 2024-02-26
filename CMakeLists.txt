@@ -78,6 +78,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       RELATIVE "${CMAKE_CURRENT_LIST_DIR}"
       LIST_DIRECTORIES false
       CONFIGURE_DEPENDS
+      "LICENSE.txt"
       "external/*.h"
       "include/*.h"
       "src/*.h"
