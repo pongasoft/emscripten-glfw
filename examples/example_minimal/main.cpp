@@ -17,6 +17,7 @@
  */
 
 #include <GLFW/glfw3.h>
+#include <cstdio>
 
 /**
  * The purpose of this example is to be as minimal as possible: initializes glfw, create window, then destroy it
@@ -24,6 +25,9 @@
 
 int main()
 {
+  // print the version on the console
+  printf("%s\n", glfwGetVersionString());
+
   if(!glfwInit())
     return -1;
 

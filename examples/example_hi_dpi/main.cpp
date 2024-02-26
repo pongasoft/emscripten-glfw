@@ -113,6 +113,9 @@ int main()
   // set a callback for errors otherwise if there is a problem, we won't know
   glfwSetErrorCallback(consoleErrorHandler);
 
+  // print the version on the console
+  printf("%s\n", glfwGetVersionString());
+
   // initialize the library
   if(!glfwInit())
     return -1;
