@@ -58,7 +58,7 @@ public:
 
 public:
   inline char const *getCanvasSelector() const { return fConfig.fCanvasSelector.data(); }
-  inline bool isHiDPIAware() const { return fConfig.fScaleFramebuffer == GLFW_TRUE; }
+  inline bool isHiDPIAware() const { return fConfig.fScaleFramebuffer == GLFW_TRUE || fConfig.fScaleToMonitor == GLFW_TRUE; }
   inline int getShouldClose() const { return fShouldClose; }
   inline void setShouldClose(int iShouldClose) { fShouldClose = iShouldClose; }
 

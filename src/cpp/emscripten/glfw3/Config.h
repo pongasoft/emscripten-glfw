@@ -41,6 +41,7 @@ struct Config
   int fClientAPI{GLFW_OPENGL_API}; // GLFW_CLIENT_API
 
   // Window
+  glfw_bool_t fScaleToMonitor{GLFW_FALSE};   // GLFW_SCALE_TO_MONITOR
   glfw_bool_t fScaleFramebuffer{GLFW_FALSE}; // GLFW_SCALE_FRAMEBUFFER
   glfw_bool_t fFocusOnShow{GLFW_TRUE};       // GLFW_FOCUS_ON_SHOW
   glfw_bool_t fResizable{GLFW_TRUE};         // GLFW_RESIZABLE

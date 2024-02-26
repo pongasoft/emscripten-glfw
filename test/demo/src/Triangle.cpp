@@ -617,9 +617,13 @@ void Triangle::updateValues()
 
   setHtmlValue(fWindow, "glfwGetWindowAttrib-resizable", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_RESIZABLE)));
 
-  auto hiDPIAware = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
-  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(hiDPIAware));
-  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_framebuffer", "%s", hiDPIAware ? "Disable" : "Enable");
+  auto scaleToMonitor = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", glfwBoolToString(scaleToMonitor));
+  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", scaleToMonitor ? "Disable" : "Enable");
+
+  auto scaleFramebuffer = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(scaleFramebuffer));
+  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_framebuffer", "%s", scaleFramebuffer ? "Disable" : "Enable");
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
