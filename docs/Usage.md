@@ -102,10 +102,10 @@ Example code:
 ```html
 <!-- html -->
 <style>
-#canvas1-container {
-  width: 75vw;
-  height: 50vh;
-}
+  #canvas1-container {
+    width: 75vw;
+    height: 50vh;
+  }
 </style>
 <div id="canvas1-container">
   <canvas id="canvas1"></canvas>
@@ -129,19 +129,20 @@ Example code:
 ```html
 <!-- html -->
 <style>
-#canvas1-container {
-  position: relative;
-<!-- . . . -->
-}
-#canvas1-handle {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background-color: #444444;
-  width: 10px;
-  height: 10px;
-  cursor: nwse-resize;
-}
+  #canvas1-container {
+    position: relative;
+  <!-- . . . -->
+  }
+
+  #canvas1-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #444444;
+    width: 10px;
+    height: 10px;
+    cursor: nwse-resize;
+  }
 </style>
 <div id="canvas1-container">
   <div id="canvas1-handle" class="handle"></div>
@@ -241,7 +242,7 @@ which is widely supported by most current browsers.
 > Due to the nature of the `Gamepad` API, polling is required, so you must ensure to call `glfwPollEvents` on each
 > loop iteration.
 >
-> If you want to disable joystick support entirely (and save some resources), you can use the `disableJoystick=true` 
+> If you want to disable joystick support entirely (and save some resources), you can use the `disableJoystick=true`
 > option if you use the port (or set the `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define).
 
 The mapping returned by this API (as defined [here](https://w3c.github.io/gamepad/#remapping)), is represented by this
@@ -342,8 +343,7 @@ using [`example_minimal`](../examples/example_minimal)
 This table contains the list of all the functions supported by this implementation with a few relevant notes
 
 > ### Note
-> GLFW 3.4 introduced the concept of platform. This implementation adds the `GLFW_PLATFORM_WEB` define
-> in `empscriptem-glfw3.h` because it is not part of the official API.
+> GLFW 3.4 introduced the concept of platform. No platform define is currently appropriate for this platform.
 
 | Function                            | Notes                                                                                                                                                                                                                   |
 |-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -377,7 +377,6 @@ This table contains the list of all the functions supported by this implementati
 | `glfwGetMonitorUserPointer`         |                                                                                                                                                                                                                         |
 | `glfwGetMonitorWorkarea`            | 0x0 for position, `screen.width`x`screen.height` for size                                                                                                                                                               |
 | `glfwGetMouseButton`                | Support `GLFW_STICKY_MOUSE_BUTTONS` as well                                                                                                                                                                             |
-| `glfwGetPlatform`                   | `GLFW_PLATFORM_WEB` (see note above)                                                                                                                                                                             |
 | `glfwGetPrimaryMonitor`             | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
 | `glfwGetTime`                       |                                                                                                                                                                                                                         |
 | `glfwGetTimerFrequency`             | Always 1000                                                                                                                                                                                                             |
@@ -395,11 +394,10 @@ This table contains the list of all the functions supported by this implementati
 | `glfwGetWindowUserPointer`          |                                                                                                                                                                                                                         |
 | `glfwHideWindow`                    | Set css property to `display: none` for the canvas                                                                                                                                                                      |
 | `glfwInit`                          | Set a listener to monitor content scale change (ex: moving browser to different resolution screen)                                                                                                                      |
-| `glfwInitHint`                      | No hint for this platforms                                                                                                                                                                                              |
+| `glfwInitHint`                      | `GLFW_PLATFORM` with value `GLFW_ANY_PLATFORM` only                                                                                                                                                                     |
 | `glfwJoystickIsGamepad`             | Returns `GLFW_TRUE` when the joystick mapping (`Gamepad.mapping`) is "standard"                                                                                                                                         |
 | `glfwJoystickPresent`               | Listens to `gamepadconnected` and `gamepaddisconnected` events to determine the presence.                                                                                                                               |
 | `glfwMakeContextCurrent`            | Since this implementation supports multiple windows, it is important to call this if using OpenGL                                                                                                                       |
-| `glfwPlatformSupported`             | `GLFW_TRUE` for `GLFW_PLATFORM_WEB` only (see note above)                                                                                                                                                        |
 | `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                                              |
 | `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                                                     |
 | `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                                                |
@@ -450,6 +448,7 @@ Note that these functions log a warning the first time they are called (which ca
 | `glfwGetClipboardString`            | Access to clipboard is severally restricted in the browser   |
 | `glfwGetGammaRamp`                  | No access from javascript                                    |
 | `glfwGetMonitorPhysicalSize`        | No access from javascript                                    |
+| `glfwGetPlatform`                   | `0` (see note about platform)                                |
 | `glfwGetProcAddress`                | Implemented by emscripten                                    |
 | `glfwGetRequiredInstanceExtensions` |                                                              |
 | `glfwGetVideoMode`                  |                                                              |
@@ -457,6 +456,7 @@ Note that these functions log a warning the first time they are called (which ca
 | `glfwIconifyWindow`                 |                                                              |
 | `glfwInitAllocator`                 | Due to javascript, memory cannot be managed                  |
 | `glfwMaximizeWindow`                |                                                              |
+| `glfwPlatformSupported`             | `GLFW_FALSE` (see note about platform)                       |
 | `glfwPostEmptyEvent`                |                                                              |
 | `glfwRequestWindowAttention`        |                                                              |
 | `glfwRestoreWindow`                 |                                                              |

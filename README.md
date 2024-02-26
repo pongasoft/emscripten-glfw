@@ -206,17 +206,17 @@ Release Notes
 #### 1.1.0 - TBD
 
 - GLFW 3.4 features implemented
-  - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_WEB` constant defined in `emscripten-glfw3.h` 
-    (non-official) 
   - Supports all 10 cursors
   - Implemented `glfwGetWindowTitle`
   - Use `GLFW_SCALE_FRAMEBUFFER` to enable (resp. disable) Hi DPI support (note that 
     `GLFW_SCALE_TO_MONITOR` can still be used as an alternative)
   - Changed the functions that can report `GLFW_FEATURE_UNAVAILABLE` failure to report this error instead of a warning
-- GLFW 3.4 features not implemented 
+- GLFW 3.4 features not implemented
+  - `glfwGetPlatform` and `glfwPlatformSupported` as there is no define that matches the emscripten/web platform 
+    (return `0` and `GLFW_FALSE` respectively)
   - `GLFW_MOUSE_PASSTHROUGH` is not supported
   - `GLFW_CURSOR_CAPTURED` cursor input mode is not supported (not possible in a browser context)
-  - `glfwInitAllocator` is not supported (could be supported for the C++ part only if there is demand, not javascript)
+  - `glfwInitAllocator` is implemented as noop (could be supported for the C++ part only if there is demand, not javascript)
   - `GLFW_POSITION_X` and `GLFW_POSITION_Y` are not supported (same as `glfwSetWindowPos`)
   - `GLFW_ANGLE_PLATFORM_TYPE` is not supported (no direct access in browser, but implementation is most likely using it anyway)
 

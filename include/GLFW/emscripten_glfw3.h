@@ -22,8 +22,6 @@
 #include <GLFW/glfw3.h>
 #include <emscripten/em_types.h>
 
-#define GLFW_PLATFORM_WEB 0x00060010
-
 #ifdef __cplusplus
 extern "C" {
 #endif
