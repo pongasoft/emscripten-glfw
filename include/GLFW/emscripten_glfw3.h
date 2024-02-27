@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define GLFW_PLATFORM_EMSCRIPTEN 0x00060006
+
 /**
  * Before calling `glfwCreateWindow` you can communicate to the library which canvas to use by calling this function.
  * Conceptually this is similar to a window hint (must be called **prior** to creating the window).

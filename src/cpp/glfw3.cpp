@@ -188,7 +188,10 @@ GLFWAPI int glfwGetError(const char** description)
 //------------------------------------------------------------------------
 GLFWAPI int glfwGetPlatform()
 {
-  return 0;
+  if(checkContextInitialized())
+    return GLFW_PLATFORM_EMSCRIPTEN;
+  else
+    return 0;
 }
 
 //------------------------------------------------------------------------
@@ -196,7 +199,7 @@ GLFWAPI int glfwGetPlatform()
 //------------------------------------------------------------------------
 GLFWAPI int glfwPlatformSupported(int platform)
 {
-  return GLFW_FALSE;
+  return toGlfwBool(platform == GLFW_PLATFORM_EMSCRIPTEN);
 }
 
 //------------------------------------------------------------------------
@@ -300,8 +303,8 @@ GLFWAPI void glfwInitHint(int hint, int value)
 {
   if(hint == GLFW_PLATFORM)
   {
-    if(value != GLFW_ANY_PLATFORM)
-      ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "GLFW_PLATFORM can only be GLFW_ANY_PLATFORM for this platform.");
+    if(!(value == GLFW_ANY_PLATFORM || value == GLFW_PLATFORM_EMSCRIPTEN))
+      ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "GLFW_PLATFORM can only be GLFW_ANY_PLATFORM|GLFW_PLATFORM_EMSCRIPTEN for this platform.");
   }
 }
 

@@ -167,11 +167,13 @@ int main()
 {
   glfwSetErrorCallback(consoleErrorHandler);
 
-  printf("%s\n", glfwGetVersionString());
-  setHtmlValue("#version", glfwGetVersionString());
+  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_EMSCRIPTEN);
 
   if(!glfwInit())
     return -1;
+
+  printf("%s | 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
+  setHtmlValue("#version", glfwGetVersionString());
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
