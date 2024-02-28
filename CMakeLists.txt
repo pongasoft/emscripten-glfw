@@ -73,27 +73,13 @@ target_compile_definitions(${target} PUBLIC
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(FILES_TO_ARCHIVE "${CMAKE_CURRENT_BINARY_DIR}/files_to_archives.txt")
-  file(GLOB_RECURSE FILES_TO_ARCHIVE_LIST
-      RELATIVE "${CMAKE_CURRENT_LIST_DIR}"
-      LIST_DIRECTORIES false
-      CONFIGURE_DEPENDS
-      "LICENSE.txt"
-      "external/*.h"
-      "include/*.h"
-      "src/*.h"
-      "src/*.cpp"
-      "src/*.js"
-  )
-  list(JOIN FILES_TO_ARCHIVE_LIST "\n" FILES_TO_ARCHIVE_STRING)
-  file(WRITE "${FILES_TO_ARCHIVE}" "${FILES_TO_ARCHIVE_STRING}")
   set(ARCHIVE_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive")
   set(ARCHIVE_NAME "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip")
   add_custom_target("create-archive"
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
-      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--mtime=${emscripten-glfw_RELEASE_DATE}" "--files-from=${FILES_TO_ARCHIVE}"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--mtime=${emscripten-glfw_RELEASE_DATE}" "--files-from=${CMAKE_CURRENT_LIST_DIR}/archive.txt"
       COMMAND ${CMAKE_COMMAND} -E sha512sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha512"
       COMMAND cat "${ARCHIVE_NAME}.sha512"
   )
