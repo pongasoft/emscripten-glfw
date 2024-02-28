@@ -155,14 +155,28 @@ GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev)
 //------------------------------------------------------------------------
 GLFWAPI const char* glfwGetVersionString(void)
 {
+#ifdef EMSCRIPTEN_GLFW3_DISABLE_WARNING
+#define EMSCRIPTEN_GLFW_VERSION_NW "-nw"
+#else
+#define EMSCRIPTEN_GLFW_VERSION_NW ""
+#endif
+#ifdef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
+#define EMSCRIPTEN_GLFW_VERSION_NJ "-nj"
+#else
+#define EMSCRIPTEN_GLFW_VERSION_NJ ""
+#endif
+#ifdef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+#define EMSCRIPTEN_GLFW_VERSION_SW "-sw"
+#else
+#define EMSCRIPTEN_GLFW_VERSION_SW ""
+#endif
 #define mkstr_inner(s) #s
 #define mkstr(s) mkstr_inner(s)
   constexpr char const *kVersionString =
-    "Emscripten/WebAssembly GLFW "
     mkstr(GLFW_VERSION_MAJOR) "."
     mkstr(GLFW_VERSION_MINOR) "."
-    mkstr(GLFW_VERSION_REVISION) " | pongasoft/emscripten-glfw@v"
-    D_EMSCRIPTEN_GLFW_VERSION_STR
+    mkstr(GLFW_VERSION_REVISION) " | Emscripten | pongasoft/emscripten-glfw@v"
+    D_EMSCRIPTEN_GLFW_VERSION_STR EMSCRIPTEN_GLFW_VERSION_NW EMSCRIPTEN_GLFW_VERSION_NJ EMSCRIPTEN_GLFW_VERSION_SW
     ;
   return kVersionString;
 }
