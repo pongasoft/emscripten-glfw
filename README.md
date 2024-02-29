@@ -203,7 +203,7 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
-#### 1.1.0 - TBD
+#### 1.1.0 - 2024-02-29
 
 - GLFW 3.4 features implemented
   - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_EMSCRIPTEN` constant defined in 

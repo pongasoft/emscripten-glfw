@@ -10,3 +10,8 @@ add_executable(${target} src/main.cpp src/Triangle.cpp)
 set_target_properties(${target} PROPERTIES OUTPUT_NAME "main")
 set_target_properties(${target} PROPERTIES SUFFIX ".html")
 target_link_libraries(${target} PRIVATE glfw3)
+
+
+# using port
+# mkdir build
+#emcc --use-port=contrib.glfw3 -sASYNCIFY -sMIN_WEBGL_VERSION=2 --shell-file=shell.html src/main.cpp src/Triangle.cpp -o build/index.html
