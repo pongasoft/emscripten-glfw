@@ -102,4 +102,14 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       "example-resizable-container-with-handle"
       "example-resizable-full-window"
   )
+  set(EXAMPLES_BUILD_FILES "${CMAKE_CURRENT_BINARY_DIR}/examples_build_files.txt")
+  set(EXAMPLES_ZIP_FILE "${CMAKE_CURRENT_BINARY_DIR}/examples.zip")
+  add_custom_target("examples-zip"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+      COMMAND find . -name main.html > "${EXAMPLES_BUILD_FILES}"
+      COMMAND find . -name main.js >> "${EXAMPLES_BUILD_FILES}"
+      COMMAND find . -name main.wasm >> "${EXAMPLES_BUILD_FILES}"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${EXAMPLES_ZIP_FILE}" "--format=zip" "--files-from=${EXAMPLES_BUILD_FILES}"
+      DEPENDS "examples-all"
+  )
 endif()
