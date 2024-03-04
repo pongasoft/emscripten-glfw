@@ -147,6 +147,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > |-----------|------------|
 > | 1.1.0     | unreleased |
 > | 1.0.5     | 3.1.55     |
+> 
 > Due to the release cadence of emscripten, if you want to be in charge of which version you use, you can simply
 > use the port that is checked-in under `port`: `--use-port=port/emscripten-glfw3.py`
 
