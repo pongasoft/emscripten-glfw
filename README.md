@@ -119,12 +119,7 @@ Building
 
 ### Using emscripten port
 
-> #### Warning
-> At this time, the contrib port contains a critical issue (if your application use the gamepad API) 
-> which won't be available until the next version of emscripten is officially released. You can use the port that is 
-> checked-in under `port` instead: `--use-port=port/emscripten-glfw3.py`
-
-Since emscripten 3.1.54, using this port is really easy via the `--use-port=contrib.glfw3` option 
+Since emscripten 3.1.55, using this port is really easy via the `--use-port=contrib.glfw3` option 
 (no need to clone this repo at all!). This is the recommended method to use this project.
 
 Example:
@@ -146,6 +141,15 @@ Example using `disableWarning` and `disableMultiWindow`:
 ```sh
 emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.cpp -o build
 ```
+
+> #### Note about availability in emscripten
+> | this port | emscripten |
+> |-----------|------------|
+> | 1.1.0     | unreleased |
+> | 1.0.5     | 3.1.55     |
+> Due to the release cadence of emscripten, if you want to be in charge of which version you use, you can simply
+> use the port that is checked-in under `port`: `--use-port=port/emscripten-glfw3.py`
+
 
 > #### Note
 > Emscripten automatically downloads and builds the library for you and stores it in its cache. If you want to
@@ -203,7 +207,7 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
-#### 1.1.0 - 2024-02-29
+#### 1.1.0 - 2024-02-29 | emscripten pending
 
 - GLFW 3.4 features implemented
   - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_EMSCRIPTEN` constant defined in 
@@ -225,7 +229,7 @@ Release Notes
   needs to be explicitly turned off (`glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE)`) if this is the desired
   behavior.
 
-#### 1.0.5 - 2024/02/18
+#### 1.0.5 - 2024/02/18 | emscripten 3.1.55
 
 - Fixed memory corruption with joystick
 
