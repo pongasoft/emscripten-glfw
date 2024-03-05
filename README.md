@@ -4,6 +4,11 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
+![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
+[![Latest - 1.1.0](https://img.shields.io/badge/Latest-1.1.0-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
+[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
 Goal
 ----
 
@@ -15,10 +20,8 @@ vs `keyboardEvent.charcode`). As a result, this implementation will most likely 
 
 Since the code is written in C++, it is trying to minimize the amount of javascript code to remain clean and lean.
 
-Status
-------
-
-![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
+Features
+--------
 
 Main supported features:
 * can create as many windows as you want, each one associated to a different canvas (use 
@@ -40,7 +43,7 @@ Main supported features:
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v1.0.0/emscripten_glfw.png)
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v1.1.0/emscripten-glfw.png)
 
 Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
@@ -210,6 +213,7 @@ Release Notes
 
 #### 1.1.0 - 2024-02-29 | emscripten pending
 
+- Upgraded to GLFW 3.4
 - GLFW 3.4 features implemented
   - `glfwGetPlatform` and `glfwPlatformSupported` uses the `GLFW_PLATFORM_EMSCRIPTEN` constant defined in 
     `emscripten-glfw3.h` (officially reserved value is `0x00060006`)
@@ -249,7 +253,7 @@ Release Notes
 - Made joystick code truly conditional on `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define
 - Added `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` as a CMake option and made the multi window code conditional
   on `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` define
-- Misc: added github workflow to compile the code/display badge
+- Misc: added GitHub workflow to compile the code/display badge
 
 #### 1.0.1 - 2024/01/21
  
