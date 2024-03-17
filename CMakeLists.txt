@@ -73,6 +73,7 @@ target_compile_definitions(${target} PUBLIC
 target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  ### create archive/emscripten-glfw3-${emscripten-glfw_VERSION}.zip for the port
   set(ARCHIVE_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive")
   set(ARCHIVE_NAME "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip")
   add_custom_target("create-archive"
@@ -84,6 +85,14 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       COMMAND cat "${ARCHIVE_NAME}.sha512"
   )
 
+  ### create a port pointing to archive
+  add_custom_target("local-port"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      COMMAND tools/create_local_port.py "${CMAKE_CURRENT_BINARY_DIR}" "${emscripten-glfw_VERSION}"
+      DEPENDS "create-archive"
+  )
+
+  ### compile all the examples
   add_subdirectory("test/demo" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_asyncify" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)
@@ -92,7 +101,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("examples/example_resizable_container_with_handle" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
   add_custom_target("examples-all"
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/examples/index.html ${CMAKE_CURRENT_BINARY_DIR}
+      COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/examples/index.html" "${CMAKE_CURRENT_BINARY_DIR}"
       DEPENDS
       "demo"
       "example-asyncify"
@@ -102,6 +111,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       "example-resizable-container-with-handle"
       "example-resizable-full-window"
   )
+
+  ### create examples.zip for easy deploy
   set(EXAMPLES_BUILD_FILES "${CMAKE_CURRENT_BINARY_DIR}/examples_build_files.txt")
   set(EXAMPLES_ZIP_FILE "${CMAKE_CURRENT_BINARY_DIR}/examples.zip")
   add_custom_target("examples-zip"

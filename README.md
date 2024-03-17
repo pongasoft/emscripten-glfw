@@ -7,6 +7,7 @@ GLFW API is 3.4.
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 [![Latest - 1.1.0](https://img.shields.io/badge/Latest-1.1.0-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
+[![emscripten - 3.1.56+](https://img.shields.io/badge/emscripten-3.1.56%2B-blue)](https://emscripten.org)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Goal
@@ -148,7 +149,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port | emscripten |
 > |-----------|------------|
-> | 1.1.0     | unreleased |
+> | 1.1.0     | 3.1.56     |
 > | 1.0.5     | 3.1.55     |
 > 
 > Due to the release cadence of emscripten, if you want to be in charge of which version you use, you can simply
@@ -211,7 +212,7 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
-#### 1.1.0 - 2024-02-29 | emscripten pending
+#### 1.1.0 - 2024-02-29 | emscripten 3.1.56
 
 - Upgraded to GLFW 3.4
 - GLFW 3.4 features implemented

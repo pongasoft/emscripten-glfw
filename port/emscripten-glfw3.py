@@ -19,6 +19,7 @@ from typing import Dict
 
 TAG = '1.1.0'
 HASH = 'ca97ef5db558d957f78f2698ca6aef66f17e3253ad6434417793d6283f3cda16cbe18a460d9403b9a939651e0e5349f53a859b7d19a9220b2e168030f74fcb56'
+ZIP_URL = f'https://github.com/pongasoft/emscripten-glfw/releases/download/v{TAG}/emscripten-glfw3-{TAG}.zip'
 
 # contrib port information (required)
 URL = 'https://github.com/pongasoft/emscripten-glfw'
@@ -49,9 +50,7 @@ def get_lib_name(settings):
 
 def get(ports, settings, shared):
   # get the port
-  ports.fetch_project(name,
-                      f'https://github.com/pongasoft/emscripten-glfw/releases/download/v{TAG}/emscripten-glfw3-{TAG}.zip',
-                      sha512hash=HASH)
+  ports.fetch_project(name, ZIP_URL, sha512hash=HASH)
 
   def create(final):
     root_path = os.path.join(ports.get_dir(), name)
