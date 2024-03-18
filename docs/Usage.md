@@ -6,10 +6,9 @@ of the library.
 
 ## Main concept
 
-This port, as well as other library ports (
-like [SDL](https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md)),
-associates the concept of a "window" (in this instance a `GLFWwindow`) to an html "canvas". The framebuffer size of
-the window is the size of the canvas (`canvas.width` x `canvas.height`) and this is what you use for your viewport.
+This port, as well as other library ports (like [SDL](https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md)), associates the concept of a "window" (in this instance 
+a `GLFWwindow`) to an html "canvas". The framebuffer size of the window is the size of the canvas 
+(`canvas.width` x `canvas.height`) and this is what you use for your viewport.
 The size of the window is the css style size of the canvas (which in the case of Hi DPI is different). The opacity
 is the css style `opacity`, etc...
 
@@ -25,8 +24,7 @@ This library offers 2 ways depending on your needs:
 
 #### 1. Using javascript/Module
 
-Every emscripten application needs to define a `Module` variable in javascript (
-see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
+Every emscripten application needs to define a `Module` variable in javascript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
 By convention in emscripten, the `Module["canvas"]` field represents the canvas that is associated to the window.
 To be backward compatible with this option, this library supports it, and it is the default. Obviously this can only
 work if there is only one window which is why there is another method.

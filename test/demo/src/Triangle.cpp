@@ -540,7 +540,7 @@ void Triangle::updateNoWindowValues()
                    state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER]
       );
       setHtmlValue(nullptr, "glfwGetGamepadState-buttons",
-                   "[%d] A:%d,B:%d,X:%d,Y:%d,LB:%d,RB:%d,Back:%d,Start:%d,Guide:%d,LT:%d,RT:%d,U:%d,R:%d,D:%d,L:%d",
+                   "[%d] A:%d,B:%d,X:%d,Y:%d,LB:%d,RB:%d,Back:%d,Start:%d,Guide:%d,L3:%d,R3:%d,U:%d,R:%d,D:%d,L:%d",
                    jid,
                    state.buttons[GLFW_GAMEPAD_BUTTON_A],
                    state.buttons[GLFW_GAMEPAD_BUTTON_B],

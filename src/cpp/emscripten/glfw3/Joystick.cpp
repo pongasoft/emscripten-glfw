@@ -80,10 +80,18 @@ void Joystick::disconnect(EmscriptenGamepadEvent const *iEvent)
 //------------------------------------------------------------------------
 void Joystick::populate(EmscriptenGamepadEvent const *iEvent)
 {
+  // making sure the 2 arrays are the same size
+  static_assert(std::tuple_size<decltype(fDigitalButtons)>{} == std::tuple_size<decltype(fAnalogButtons)>{});
+
   fNumButtons = std::clamp(iEvent->numButtons, 0, static_cast<int>(fDigitalButtons.size()));
   for(auto i = 0; i < fNumButtons; i++)
   {
     fDigitalButtons[i] = iEvent->digitalButton[i];
+  }
+
+  for(auto i = 0; i < fNumButtons; i++)
+  {
+    fAnalogButtons[i] = static_cast<float>(iEvent->analogButton[i]);
   }
 
   fNumAxes = std::clamp(iEvent->numAxes, 0, static_cast<int>(fAxes.size()));
@@ -155,15 +163,15 @@ glfw_joystick_button_state_t const *Joystick::getHats(int *oCount) const
 //------------------------------------------------------------------------
 int Joystick::getGamepadState(GLFWgamepadstate *oState) const
 {
-  if(isGamepad() && fNumAxes >= 4 && fNumButtons >= 16)
+  if(isGamepad() && fNumAxes >= kNumAxes && fNumButtons >= kNumButtons)
   {
     // axes
     oState->axes[GLFW_GAMEPAD_AXIS_LEFT_X] = fAxes[0];
     oState->axes[GLFW_GAMEPAD_AXIS_LEFT_Y] = fAxes[1];
     oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_X] = fAxes[2];
     oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] = fAxes[3];
-    oState->axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER]  = fDigitalButtons[10] ? 1.0f : 0;
-    oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] = fDigitalButtons[11] ? 1.0f : 0;
+    oState->axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER]  = (fAnalogButtons[6] * 2.0f) - 1.0f; // [0,1] => [-1,1]
+    oState->axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] = (fAnalogButtons[7] * 2.0f) - 1.0f; // [0,1] => [-1,1]
 
     // buttons
     oState->buttons[GLFW_GAMEPAD_BUTTON_A] = fDigitalButtons[0];
@@ -175,8 +183,8 @@ int Joystick::getGamepadState(GLFWgamepadstate *oState) const
     oState->buttons[GLFW_GAMEPAD_BUTTON_BACK] = fDigitalButtons[8];
     oState->buttons[GLFW_GAMEPAD_BUTTON_START] = fDigitalButtons[9];
     oState->buttons[GLFW_GAMEPAD_BUTTON_GUIDE] = fDigitalButtons[16];
-    oState->buttons[GLFW_GAMEPAD_BUTTON_LEFT_THUMB] = fDigitalButtons[6];
-    oState->buttons[GLFW_GAMEPAD_BUTTON_RIGHT_THUMB] = fDigitalButtons[7];
+    oState->buttons[GLFW_GAMEPAD_BUTTON_LEFT_THUMB] = fDigitalButtons[10];
+    oState->buttons[GLFW_GAMEPAD_BUTTON_RIGHT_THUMB] = fDigitalButtons[11];
     oState->buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] = fDigitalButtons[12];
     oState->buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = fDigitalButtons[15];
     oState->buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] = fDigitalButtons[13];

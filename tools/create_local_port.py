@@ -34,3 +34,5 @@ with open(local_port_file, 'r+') as file:
         else:
             file.write(line)
     file.truncate()
+
+print(f'Created local port {local_port_file}\n')

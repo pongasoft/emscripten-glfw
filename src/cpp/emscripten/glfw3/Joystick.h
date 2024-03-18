@@ -62,6 +62,9 @@ private:
 private:
   static std::array<Joystick, GLFW_JOYSTICK_LAST + 1> kJoysticks;
 
+  constexpr static size_t kNumAxes{4};
+  constexpr static size_t kNumButtons{16};
+
 private:
   glfw_joystick_id_t fId{};
   bool fPresent{};
@@ -71,8 +74,9 @@ private:
   int fNumAxes{};
   int fNumButtons{};
   // mapping is defined here https://w3c.github.io/gamepad/#remapping
-  std::array<float, 64> fAxes{};
-  std::array<glfw_joystick_button_state_t, 64> fDigitalButtons{};
+  std::array<float, kNumAxes> fAxes{};
+  std::array<glfw_joystick_button_state_t, kNumButtons> fDigitalButtons{};
+  std::array<float, kNumButtons> fAnalogButtons{};
   mutable glfw_joystick_button_state_t fDPad{};
 };
 
