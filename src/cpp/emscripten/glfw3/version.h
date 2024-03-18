@@ -22,7 +22,7 @@
 
 namespace emscripten::glfw3 {
 
-#define D_EMSCRIPTEN_GLFW_VERSION_STR "1.1.0"
+#define D_EMSCRIPTEN_GLFW_VERSION_STR "3.4.0.20240318"
 
 }
 
