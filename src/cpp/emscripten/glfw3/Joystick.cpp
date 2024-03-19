@@ -140,8 +140,10 @@ glfw_joystick_button_state_t const *Joystick::getDigitalButtons(int *oCount) con
 //------------------------------------------------------------------------
 glfw_joystick_button_state_t const *Joystick::getHats(int *oCount) const
 {
+  static_assert(std::tuple_size<decltype(fDigitalButtons)>{} >= kNumGamepadButtons);
+
   // see https://w3c.github.io/gamepad/#remapping for DPad buttons
-  if(isGamepad() && fNumButtons > 15)
+  if(isGamepad() && fNumButtons >= kNumGamepadButtons)
   {
     *oCount = 1;
     fDPad = 0;
@@ -163,7 +165,11 @@ glfw_joystick_button_state_t const *Joystick::getHats(int *oCount) const
 //------------------------------------------------------------------------
 int Joystick::getGamepadState(GLFWgamepadstate *oState) const
 {
-  if(isGamepad() && fNumAxes >= kNumAxes && fNumButtons >= kNumButtons)
+  static_assert(std::tuple_size<decltype(fAxes)>{} >= kNumGamepadAxes);
+  static_assert(std::tuple_size<decltype(fDigitalButtons)>{} >= kNumGamepadButtons);
+  static_assert(std::tuple_size<decltype(fAnalogButtons)>{} >= kNumGamepadButtons);
+
+  if(isGamepad() && fNumAxes >= kNumGamepadAxes && fNumButtons >= kNumGamepadButtons)
   {
     // axes
     oState->axes[GLFW_GAMEPAD_AXIS_LEFT_X] = fAxes[0];

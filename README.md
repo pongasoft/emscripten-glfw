@@ -4,15 +4,16 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 [![Latest - 3.4.0.20240318](https://img.shields.io/badge/Latest-3.4.0.20240318-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - unreleased](https://img.shields.io/badge/emscripten-pending-blue)](https://emscripten.org)
-[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
 [![Previous - 1.1.0](https://img.shields.io/badge/Previous-1.1.0-blue)](https://github.com/pongasoft/emscripten-glfw/releases/tag/v1.1.0)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - 3.1.56+](https://img.shields.io/badge/emscripten-3.1.56-blue)](https://emscripten.org)
+
+[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Goal
 ----
@@ -220,7 +221,7 @@ Release Notes
 #### 3.4.0.20240318 - 2024-03-18 | pending
 
 - Fixed joystick/gamepad code that was improperly mapping `GLFW_GAMEPAD_AXIS_LEFT_TRIGGER`
-  `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER`, `GLFW_GAMEPAD_BUTTON_LEFT_THUMB`, `GLFW_GAMEPAD_BUTTON_RIGHT_THUMB`
+  `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER`, `GLFW_GAMEPAD_BUTTON_LEFT_THUMB` and `GLFW_GAMEPAD_BUTTON_RIGHT_THUMB`
 - `GLFW_GAMEPAD_AXIS_LEFT_TRIGGER` and `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER` are now properly represented as an analog
   value in the range [-1.0, +1.0]
 - Please note the change in version numbering which from now on will be tied to the GLFW version implemented + date

@@ -62,8 +62,13 @@ private:
 private:
   static std::array<Joystick, GLFW_JOYSTICK_LAST + 1> kJoysticks;
 
-  constexpr static size_t kNumAxes{4};
-  constexpr static size_t kNumButtons{16};
+  // Javascript gamepad API has 4 axes and 16 buttons
+  // mapping is defined here https://w3c.github.io/gamepad/#remapping
+  constexpr static size_t kNumGamepadAxes{4};
+  constexpr static size_t kNumGamepadButtons{16};
+  constexpr static auto kEmscriptenMaxNumDigitalButtons = std::extent_v<decltype(EmscriptenGamepadEvent::digitalButton)>;
+  constexpr static auto kEmscriptenMaxNumAnalogButtons = std::extent_v<decltype(EmscriptenGamepadEvent::analogButton)>;
+  constexpr static auto kEmscriptenMaxNumAxes = std::extent_v<decltype(EmscriptenGamepadEvent::axis)>;
 
 private:
   glfw_joystick_id_t fId{};
@@ -73,10 +78,9 @@ private:
   std::string fMapping{};
   int fNumAxes{};
   int fNumButtons{};
-  // mapping is defined here https://w3c.github.io/gamepad/#remapping
-  std::array<float, kNumAxes> fAxes{};
-  std::array<glfw_joystick_button_state_t, kNumButtons> fDigitalButtons{};
-  std::array<float, kNumButtons> fAnalogButtons{};
+  std::array<float, kEmscriptenMaxNumAxes> fAxes{};
+  std::array<glfw_joystick_button_state_t, kEmscriptenMaxNumDigitalButtons> fDigitalButtons{};
+  std::array<float, kEmscriptenMaxNumAnalogButtons> fAnalogButtons{};
   mutable glfw_joystick_button_state_t fDPad{};
 };
 

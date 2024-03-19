@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(emscripten-glfw_VERSION "3.4.0.20240318")
-set(emscripten-glfw_RELEASE_DATE "2024-03-18")
+set(emscripten-glfw_RELEASE_YEAR  "2024")
+set(emscripten-glfw_RELEASE_MONTH "03"  )
+set(emscripten-glfw_RELEASE_DAY   "18"  )
+
+set(emscripten-glfw_GLFW_VERSION "3.4.0")
+
+set(emscripten-glfw_VERSION "${emscripten-glfw_GLFW_VERSION}.${emscripten-glfw_RELEASE_YEAR}${emscripten-glfw_RELEASE_MONTH}${emscripten-glfw_RELEASE_DAY}")
+set(emscripten-glfw_RELEASE_DATE "${emscripten-glfw_RELEASE_YEAR}-${emscripten-glfw_RELEASE_MONTH}-${emscripten-glfw_RELEASE_DAY}")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
 
