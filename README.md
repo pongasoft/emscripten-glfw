@@ -6,7 +6,7 @@ GLFW API is 3.4.
 
 [![Latest - 3.4.0.20240318](https://img.shields.io/badge/Latest-3.4.0.20240318-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - unreleased](https://img.shields.io/badge/emscripten-pending-blue)](https://emscripten.org)
+[![emscripten - 3.1.57](https://img.shields.io/badge/emscripten-pending-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
 [![Previous - 1.1.0](https://img.shields.io/badge/Previous-1.1.0-blue)](https://github.com/pongasoft/emscripten-glfw/releases/tag/v1.1.0)
@@ -154,7 +154,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port          | emscripten |
 > |--------------------|------------|
-> | 3.4.0.20240318     | pending    |
+> | 3.4.0.20240318     | 3.1.57     |
 > | 1.1.0              | 3.1.56     |
 > | 1.0.5              | 3.1.55     |
 > 
@@ -218,7 +218,7 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 Release Notes
 -------------
 
-#### 3.4.0.20240318 - 2024-03-18 | pending
+#### 3.4.0.20240318 - 2024-03-18 | emscripten 3.1.57
 
 - Fixed joystick/gamepad code that was improperly mapping `GLFW_GAMEPAD_AXIS_LEFT_TRIGGER`
   `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER`, `GLFW_GAMEPAD_BUTTON_LEFT_THUMB` and `GLFW_GAMEPAD_BUTTON_RIGHT_THUMB`
