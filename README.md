@@ -6,7 +6,7 @@ GLFW API is 3.4.
 
 [![Latest - 3.4.0.20240318](https://img.shields.io/badge/Latest-3.4.0.20240318-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - 3.1.57](https://img.shields.io/badge/emscripten-pending-blue)](https://emscripten.org)
+[![emscripten - 3.1.57](https://img.shields.io/badge/emscripten-3.1.57-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
 [![Previous - 1.1.0](https://img.shields.io/badge/Previous-1.1.0-blue)](https://github.com/pongasoft/emscripten-glfw/releases/tag/v1.1.0)
