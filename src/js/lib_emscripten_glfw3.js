@@ -1,6 +1,6 @@
 // Javascript implementation called from cpp. These functions are considered
 // implementation details and should NOT be used outside.
-let impl = {
+let emscripten_glfw3_impl = {
   $GLFW3__deps: ['$GL', '$stringToNewUTF8', 'free'],
   $GLFW3__postset: `
     // exports
@@ -525,7 +525,7 @@ let impl = {
 }
 
 // Javascript public api that is called from cpp (see emscripten_glfw3.h)
-let api = {
+let emscripten_glfw3_api = {
   //! emscripten_glfw_make_canvas_resizable
   emscripten_glfw_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
     resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
@@ -539,7 +539,7 @@ let api = {
   }
 }
 
-autoAddDeps(impl, '$GLFW3')
-autoAddDeps(api, '$GLFW3')
-mergeInto(LibraryManager.library, impl);
-mergeInto(LibraryManager.library, api);
+autoAddDeps(emscripten_glfw3_impl, '$GLFW3')
+autoAddDeps(emscripten_glfw3_api, '$GLFW3')
+mergeInto(LibraryManager.library, emscripten_glfw3_impl);
+mergeInto(LibraryManager.library, emscripten_glfw3_api);
