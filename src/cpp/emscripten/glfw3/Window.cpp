@@ -447,8 +447,10 @@ void Window::makeGLContextCurrent()
 void Window::getContentScale(float *iXScale, float *iYScale) const
 {
   auto scale = getScale();
-  *iXScale = scale;
-  *iYScale = scale;
+  if(iXScale)
+    *iXScale = scale;
+  if(iYScale)
+    *iYScale = scale;
 }
 
 //------------------------------------------------------------------------
