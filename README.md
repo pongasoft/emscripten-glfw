@@ -154,6 +154,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port      | emscripten |
 > |----------------|------------|
+> | 3.4.0.20240514 | TBD        |
 > | 3.4.0.20240501 | TBD        |
 > | 3.4.0.20240318 | 3.1.57     |
 > | 1.1.0          | 3.1.56     |
