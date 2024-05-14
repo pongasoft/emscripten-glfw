@@ -4,14 +4,14 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240501](https://img.shields.io/badge/Latest-3.4.0.20240501-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240514](https://img.shields.io/badge/Latest-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![Previous - 3.4.0.20240318](https://img.shields.io/badge/Previous-3.4.0.20240318-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Previous - 3.4.0.20240501](https://img.shields.io/badge/Previous-3.4.0.20240501-blue)](https://github.com/pongasoft/emscripten-glfw/releases/tag/v3.4.0.20240501)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - 3.1.57](https://img.shields.io/badge/emscripten-3.1.57-blue)](https://emscripten.org)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -218,6 +218,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+
+#### 3.4.0.20240514 - 2024-05-14 | emscripten TBD
+
+- Implemented `glfwSetClipboardString`
 
 #### 3.4.0.20240501 - 2024-05-01 | emscripten TBD
 

@@ -408,6 +408,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                                              |
 | `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                                                     |
 | `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                                                |
+| `glfwSetClipboardString`            | Uses `navigator.clipboard.writeText`                                                                                                                                                                                    |
 | `glfwSetCursor`                     | Uses css style `cursor: xxx` for the canvas                                                                                                                                                                             |
 | `glfwSetCursorEnterCallback`        | Listeners to `mouseenter` and `mouseleave` events                                                                                                                                                                       |
 | `glfwSetCursorPosCallback`          | Hi DPI aware                                                                                                                                                                                                            |
@@ -466,7 +467,6 @@ Note that these functions log a warning the first time they are called (which ca
 | `glfwRequestWindowAttention`        |                                                              |
 | `glfwRestoreWindow`                 |                                                              |
 | `glfwSetCharModsCallback`           | It is deprecated in GLFW                                     |
-| `glfwSetClipboardString`            | Access to clipboard is severally restricted in the browser   |
 | `glfwSetCursorPos`                  | Javascript does not allow the cursor to be positioned        |
 | `glfwSetDropCallback`               | Javascript only gives access to filename, so it is pointless |
 | `glfwSetGamma`                      |                                                              |
