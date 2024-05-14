@@ -1221,6 +1221,16 @@ GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state)
 }
 
 //------------------------------------------------------------------------
+// glfwSetClipboardString
+//------------------------------------------------------------------------
+GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string)
+{
+  auto context = getContext();
+  if(context)
+    context->setClipboardString(string);
+}
+
+//------------------------------------------------------------------------
 // no implementation for the emscripten platform
 //------------------------------------------------------------------------
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
@@ -1257,7 +1267,6 @@ GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GL
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback) { logNotImplemented("glfwSetWindowIconifyCallback"); return callback; }
 GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, GLFWwindowmaximizefun callback) { logNotImplemented("glfwSetWindowMaximizeCallback"); return callback; }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback) { logNotImplemented("glfwSetDropCallback"); return callback; }
-GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string) { logNotImplemented("glfwSetClipboardString"); }
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window) { logNotImplemented("glfwGetClipboardString"); return nullptr; }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window) { logNotImplemented("glfwSwapBuffers"); }
 // GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname) { logNotImplemented("glfwGetProcAddress"); } implemented by emscripten GL

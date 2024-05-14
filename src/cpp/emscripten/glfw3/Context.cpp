@@ -44,6 +44,7 @@ GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
+void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 }
 
 namespace emscripten::glfw3 {
@@ -916,6 +917,14 @@ glfw_bool_t Context::isExtensionSupported(char const *extension)
     return toGlfwBool(emscripten_glfw3_context_is_extension_supported(extension));
   else
     return GLFW_FALSE;
+}
+
+//------------------------------------------------------------------------
+// Context::setClipboardString
+//------------------------------------------------------------------------
+void Context::setClipboardString(char const *iContent)
+{
+  emscripten_glfw3_context_set_clipboard_string(iContent);
 }
 
 }

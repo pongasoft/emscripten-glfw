@@ -47,6 +47,7 @@ public:
   void toggleSizeLimits();
   void toggleAspectRatio();
   void updateTitle();
+  void setClipboardString();
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;

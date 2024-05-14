@@ -19,7 +19,7 @@ let emscripten_glfw3_impl = {
     fWindowResizeCallback: null,
     fRequestFullscreen: null,
     fContext: null,
-    fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004},
+    fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004, GLFW_PLATFORM_ERROR: 0x00010008},
 
     //! onError
     onError(errorCode, errorMessage) {
@@ -522,6 +522,15 @@ let emscripten_glfw3_impl = {
     else
       return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
   },
+
+  // emscripten_glfw3_context_set_clipboard_string
+  emscripten_glfw3_context_set_clipboard_string: (content) => {
+    content = content ? UTF8ToString(content): '';
+    navigator.clipboard.writeText(content).then(null, function(err) {
+      GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
+    });
+  },
+
 }
 
 // Javascript public api that is called from cpp (see emscripten_glfw3.h)

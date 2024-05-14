@@ -810,3 +810,14 @@ void Triangle::updateTitle()
   fmt(kTitle, "%s | Update %d", getName(), kId++);
   glfwSetWindowTitle(fWindow, kTitle.data());
 }
+
+//------------------------------------------------------------------------
+// Triangle::setClipboardString
+//------------------------------------------------------------------------
+void Triangle::setClipboardString()
+{
+  static int kId = 1;
+  static std::array<char, 256> kContent;
+  fmt(kContent, "[%d] %s | %d", static_cast<int>(glfwGetTime()), getName(), kId++);
+  glfwSetClipboardString(fWindow, kContent.data());
+}

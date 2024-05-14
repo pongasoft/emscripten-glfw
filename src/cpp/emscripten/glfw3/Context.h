@@ -90,6 +90,9 @@ public:
   // opengl
   glfw_bool_t isExtensionSupported(const char* extension);
 
+  // clipboard
+  void setClipboardString(char const *iContent);
+
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);

@@ -52,7 +52,8 @@ struct Event
     toggleResizable,
     toggleSizeLimits,
     toggleAspectRatio,
-    updateTitle
+    updateTitle,
+    setClipboardString
   };
 
   Type fType;
@@ -110,6 +111,7 @@ bool handleEvents()
       case Event::Type::toggleSizeLimits: if(triangle) triangle->toggleSizeLimits(); break;
       case Event::Type::toggleAspectRatio: if(triangle) triangle->toggleAspectRatio(); break;
       case Event::Type::updateTitle: if(triangle) triangle->updateTitle(); break;
+      case Event::Type::setClipboardString: if(triangle) triangle->setClipboardString(); break;
       default: break;
     }
   }
