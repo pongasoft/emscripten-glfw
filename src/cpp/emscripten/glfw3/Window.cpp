@@ -135,9 +135,14 @@ bool Window::maybeRescale(std::function<void()> const &iAction)
 {
   auto oldScale = getScale();
   iAction();
-  auto scaleChanged = oldScale != getScale();
+  auto newScale = getScale();
+  auto scaleChanged = oldScale != newScale;
   if(scaleChanged)
+  {
     setCanvasSize(fSize);
+    if(fContentScaleCallback)
+      fContentScaleCallback(asOpaquePtr(), newScale, newScale);
+  }
   return scaleChanged;
 }
 
@@ -148,8 +153,7 @@ void Window::setMonitorScale(float iScale)
 {
   if(fMonitorScale != iScale)
   {
-    if(maybeRescale([this, scale=iScale]() { fMonitorScale = scale; }) && fContentScaleCallback)
-      fContentScaleCallback(asOpaquePtr(), fMonitorScale, fMonitorScale);
+    maybeRescale([this, scale=iScale]() { fMonitorScale = scale; });
   }
 }
 
