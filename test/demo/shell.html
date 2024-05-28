@@ -23,9 +23,12 @@
       position: absolute;
       bottom: 0;
       right: 0;
-      background-color: #444444;
-      width: 10px;
-      height: 10px;
+      margin-bottom: 1px;
+      margin-right: 1px;
+      border-left: 20px solid transparent;
+      border-bottom: 20px solid rgba(102, 102, 102, 0.5);
+      width: 0;
+      height: 0;
       cursor: nwse-resize;
     }
 
@@ -263,7 +266,7 @@
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas1')"></td>
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas2')"></td>
     </tr>
-    <tr class="glfwSetWindowAttrib-scale_to_monitor">
+    <tr class="glfwSetWindowAttrib-scale_framebuffer">
       <td class="action">Hi DPI Aware</td>
       <td><input class="canvas1" type="button" value="Enable" onclick="Module.pushEvent('toggle_hi_dpi_aware', '#canvas1')"></td>
       <td><input class="canvas2" type="button" value="Disable" onclick="Module.pushEvent('toggle_hi_dpi_aware', '#canvas2')"></td>
@@ -298,7 +301,7 @@
     </tr>
     <tr>
       <td class="action">Change focus</td>
-      <td colspan="2"><label>Text: <input type="text"></label></td>
+      <td colspan="2"><label>Text: <input type="text" id="change-focus"></label></td>
     </tr>
     <tr>
       <td class="action">Exit main loop</td>

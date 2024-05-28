@@ -619,7 +619,6 @@ void Triangle::updateValues()
 
   auto scaleToMonitor = glfwGetWindowAttrib(fWindow, GLFW_SCALE_TO_MONITOR);
   setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_to_monitor", "%s", glfwBoolToString(scaleToMonitor));
-  setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_to_monitor", "%s", scaleToMonitor ? "Disable" : "Enable");
 
   auto scaleFramebuffer = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
   setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(scaleFramebuffer));
