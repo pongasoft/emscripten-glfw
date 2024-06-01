@@ -4,12 +4,12 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240514](https://img.shields.io/badge/Latest-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240601](https://img.shields.io/badge/Latest-3.4.0.20240601-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - 3.1.60](https://img.shields.io/badge/emscripten-3.1.60-blue)](https://emscripten.org)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![Previous - 3.4.0.20240501](https://img.shields.io/badge/Previous-3.4.0.20240501-blue)](https://github.com/pongasoft/emscripten-glfw/releases/tag/v3.4.0.20240501)
+[![Previous - 3.4.0.20240514](https://img.shields.io/badge/Latest-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - 3.1.60](https://img.shields.io/badge/emscripten-3.1.60-blue)](https://emscripten.org)
 
@@ -154,6 +154,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port      | emscripten |
 > |----------------|------------|
+> | 3.4.0.20240601 | TBD        |
 > | 3.4.0.20240514 | 3.1.60     |
 > | 3.4.0.20240501 | 3.1.60     |
 > | 3.4.0.20240318 | 3.1.57     |
@@ -219,6 +220,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+
+#### 3.4.0.20240601 - 2024-06-01 | emscripten TBD
+
+- Fixed #2: Dynamically changing HiDPI awareness does not trigger content callback
 
 #### 3.4.0.20240514 - 2024-05-14 | emscripten 3.1.60
 
