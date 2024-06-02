@@ -214,8 +214,9 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 > The previous `Makefile` is shown as an illustration of what a `Makefile` to compile this project 
 > would look like. The actual changes required for ImGui are actually much simpler:
 > ```Makefile
+> EMS += -s DISABLE_EXCEPTION_CATCHING=1 --use-port=contrib.glfw3
 > #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
-> LDFLAGS += --use-port=contrib.glfw3 -s USE_WEBGPU=1
+> LDFLAGS += -s USE_WEBGPU=1
 > ```
 
 Release Notes
