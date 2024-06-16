@@ -1231,6 +1231,17 @@ GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string)
 }
 
 //------------------------------------------------------------------------
+// glfwGetClipboardString
+//------------------------------------------------------------------------
+GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window)
+{
+  auto context = getContext();
+  if(context)
+    return context->getClipboardString();
+  return nullptr;
+}
+
+//------------------------------------------------------------------------
 // no implementation for the emscripten platform
 //------------------------------------------------------------------------
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
@@ -1267,7 +1278,6 @@ GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GL
 GLFWAPI GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow* window, GLFWwindowiconifyfun callback) { logNotImplemented("glfwSetWindowIconifyCallback"); return callback; }
 GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, GLFWwindowmaximizefun callback) { logNotImplemented("glfwSetWindowMaximizeCallback"); return callback; }
 GLFWAPI GLFWdropfun glfwSetDropCallback(GLFWwindow* window, GLFWdropfun callback) { logNotImplemented("glfwSetDropCallback"); return callback; }
-GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window) { logNotImplemented("glfwGetClipboardString"); return nullptr; }
 GLFWAPI void glfwSwapBuffers(GLFWwindow* window) { logNotImplemented("glfwSwapBuffers"); }
 // GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname) { logNotImplemented("glfwGetProcAddress"); } implemented by emscripten GL
 GLFWAPI int glfwVulkanSupported(void) { return GLFW_FALSE; }

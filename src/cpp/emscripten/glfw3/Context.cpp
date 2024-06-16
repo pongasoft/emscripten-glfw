@@ -924,7 +924,22 @@ glfw_bool_t Context::isExtensionSupported(char const *extension)
 //------------------------------------------------------------------------
 void Context::setClipboardString(char const *iContent)
 {
-  emscripten_glfw3_context_set_clipboard_string(iContent);
+  if(iContent)
+  {
+    emscripten_glfw3_context_set_clipboard_string(iContent);
+    fClipboardText = iContent;
+  }
+}
+
+//------------------------------------------------------------------------
+// Context::getClipboardString
+//------------------------------------------------------------------------
+char const *Context::getClipboardString()
+{
+  if(fClipboardText)
+    return fClipboardText->c_str();
+  else
+    return nullptr;
 }
 
 }

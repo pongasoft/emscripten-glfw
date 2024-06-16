@@ -92,6 +92,7 @@ public:
 
   // clipboard
   void setClipboardString(char const *iContent);
+  char const *getClipboardString();
 
 public:
   void onScaleChange();
@@ -130,6 +131,7 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTime{getPlatformTimerValue()};
+  std::optional<std::string> fClipboardText{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};

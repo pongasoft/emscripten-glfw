@@ -446,6 +446,9 @@ void Triangle::updateNoWindowValues()
 {
   setHtmlValue(nullptr, "glfwGetTime", "%.2f", glfwGetTime());
   setHtmlValue(nullptr, "glfwGetTimerValue", "%ld", glfwGetTimerValue());
+  auto clipboardText = glfwGetClipboardString(nullptr);
+  if(clipboardText)
+    setHtmlValue(nullptr, "glfwGetClipboardString", "%s", clipboardText);
 
   static std::vector<int> jids{};
 

@@ -136,9 +136,12 @@ Example code:
     position: absolute;
     bottom: 0;
     right: 0;
-    background-color: #444444;
-    width: 10px;
-    height: 10px;
+    margin-bottom: 1px;
+    margin-right: 1px;
+    border-left: 20px solid transparent;
+    border-bottom: 20px solid rgba(102, 102, 102, 0.5);
+    width: 0;
+    height: 0;
     cursor: nwse-resize;
   }
 </style>
@@ -359,6 +362,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                                               |
 | `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                                                |
 | `glfwFocusWindow`                   | Calls javascript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
+| `glfwGetClipboardString`            | Due to async nature of the browser API, only returns what was set via `glfwSetClipboardString`                                                                                                                          |
 | `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                                                        |
 | `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                                            |
 | `glfwGetError`                      |                                                                                                                                                                                                                         |
@@ -453,7 +457,6 @@ Note that these functions log a warning the first time they are called (which ca
 | Function                            | Notes                                                        |
 |-------------------------------------|--------------------------------------------------------------|
 | `glfwDestroyCursor`                 |                                                              |
-| `glfwGetClipboardString`            | Access to clipboard is severally restricted in the browser   |
 | `glfwGetGammaRamp`                  | No access from javascript                                    |
 | `glfwGetMonitorPhysicalSize`        | No access from javascript                                    |
 | `glfwGetProcAddress`                | Implemented by emscripten                                    |
