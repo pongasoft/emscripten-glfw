@@ -49,7 +49,7 @@ Main supported features:
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v1.1.0/emscripten-glfw.png)
+![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240616/emscripten-glfw.png)
 
 Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
