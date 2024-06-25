@@ -4,7 +4,7 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240617](https://img.shields.io/badge/Latest-3.4.0.20240617-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240625](https://img.shields.io/badge/Latest-3.4.0.20240625-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
@@ -154,6 +154,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port      | emscripten |
 > |----------------|------------|
+> | 3.4.0.20240625 | TBD        |
 > | 3.4.0.20240617 | TBD        |
 > | 3.4.0.20240616 | TBD        |
 > | 3.4.0.20240601 | TBD        |
@@ -223,10 +224,18 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+#### 3.4.0.20240625 - 2024-06-25 | emscripten TBD
+
+- Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
+  Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
+  javascript handling the `Super/Meta` key, there is no good solution. The workaround implemented, releases all keys when `Super` is released. Although not a perfect
+  solution, it guarantees that the state is _eventually_ consistent:
+    - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released (later than when actually released, final state is consistent: "Key" in `Release` state)
+    - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
 
 #### 3.4.0.20240617 - 2024-06-17 | emscripten TBD
 
-- Fixed [#3](https://github.com/pongasoft/emscripten-glfw/issues/3): glfwGetKey must return one of `GLFW_PRESS` or `GLFW_RELEASE`
+- Fixed [#3](https://github.com/pongasoft/emscripten-glfw/issues/3): _glfwGetKey must return one of `GLFW_PRESS` or `GLFW_RELEASE`_
 
 #### 3.4.0.20240616 - 2024-06-16 | emscripten TBD
 

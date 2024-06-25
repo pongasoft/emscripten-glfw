@@ -118,6 +118,8 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
 
   const glfw_key_state_t state = GLFW_RELEASE;
 
+  bool wasSuperPressed = isSuperPressed();
+
   if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
   {
     fKeyStates[key] = fStickyKeys ? kStickyPress : state;
@@ -125,6 +127,9 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
     if(fKeyCallback)
       fKeyCallback(iWindow, key, scancode, state, computeCallbackModifierBits(iKeyboardEvent));
   }
+
+  if(wasSuperPressed && !isSuperPressed())
+    resetKeysOnSuperRelease(iWindow);
 
   return true;
 }
@@ -160,6 +165,34 @@ void Keyboard::setStickyKeys(bool iStickyKeys)
     {
       if(state == kStickyPress)
         state = GLFW_RELEASE;
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+// Keyboard::resetKeysOnSuperRelease
+//------------------------------------------------------------------------
+void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
+{
+  auto modifiedBits = computeCallbackModifierBits();
+
+  for(auto key = 0; key < fKeyStates.size(); key++)
+  {
+    if(key == GLFW_KEY_LEFT_SHIFT   || key == GLFW_KEY_RIGHT_SHIFT   ||
+       key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL ||
+       key == GLFW_KEY_LEFT_ALT     || key == GLFW_KEY_RIGHT_ALT     ||
+       key == GLFW_KEY_LEFT_SUPER   || key == GLFW_KEY_RIGHT_SUPER)
+    {
+      // the special keys properly receive key up events...
+      continue;
+    }
+
+    if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
+    {
+      fKeyStates[key] = GLFW_RELEASE;
+
+      if(fKeyCallback)
+        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifiedBits);
     }
   }
 }

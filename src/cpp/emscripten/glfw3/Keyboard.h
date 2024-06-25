@@ -47,6 +47,7 @@ public:
   bool onKeyDown(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
   bool onKeyUp(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
   void resetAllKeys(GLFWwindow *iWindow);
+  void resetKeysOnSuperRelease(GLFWwindow *iWindow);
 
   void setStickyKeys(bool iStickyKeys);
   bool getStickyKeys() const { return fStickyKeys; };
