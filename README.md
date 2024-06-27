@@ -4,7 +4,7 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240625](https://img.shields.io/badge/Latest-3.4.0.20240625-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240627](https://img.shields.io/badge/Latest-3.4.0.20240627-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
@@ -154,12 +154,8 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | this port      | emscripten |
 > |----------------|------------|
-> | 3.4.0.20240625 | TBD        |
-> | 3.4.0.20240617 | TBD        |
-> | 3.4.0.20240616 | TBD        |
-> | 3.4.0.20240601 | TBD        |
+> | 3.4.0.20240627 | TBD        |
 > | 3.4.0.20240514 | 3.1.60     |
-> | 3.4.0.20240501 | 3.1.60     |
 > | 3.4.0.20240318 | 3.1.57     |
 > | 1.1.0          | 3.1.56     |
 > | 1.0.5          | 3.1.55     |
@@ -224,6 +220,10 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+#### 3.4.0.20240627 - 2024-06-27 | emscripten TBD
+
+- Fixed internal implementation to use `EM_BOOL` (PR [#5](https://github.com/pongasoft/emscripten-glfw/pull/5))
+
 #### 3.4.0.20240625 - 2024-06-25 | emscripten TBD
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
