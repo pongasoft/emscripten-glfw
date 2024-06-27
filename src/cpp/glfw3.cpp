@@ -781,7 +781,7 @@ void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector)
 //------------------------------------------------------------------------
 // emscripten_glfw_is_window_fullscreen
 //------------------------------------------------------------------------
-int emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
+EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 {
   auto w = getWindow(window);
   if(w)
