@@ -6,10 +6,10 @@ GLFW API is 3.4.
 
 [![Latest - 3.4.0.20240627](https://img.shields.io/badge/Latest-3.4.0.20240627-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![emscripten - 3.1.62](https://img.shields.io/badge/emscripten-3.1.62-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![Released - 3.4.0.20240514](https://img.shields.io/badge/Released-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Previous - 3.4.0.20240514](https://img.shields.io/badge/Previous-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - 3.1.60](https://img.shields.io/badge/emscripten-3.1.60-blue)](https://emscripten.org)
 
@@ -152,13 +152,13 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 ```
 
 > #### Note about availability in emscripten
-> | this port      | emscripten |
-> |----------------|------------|
-> | 3.4.0.20240627 | TBD        |
-> | 3.4.0.20240514 | 3.1.60     |
-> | 3.4.0.20240318 | 3.1.57     |
-> | 1.1.0          | 3.1.56     |
-> | 1.0.5          | 3.1.55     |
+> | emscripten | this port      |
+> |------------|----------------|
+> | 3.1.62     | 3.4.0.20240627 |
+> | 3.1.60     | 3.4.0.20240514 |
+> | 3.1.57     | 3.4.0.20240318 |
+> | 3.1.56     | 1.1.0          |
+> | 3.1.55     | 1.0.5          |
 > 
 > Due to the release cadence of emscripten, if you want to be in charge of which version you use, you can simply
 > use the port that is checked-in under `port`: `--use-port=port/emscripten-glfw3.py`
@@ -220,11 +220,11 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
-#### 3.4.0.20240627 - 2024-06-27 | emscripten TBD
+#### 3.4.0.20240627 - 2024-06-27 | emscripten 3.1.62
 
 - Fixed internal implementation to use `EM_BOOL` (PR [#5](https://github.com/pongasoft/emscripten-glfw/pull/5))
 
-#### 3.4.0.20240625 - 2024-06-25 | emscripten TBD
+#### 3.4.0.20240625 - 2024-06-25 | emscripten 3.1.62
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
   Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
@@ -233,17 +233,17 @@ Release Notes
     - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released (later than when actually released, final state is consistent: "Key" in `Release` state)
     - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
 
-#### 3.4.0.20240617 - 2024-06-17 | emscripten TBD
+#### 3.4.0.20240617 - 2024-06-17 | emscripten 3.1.62
 
 - Fixed [#3](https://github.com/pongasoft/emscripten-glfw/issues/3): _glfwGetKey must return one of `GLFW_PRESS` or `GLFW_RELEASE`_
 
-#### 3.4.0.20240616 - 2024-06-16 | emscripten TBD
+#### 3.4.0.20240616 - 2024-06-16 | emscripten 3.1.62
 
 - Implemented `glfwGetClipboardString`. Note that due to the async (and restrictive) nature of the 
   `navigator.clipboard.readText` call, this synchronous API returns whatever was set via a previous call
   to `glfwSetClipboardString` and ignores the external clipboard entirely.
 
-#### 3.4.0.20240601 - 2024-06-01 | emscripten TBD
+#### 3.4.0.20240601 - 2024-06-01 | emscripten 3.1.62
 
 - Fixed [#2](https://github.com/pongasoft/emscripten-glfw/issues/2): Dynamically changing HiDPI awareness does not trigger content callback
 
