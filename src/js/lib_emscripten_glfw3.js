@@ -19,6 +19,7 @@ let emscripten_glfw3_impl = {
     fWindowResizeCallback: null,
     fRequestFullscreen: null,
     fContext: null,
+    fCSSValues: null, // key is element, value is {property_name: property_value}
     fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004, GLFW_PLATFORM_ERROR: 0x00010008},
 
     //! onError
@@ -85,6 +86,43 @@ let emscripten_glfw3_impl = {
       }
     },
 
+    //! backupCSSValues
+    backupCSSValues(element, ...names) {
+      if(!GLFW3.fCSSValues.has(element)) {
+        GLFW3.fCSSValues.set(element, {});
+      }
+      const properties = GLFW3.fCSSValues.get(element);
+      names.forEach(name => properties[name] = element.style.getPropertyValue(name));
+    },
+
+    //! setCSSValue
+    setCSSValue(element, name, value) {
+      if(!GLFW3.fCSSValues.get(element)?.hasOwnProperty(name)) {
+        GLFW3.backupCSSValues(element, name);
+      }
+      element.style.setProperty(name, value);
+    },
+
+    //! restoreCSSValues
+    restoreCSSValues(element, ...names) {
+      const properties = GLFW3.fCSSValues.get(element);
+      if(!properties)
+        return;
+      if(names.length === 0)
+        names = Object.keys(properties);
+      names.forEach(name => {
+        const value = properties[name];
+        if(!value)
+          element.style.removeProperty(name);
+        else
+          element.style.setProperty(name, value);
+        delete properties[name];
+      });
+      if(Object.keys(properties).length === 0) {
+        GLFW3.fCSSValues.delete(element);
+      }
+    },
+
     //! setCanvasResizeSelector
     setCanvasResizeSelector__deps: ['$findEventTarget'],
     setCanvasResizeSelector: (any, canvasResizeSelector) => {
@@ -127,6 +165,7 @@ let emscripten_glfw3_impl = {
             disconnect: () => { window.removeEventListener('resize', listener) }
           }
         } else {
+          ctx.fCanvasResize.destructors.push(() => { GLFW3.restoreCSSValues(canvasResize); });
           ctx.fCanvasResize.computeSize = () => {
             const style = getComputedStyle(canvasResize);
             return {width: parseInt(style.width, 10), height: parseInt(style.height, 10)}
@@ -184,8 +223,8 @@ let emscripten_glfw3_impl = {
 
       ctx.fCanvasResize.onSizeChanged = (width, height) => {
         if (!size) { // while not resizing (otherwise it conflicts)
-          resizable.style.width = width + 'px';
-          resizable.style.height = height + 'px';
+          GLFW3.setCSSValue(resizable, 'width', `${width}px`);
+          GLFW3.setCSSValue(resizable, 'height', `${height}px`);
         }
       }
 
@@ -196,6 +235,7 @@ let emscripten_glfw3_impl = {
 
       // mouse down (target handle) => record size + location
       const onMouseDown = (e) => {
+        e.preventDefault();
         size = computeSize(resizable);
         lastDownX = e.clientX;
         lastDownY = e.clientY;
@@ -217,8 +257,8 @@ let emscripten_glfw3_impl = {
           size.width = 0;
         if (size.height < 0)
           size.height = 0;
-        resizable.style.width = size.width + 'px';
-        resizable.style.height = size.height + 'px';
+        GLFW3.setCSSValue(resizable, 'width', `${size.width}px`);
+        GLFW3.setCSSValue(resizable, 'height', `${size.height}px`);
         lastDownX = e.clientX;
         lastDownY = e.clientY;
       };
@@ -230,8 +270,8 @@ let emscripten_glfw3_impl = {
       const onMouseUp = (e) => {
         if (size) {
           const canvasSize = computeSize(ctx.canvas);
-          resizable.style.width = canvasSize.width + 'px';
-          resizable.style.height = canvasSize.height + 'px';
+          GLFW3.setCSSValue(resizable, 'width', `${canvasSize.width}px`);
+          GLFW3.setCSSValue(resizable, 'height', `${canvasSize.height}px`);
           size = undefined;
         }
       };
@@ -269,6 +309,7 @@ let emscripten_glfw3_impl = {
     specialHTMLTargets["window"] = window;
     GLFW3.fWindowContexts = {};
 
+    GLFW3.fCSSValues = new Map();
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
     GLFW3.fRequestFullscreen = requestFullscreen;
@@ -353,28 +394,9 @@ let emscripten_glfw3_impl = {
     canvasCtx.canvas = canvas;
     canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
 
-    canvasCtx.originalCSS = {};
-    ["width", "height", "opacity", "cursor", "display"].forEach((name) => {
-      canvasCtx.originalCSS[name] = canvas.style.getPropertyValue(name);
-    });
-    canvasCtx.restoreCSSValue = (name) => {
-      const value = canvasCtx.originalCSS[name];
-      if(!value)
-        canvas.style.removeProperty(name);
-      else
-        canvas.style.setProperty(name, value);
-    };
-    canvasCtx.restoreCSSValues = () => {
-      Object.entries(canvasCtx.originalCSS).forEach(([name, value]) => {
-        if(!value)
-          canvas.style.removeProperty(name);
-        else
-          canvas.style.setProperty(name, value);
-      });
-    };
-    canvasCtx.setCSSValue = (name, value) => {
-      canvas.style.setProperty(name, value);
-    };
+    canvasCtx.restoreCSSValue = (name) => { GLFW3.restoreCSSValues(canvas, name); };
+    canvasCtx.restoreCSSValues = () => { GLFW3.restoreCSSValues(canvas); };
+    canvasCtx.setCSSValue = (name, value) => { GLFW3.setCSSValue(canvas, name, value); };
     canvasCtx.getComputedCSSValue = (name) => {
       return window.getComputedStyle(canvas).getPropertyValue(name);
     };

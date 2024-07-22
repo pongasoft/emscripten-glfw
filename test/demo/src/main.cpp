@@ -174,7 +174,8 @@ int main()
   if(!glfwInit())
     return -1;
 
-  printf("%s | 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
+  printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
+  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
