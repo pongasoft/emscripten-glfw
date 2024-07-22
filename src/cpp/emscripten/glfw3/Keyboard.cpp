@@ -94,7 +94,9 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
     fKeyStates[key] = GLFW_PRESS;
 
     if(fKeyCallback)
-      fKeyCallback(iWindow, key, scancode, iKeyboardEvent->repeat == GLFW_TRUE ? GLFW_REPEAT : GLFW_PRESS, computeCallbackModifierBits(iKeyboardEvent));
+    {
+      fKeyCallback(iWindow, key, scancode, iKeyboardEvent->repeat ? GLFW_REPEAT : GLFW_PRESS, computeCallbackModifierBits(iKeyboardEvent));
+    }
   }
 
   if(fCharCallback) {
