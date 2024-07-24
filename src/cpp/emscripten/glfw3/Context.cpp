@@ -30,11 +30,14 @@
 extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
+using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, char const *, char const *);
 using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
+
+
 void emscripten_glfw3_context_init(emscripten::glfw3::Context *iContext,
                                    float iScale,
-                                   ScaleChangeCallback, WindowResizeCallback, RequestFullscreen, ErrorHandler);
+                                   ScaleChangeCallback, WindowResizeCallback, ClipboardStringCallback, RequestFullscreen, ErrorHandler);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
@@ -45,6 +48,7 @@ GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
+void emscripten_glfw3_context_async_get_clipboard_string();
 }
 
 namespace emscripten::glfw3 {
@@ -76,6 +80,14 @@ void ContextWindowResizeCallback(Context *iContext, GLFWwindow *iWindow, int iWi
 }
 
 //------------------------------------------------------------------------
+// ContextClipboardStringCallback
+//------------------------------------------------------------------------
+void ContextClipboardStringCallback(Context *iContext, char const *iClipboardString, char const *iErrorMessage)
+{
+  iContext->onClipboardString(iClipboardString, iErrorMessage);
+}
+
+//------------------------------------------------------------------------
 // ContextErrorHandler
 //------------------------------------------------------------------------
 void ContextErrorHandler(int iErrorCode, char const *iErrorMessage)
@@ -93,6 +105,7 @@ Context::Context()
                                 fScale,
                                 ContextScaleChangeCallback,
                                 ContextWindowResizeCallback,
+                                ContextClipboardStringCallback,
                                 emscripten_glfw_request_fullscreen,
                                 ContextErrorHandler);
   addOrRemoveEventListeners(true);
@@ -927,7 +940,10 @@ void Context::setClipboardString(char const *iContent)
   if(iContent)
   {
     emscripten_glfw3_context_set_clipboard_string(iContent);
-    fClipboardText = iContent;
+    fInternalClipboardText = iContent;
+    for(auto &promise: fExternalClipboardTextRequests)
+      promise.set_value(ClipboardString::fromValue(iContent));
+    fExternalClipboardTextRequests.clear();
   }
 }
 
@@ -936,10 +952,40 @@ void Context::setClipboardString(char const *iContent)
 //------------------------------------------------------------------------
 char const *Context::getClipboardString()
 {
-  if(fClipboardText)
-    return fClipboardText->c_str();
+  if(fInternalClipboardText)
+    return fInternalClipboardText->c_str();
   else
     return nullptr;
+}
+
+//------------------------------------------------------------------------
+// Context::asyncGetClipboardString
+//------------------------------------------------------------------------
+std::future<ClipboardString> Context::asyncGetClipboardString()
+{
+  if(fExternalClipboardTextRequests.empty())
+    emscripten_glfw3_context_async_get_clipboard_string();
+  return fExternalClipboardTextRequests.emplace_back().get_future();
+}
+
+//------------------------------------------------------------------------
+// Context::onClipboardString
+//------------------------------------------------------------------------
+void Context::onClipboardString(char const *iText, char const *iErrorMessage)
+{
+  if(iText)
+  {
+    for(auto &promise: fExternalClipboardTextRequests)
+      promise.set_value(ClipboardString::fromValue(iText));
+  }
+  else if(iErrorMessage)
+  {
+    for(auto &promise: fExternalClipboardTextRequests)
+      promise.set_value(ClipboardString::fromError(iErrorMessage));
+  }
+  fExternalClipboardTextRequests.clear();
+
+  fInternalClipboardText = iText ? std::optional<std::string>(iText) : std::nullopt;
 }
 
 }

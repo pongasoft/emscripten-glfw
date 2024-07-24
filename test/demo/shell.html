@@ -301,6 +301,10 @@
         <label for="pointerLock-any">L</label><input type="checkbox" id="pointerLock-any">
       </td>
     </tr>
+    <tr class="GetClipboardString">
+      <td class="action">GetClipboardString (async)</td>
+      <td colspan="2"><input type="button" value="Paste" onclick="Module.pushEvent('async_get_clipboard_string');"> <label>Result: <input type="text" value="-" disabled></label></td>
+    </tr>
     <tr>
       <td class="action">Change focus</td>
       <td colspan="2"><label>Text: <input type="text" id="change-focus"></label></td>
@@ -351,7 +355,7 @@
       exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5,
       opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10,
       toggle_resizable: 11, toggle_size_limits: 12, toggle_aspect_ratio: 13,
-      update_title: 14, set_clipboard_string: 15
+      update_title: 14, set_clipboard_string: 15, async_get_clipboard_string: 16
     },
     events: [],
     hasEvents: () => { return Module.events.length > 0; },

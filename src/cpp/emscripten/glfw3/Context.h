@@ -25,6 +25,9 @@
 #include "Monitor.h"
 #include <string>
 #include <optional>
+#include <future>
+#include <vector>
+#include <GLFW/emscripten_glfw3.h>
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
 #include "Joystick.h"
@@ -93,10 +96,12 @@ public:
   // clipboard
   void setClipboardString(char const *iContent);
   char const *getClipboardString();
+  std::future<ClipboardString> asyncGetClipboardString();
 
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
+  void onClipboardString(char const *iText, char const *iErrorMessage);
   int requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
   int requestPointerLock(GLFWwindow *iWindow);
   void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);
@@ -131,7 +136,8 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTime{getPlatformTimerValue()};
-  std::optional<std::string> fClipboardText{};
+  std::optional<std::string> fInternalClipboardText{};
+  std::vector<std::promise<ClipboardString>> fExternalClipboardTextRequests{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};

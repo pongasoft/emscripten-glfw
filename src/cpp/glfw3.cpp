@@ -1287,3 +1287,52 @@ GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count) { logNot
 #ifdef __cplusplus
 } // extern "C"
 #endif
+
+//------------------------------------------------------------------------
+// C++ specific API
+//------------------------------------------------------------------------
+
+namespace emscripten::glfw3 {
+
+//------------------------------------------------------------------------
+// ClipboardString::fromValue
+//------------------------------------------------------------------------
+ClipboardString ClipboardString::fromValue(std::string iValue)
+{
+  return ClipboardString{std::move(iValue), std::nullopt};
+}
+
+//------------------------------------------------------------------------
+// ClipboardString::fromError
+//------------------------------------------------------------------------
+ClipboardString ClipboardString::fromError(std::string iError)
+{
+  return ClipboardString{std::nullopt, std::move(iError)};
+}
+
+//------------------------------------------------------------------------
+// ClipboardString::ClipboardString
+//------------------------------------------------------------------------
+ClipboardString::ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError)
+  : fValue(std::move(iValue)), fError(std::move(iError))
+{
+
+}
+
+//------------------------------------------------------------------------
+// GetClipboardString
+//------------------------------------------------------------------------
+std::future<ClipboardString> GetClipboardString()
+{
+  auto context = getContext();
+  if(context)
+    return context->asyncGetClipboardString();
+  else
+  {
+    std::promise<ClipboardString> p;
+    p.set_value(ClipboardString::fromError("GLFW has not been initialized"));
+    return p.get_future();
+  }
+}
+
+}

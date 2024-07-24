@@ -143,6 +143,7 @@ Example code:
     width: 0;
     height: 0;
     cursor: nwse-resize;
+    z-index: 1;
   }
 </style>
 <div id="canvas1-container">

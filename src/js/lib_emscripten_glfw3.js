@@ -17,6 +17,7 @@ let emscripten_glfw3_impl = {
     fScaleMQL: null,
     fScaleChangeCallback: null,
     fWindowResizeCallback: null,
+    fClipboardStringCallback: null,
     fRequestFullscreen: null,
     fContext: null,
     fCSSValues: null, // key is element, value is {property_name: property_value}
@@ -303,7 +304,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, requestFullscreen, errorHandler) => {
+  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, clipboardStringCallback, requestFullscreen, errorHandler) => {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
@@ -312,6 +313,7 @@ let emscripten_glfw3_impl = {
     GLFW3.fCSSValues = new Map();
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
+    GLFW3.fClipboardStringCallback = clipboardStringCallback;
     GLFW3.fRequestFullscreen = requestFullscreen;
     GLFW3.fErrorHandler = errorHandler;
     GLFW3.fContext = context;
@@ -364,8 +366,10 @@ let emscripten_glfw3_impl = {
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
     GLFW3.fWindowContexts = null;
+    GLFW3.fCSSValues = null;
     GLFW3.fScaleChangeCallback = null;
     GLFW3.fWindowResizeCallback = null;
+    GLFW3.fClipboardStringCallback = null;
     GLFW3.fRequestFullscreen = null;
     if(GLFW3.fScaleMQL) {
       GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
@@ -543,6 +547,27 @@ let emscripten_glfw3_impl = {
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     else
       return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
+  },
+
+  // emscripten_glfw3_context_async_get_clipboard_string
+  emscripten_glfw3_context_async_get_clipboard_string: () => {
+    navigator.clipboard.readText()
+      .then(text => {
+        if(GLFW3.fClipboardStringCallback) {
+          const string = stringToNewUTF8(text);
+          {{{ makeDynCall('vppp', 'GLFW3.fClipboardStringCallback') }}}(GLFW3.fContext, string, null);
+          _free(string);
+        }
+      })
+      .catch(err => {
+        if(GLFW3.fClipboardStringCallback) {
+          const errorString = stringToNewUTF8(`${err}`);
+          {{{ makeDynCall('vppp', 'GLFW3.fClipboardStringCallback') }}}(GLFW3.fContext, null, errorString);
+          _free(errorString);
+        } else {
+          GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot get clipboard string [${err}]`);
+        }
+      })
   },
 
   // emscripten_glfw3_context_set_clipboard_string

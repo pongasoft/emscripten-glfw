@@ -22,6 +22,67 @@
 #include <GLFW/glfw3.h>
 #include <emscripten/em_types.h>
 
+//------------------------------------------------------------------------
+// CPP Interface
+//------------------------------------------------------------------------
+#ifdef __cplusplus
+
+#include <future>
+#include <string>
+#include <optional>
+
+namespace emscripten::glfw3 {
+
+/**
+ * Value returned by `GetClipboardString`: encapsulates the fact that the API can return an error (due to restrictions
+ * imposed by browser when accessing the clipboard).
+ *
+ * Note: Accessing `value()` when there is an error will throw an exception. You should make sure to check for errors
+ * or use the `value_or()` API.
+ */
+struct ClipboardString
+{
+  bool hasValue() const { return fValue.has_value(); }
+  bool hasError() const { return fError.has_value(); }
+  std::string const &value() const { return fValue.value(); }
+  std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
+  std::string const &error() const { return *fError; }
+
+  static ClipboardString fromValue(std::string iValue);
+  static ClipboardString fromError(std::string iError);
+
+private:
+  ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError);
+
+  std::optional<std::string> fValue{};
+  std::optional<std::string> fError{};
+};
+
+/**
+ * The `glfwGetClipboardString` function does not work well in a browser environment due to the fact that the
+ * Javascript API to access the clipboard is asynchronous. This function provides an alternative way to retrieve
+ * the clipboard in this environment.
+ *
+ * Note 1: Due to the restrictions imposed by browsers in accessing the clipboard, the value returned by the future
+ *         can contain an error. Note that the future itself will never be in error (no exception).
+ * Note 2: This implementation also maintains an "internal" clipboard, one that is always available whether the browser
+ *         is authorized or not to access the external clipboard:
+ *         - `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
+ *            external one (which may fail)
+ *         - `glfwGetClipboardString` always return the contents of the internal clipboard
+ *         - `emscripten::glfw3::GetClipboardString` tries to fetch the content of the external clipboard and if
+ *           successful, also copies it to the internal one
+ */
+std::future<ClipboardString> GetClipboardString();
+
+} // namespace emscripten::glfw3
+
+#endif // __cplusplus
+
+//------------------------------------------------------------------------
+// C Interface
+//------------------------------------------------------------------------
+
 #ifdef __cplusplus
 extern "C" {
 #endif
