@@ -769,13 +769,37 @@ GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int
 }
 
 //------------------------------------------------------------------------
+// emscripten_glfw_make_canvas_resizable
+//------------------------------------------------------------------------
+int emscripten_glfw_make_canvas_resizable(GLFWwindow *window,
+                                          char const *canvasResizeSelector,
+                                          char const *handleSelector)
+{
+  if(canvasResizeSelector == nullptr)
+  {
+    ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "canvasResizeSelector is required");
+    return EMSCRIPTEN_RESULT_UNKNOWN_TARGET;
+  }
+  else
+    return emscripten::glfw3::MakeCanvasResizable(window,
+                                                  canvasResizeSelector,
+                                                  handleSelector == nullptr ? std::nullopt : std::optional<std::string_view>(handleSelector));
+}
+
+//------------------------------------------------------------------------
+// emscripten_glfw_unmake_canvas_resizable
+//------------------------------------------------------------------------
+int emscripten_glfw_unmake_canvas_resizable(GLFWwindow *window)
+{
+  return emscripten::glfw3::UnmakeCanvasResizable(window);
+}
+
+//------------------------------------------------------------------------
 // emscripten_glfw_set_next_window_canvas_selector
 //------------------------------------------------------------------------
 void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector)
 {
-  auto context = getContext();
-  if(context)
-    context->setNextWindowCanvasSelector(canvasSelector);
+  emscripten::glfw3::SetNextWindowCanvasSelector(canvasSelector);
 }
 
 //------------------------------------------------------------------------
@@ -783,11 +807,7 @@ void emscripten_glfw_set_next_window_canvas_selector(char const *canvasSelector)
 //------------------------------------------------------------------------
 EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 {
-  auto w = getWindow(window);
-  if(w)
-    return toEMBool(w->isFullscreen());
-  else
-    return EM_FALSE;
+  return emscripten::glfw3::IsWindowFullscreen(window);
 }
 
 //------------------------------------------------------------------------
@@ -795,11 +815,7 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow* window)
 //------------------------------------------------------------------------
 int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas)
 {
-  auto context = getContext();
-  if(context)
-    return context->requestFullscreen(window, lockPointer, resizeCanvas);
-  else
-    return EMSCRIPTEN_RESULT_FAILED;
+  return emscripten::glfw3::RequestFullscreen(window, lockPointer, resizeCanvas);
 }
 
 //------------------------------------------------------------------------
@@ -1333,6 +1349,66 @@ std::future<ClipboardString> GetClipboardString()
     p.set_value(ClipboardString::fromError("GLFW has not been initialized"));
     return p.get_future();
   }
+}
+
+//------------------------------------------------------------------------
+// SetNextWindowCanvasSelector
+//------------------------------------------------------------------------
+void SetNextWindowCanvasSelector(std::string_view canvasSelector)
+{
+  auto context = getContext();
+  if(context)
+    context->setNextWindowCanvasSelector(canvasSelector.data());
+}
+
+//------------------------------------------------------------------------
+// MakeCanvasResizable
+//------------------------------------------------------------------------
+int MakeCanvasResizable(GLFWwindow *window,
+                        std::string_view canvasResizeSelector,
+                        std::optional<std::string_view> handleSelector)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->makeCanvasResizable(canvasResizeSelector, handleSelector);
+  else
+    return EMSCRIPTEN_RESULT_UNKNOWN_TARGET;
+}
+
+//------------------------------------------------------------------------
+// UnmakeCanvasResizable
+//------------------------------------------------------------------------
+int UnmakeCanvasResizable(GLFWwindow *window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->unmakeCanvasResizable();
+  else
+    return EMSCRIPTEN_RESULT_UNKNOWN_TARGET;
+}
+
+//------------------------------------------------------------------------
+// IsWindowFullscreen
+//------------------------------------------------------------------------
+bool IsWindowFullscreen(GLFWwindow *window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->isFullscreen();
+  else
+    return false;
+}
+
+//------------------------------------------------------------------------
+// RequestFullscreen
+//------------------------------------------------------------------------
+int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
+{
+  auto context = getContext();
+  if(context)
+    return context->requestFullscreen(window, lockPointer, resizeCanvas);
+  else
+    return EMSCRIPTEN_RESULT_FAILED;
 }
 
 }

@@ -55,7 +55,7 @@ void renderFrame(GLFWwindow *iWindow)
   int fw,fh; glfwGetFramebufferSize(iWindow, &fw, &fh);
   double mx,my; glfwGetCursorPos(iWindow, &mx, &my);
   auto color = 127.0f + 127.0f * std::sin((float) frameCount++ / 120.f);
-  jsRenderFrame(iWindow, w, h, fw, fh, mx, my, (int) color, emscripten_glfw_is_window_fullscreen(iWindow));
+  jsRenderFrame(iWindow, w, h, fw, fh, mx, my, (int) color, emscripten::glfw3::IsWindowFullscreen(iWindow));
 }
 
 //! The main loop (called by emscripten for each frame)
@@ -80,7 +80,7 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
   if(action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL)) {
     switch(key) {
       case GLFW_KEY_Q: glfwSetWindowShouldClose(window, GLFW_TRUE); break;
-      case GLFW_KEY_F: emscripten_glfw_request_fullscreen(window, false, true); break; // ok from a keyboard event
+      case GLFW_KEY_F: emscripten::glfw3::RequestFullscreen(window, false, true); break; // ok from a keyboard event
       default: break;
     }
   }
@@ -106,7 +106,7 @@ int main()
   glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
 
   // setting the association window <-> canvas
-  emscripten_glfw_set_next_window_canvas_selector("#canvas");
+  emscripten::glfw3::SetNextWindowCanvasSelector("#canvas");
 
   // create the only window
   auto window = glfwCreateWindow(600, 400, "Resizable Container | emscripten-glfw", nullptr, nullptr);
@@ -114,7 +114,7 @@ int main()
     return -1;
 
   // makes the canvas resizable to the size of its div container
-  emscripten_glfw_make_canvas_resizable(window, "#canvas-container", nullptr);
+  emscripten::glfw3::MakeCanvasResizable(window, "#canvas-container");
 
   // set callback for exit (CTRL+Q) and fullscreen (CTRL+F)
   glfwSetKeyCallback(window, onKeyChange);

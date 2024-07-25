@@ -154,6 +154,11 @@ public:
   bool createGLContext();
   void makeGLContextCurrent();
 
+  // Canvas
+  int makeCanvasResizable(std::string_view canvasResizeSelector,
+                          std::optional<std::string_view> handleSelector = std::nullopt);
+  int unmakeCanvasResizable();
+
   Window(Context *iContext, Config iConfig, float iMonitorScale, char const *iTitle);
   ~Window() override;
   constexpr bool isDestroyed() const { return fDestroyed; }

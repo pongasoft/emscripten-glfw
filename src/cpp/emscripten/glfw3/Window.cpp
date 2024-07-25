@@ -40,6 +40,8 @@ void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
 void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
 int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
 int emscripten_glfw3_context_gl_make_context_current(GLFWwindow *iWindow);
+int emscripten_glfw3_context_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
+int emscripten_glfw3_context_unmake_canvas_resizable(GLFWwindow *window);
 }
 
 namespace emscripten::glfw3 {
@@ -858,6 +860,23 @@ bool Window::onExitFullscreen()
   return true;
 }
 
+//------------------------------------------------------------------------
+// Window::makeCanvasResizable
+//------------------------------------------------------------------------
+int Window::makeCanvasResizable(std::string_view canvasResizeSelector, std::optional<std::string_view> handleSelector)
+{
+  return emscripten_glfw3_context_make_canvas_resizable(asOpaquePtr(),
+                                                        canvasResizeSelector.data(),
+                                                        handleSelector ? handleSelector->data() : nullptr);
+}
+
+//------------------------------------------------------------------------
+// Window::unmakeCanvasResizable
+//------------------------------------------------------------------------
+int Window::unmakeCanvasResizable()
+{
+  return emscripten_glfw3_context_unmake_canvas_resizable(asOpaquePtr());
+}
 
 
 }

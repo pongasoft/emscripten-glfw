@@ -549,6 +549,18 @@ let emscripten_glfw3_impl = {
       return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
   },
 
+  //! emscripten_glfw3_context_make_canvas_resizable
+  emscripten_glfw3_context_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
+    resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
+    handleSelector = handleSelector ? UTF8ToString(handleSelector) : null;
+    return GLFW3.makeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
+  },
+
+  //! emscripten_glfw3_context_unmake_canvas_resizable
+  emscripten_glfw3_context_unmake_canvas_resizable: (glfwWindow) => {
+    return GLFW3.unmakeCanvasResizable(glfwWindow);
+  },
+
   // emscripten_glfw3_context_async_get_clipboard_string
   emscripten_glfw3_context_async_get_clipboard_string: () => {
     navigator.clipboard.readText()
@@ -580,22 +592,5 @@ let emscripten_glfw3_impl = {
 
 }
 
-// Javascript public api that is called from cpp (see emscripten_glfw3.h)
-let emscripten_glfw3_api = {
-  //! emscripten_glfw_make_canvas_resizable
-  emscripten_glfw_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
-    resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
-    handleSelector = handleSelector ? UTF8ToString(handleSelector) : null;
-    return GLFW3.makeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
-  },
-
-  //! emscripten_glfw_unmake_canvas_resizable
-  emscripten_glfw_unmake_canvas_resizable: (glfwWindow) => {
-    return GLFW3.unmakeCanvasResizable(glfwWindow);
-  }
-}
-
 autoAddDeps(emscripten_glfw3_impl, '$GLFW3')
-autoAddDeps(emscripten_glfw3_api, '$GLFW3')
 mergeInto(LibraryManager.library, emscripten_glfw3_impl);
-mergeInto(LibraryManager.library, emscripten_glfw3_api);
