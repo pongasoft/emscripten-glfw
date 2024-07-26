@@ -405,6 +405,9 @@ int Window::getAttrib(int iAttrib)
     case GLFW_RESIZABLE:
       return fConfig.fResizable;
 
+    case GLFW_HOVERED:
+      return toGlfwBool(fHovered);
+
     default:
       kErrorHandler.logWarning("glfwGetWindowAttrib: attrib [%d] not supported", iAttrib);
       return 0;
@@ -772,6 +775,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
     fOnMouseEnter
       .target(selector)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        fHovered = true;
         if(fMouse.fCursorEnterCallback)
         {
           fMouse.fCursorEnterCallback(asOpaquePtr(), GLFW_TRUE);
@@ -785,6 +789,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
     fOnMouseLeave
       .target(selector)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        fHovered = false;
         if(fMouse.fCursorEnterCallback)
         {
           fMouse.fCursorEnterCallback(asOpaquePtr(), GLFW_FALSE);

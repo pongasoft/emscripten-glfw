@@ -621,6 +621,8 @@ void Triangle::updateValues()
   setHtmlValue(fWindow, "glfwGetWindowAttrib-visible", "%s", visible ? "visible" : "hidden");
   setHtmlValue(fWindow, "glfwShowWindow", "%s", visible ? "Hide" : "Show");
 
+  setHtmlValue(fWindow, "glfwGetWindowAttrib-hovered", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_HOVERED)));
+
   setHtmlValue(fWindow, "glfwGetWindowAttrib-focused", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED)));
 
   setHtmlValue(fWindow, "glfwGetWindowAttrib-resizable", "%s", glfwBoolToString(glfwGetWindowAttrib(fWindow, GLFW_RESIZABLE)));

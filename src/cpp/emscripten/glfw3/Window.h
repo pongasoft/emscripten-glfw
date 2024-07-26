@@ -202,6 +202,7 @@ private:
   Config fConfig;
   float fMonitorScale;
   bool fDestroyed{};
+  bool fHovered{};
   bool fFocused{};
   bool fVisible{true};
   bool fFullscreen{};
