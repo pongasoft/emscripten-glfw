@@ -722,6 +722,18 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos)
 GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos) { logNotAvailable("glfwSetWindowPos"); }
 
 //------------------------------------------------------------------------
+// glfwSetWindowPosCallback
+//------------------------------------------------------------------------
+GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->setPosCallback(callback);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwSetWindowTitle
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title)
@@ -743,17 +755,6 @@ GLFWAPI const char* glfwGetWindowTitle(GLFWwindow* window)
     return nullptr;
 }
 
-
-//------------------------------------------------------------------------
-// glfwSetWindowPosCallback
-//------------------------------------------------------------------------
-GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindowposfun callback)
-{
-  // there is no direct way in javascript to get notified => this would require polling so not implementing
-  // at this stage
-  logNotImplemented("glfwSetWindowPosCallback");
-  return callback;
-}
 
 //------------------------------------------------------------------------
 // glfwGetWindowFrameSize

@@ -79,7 +79,7 @@ public:
     if(oWidth) *oWidth = getFramebufferWidth();
     if(oHeight) *oHeight = getFramebufferHeight();
   }
-  void getPosition(int *oX, int *oY);
+  void getPosition(int *oX, int *oY) const;
 //  inline bool isPointOutside(int x, int y) const { return x < 0 || x > fWidth || y < 0 || y > fHeight; }
 //  inline bool isPointInside(int x, int y) const { return !isPointOutside(x, y); }
 
@@ -101,6 +101,7 @@ public:
   inline GLFWwindowcontentscalefun setContentScaleCallback(GLFWwindowcontentscalefun iCallback) { return std::exchange(fContentScaleCallback, iCallback); }
 
   // events
+  inline GLFWwindowposfun setPosCallback(GLFWwindowposfun iCallback) { return std::exchange(fPosCallback, iCallback); }
   inline GLFWcursorposfun setCursorPosCallback(GLFWcursorposfun iCallback) { return std::exchange(fMouse.fCursorPosCallback, iCallback); }
   inline GLFWmousebuttonfun setMouseButtonCallback(GLFWmousebuttonfun iCallback) { return std::exchange(fMouse.fButtonCallback, iCallback); }
   inline GLFWscrollfun setScrollCallback(GLFWscrollfun iCallback) { return std::exchange(fMouse.fScrollCallback, iCallback); }
@@ -182,7 +183,6 @@ protected:
   Vec2<int> maybeApplySizeConstraints(Vec2<int> const &iSize) const;
 
 private:
-  EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonDown{};
   EventListener<EmscriptenMouseEvent> fOnMouseEnter{};
   EventListener<EmscriptenMouseEvent> fOnMouseLeave{};
@@ -194,6 +194,8 @@ private:
   void addOrRemoveEventListeners(bool iAdd);
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
   void setCursorPos(Vec2<double> const &iPos);
+  void onGlobalMouseMove(EmscriptenMouseEvent const *iEvent);
+  void computePos();
 
 private:
   Context *fContext;
@@ -205,6 +207,7 @@ private:
   bool fFullscreen{};
   bool fFocusOnMouse{true};
   Vec2<int> fSize{};
+  Vec2<int> fPos{};
   Vec2<int> fFramebufferSize{};
   Vec2<int> fMinSize{GLFW_DONT_CARE, GLFW_DONT_CARE};
   Vec2<int> fMaxSize{GLFW_DONT_CARE, GLFW_DONT_CARE};
@@ -219,6 +222,7 @@ private:
   Keyboard fKeyboard{};
   void *fUserPointer{};
   GLFWwindowcontentscalefun fContentScaleCallback{};
+  GLFWwindowposfun fPosCallback{};
   GLFWwindowsizefun fSizeCallback{};
   GLFWwindowfocusfun fFocusCallback{};
   GLFWframebuffersizefun fFramebufferSizeCallback{};

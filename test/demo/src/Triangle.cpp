@@ -375,6 +375,10 @@ void onCursorPosChange(GLFWwindow *window, double xScale, double yScale)
 {
   setHtmlValue(window, "glfwSetCursorPosCallback", "%.2fx%.2f", xScale, yScale);
 }
+void onPosChange(GLFWwindow *window, int x, int y)
+{
+  setHtmlValue(window, "glfwSetWindowPosCallback", "%dx%d", x, y);
+}
 void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 {
 //  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -423,6 +427,7 @@ void Triangle::registerCallbacks()
   glfwSetWindowSizeCallback(fWindow, onWindowSizeChange);
   glfwSetFramebufferSizeCallback(fWindow, onFramebufferSizeChange);
   glfwSetCursorPosCallback(fWindow, onCursorPosChange);
+  glfwSetWindowPosCallback(fWindow, onPosChange);
   glfwSetMouseButtonCallback(fWindow, onMouseButtonChange);
   glfwSetCursorEnterCallback(fWindow, onCursorEnterChange);
   glfwSetScrollCallback(fWindow, onScrollChange);

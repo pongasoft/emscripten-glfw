@@ -148,6 +148,22 @@ void Context::addOrRemoveEventListeners(bool iAdd)
 {
   if(iAdd)
   {
+    // fOnMouseMove
+    fOnMouseMove
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+        for(auto &w: fWindows)
+          w->onGlobalMouseMove(iEvent);
+#else
+        if(fSingleWindow)
+          fSingleWindow->onGlobalMouseMove(iEvent);
+#endif
+        return true;
+      })
+      .add(emscripten_set_mousemove_callback_on_thread);
+
+    // fOnMouseButtonUp
     fOnMouseButtonUp
       .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
@@ -229,6 +245,7 @@ void Context::addOrRemoveEventListeners(bool iAdd)
   }
   else
   {
+    fOnMouseMove.remove();
     fOnMouseButtonUp.remove();
     fOnKeyDown.remove();
     fOnKeyUp.remove();
@@ -241,6 +258,23 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnGamepadDisconnected.remove();
 #endif
   }
+}
+
+//------------------------------------------------------------------------
+// Context::computeWindowPos
+//------------------------------------------------------------------------
+void Context::computeWindowPos()
+{
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+  for(auto &w: fWindows)
+  {
+    w->computePos();
+  }
+#else
+  if(fSingleWindow)
+    fSingleWindow->computePos();
+#endif
+
 }
 
 //------------------------------------------------------------------------
@@ -899,6 +933,8 @@ uint64_t Context::getTimerValue()
 //------------------------------------------------------------------------
 void Context::pollEvents()
 {
+  computeWindowPos();
+
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   if(fPresentJoystickCount > 0)
     fPresentJoystickCount = Joystick::pollJoysticks();

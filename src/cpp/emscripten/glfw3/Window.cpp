@@ -98,6 +98,8 @@ void Window::init(int iWidth, int iHeight)
   }
 
   setCanvasSize({iWidth, iHeight});
+
+  computePos();
 }
 
 //------------------------------------------------------------------------
@@ -246,14 +248,35 @@ void Window::setAspectRatio(int iNumerator, int iDenominator)
 //------------------------------------------------------------------------
 // Window::getPosition
 //------------------------------------------------------------------------
-void Window::getPosition(int *oX, int *oY)
+void Window::getPosition(int *oX, int *oY) const
 {
-  int x,y;
-  emscripten_glfw3_window_get_position(asOpaquePtr(), &x, &y);
   if(oX)
-    *oX = x;
+    *oX = fPos.x;
   if(oY)
-    *oY = y;
+    *oY = fPos.y;
+}
+
+
+//------------------------------------------------------------------------
+// Window::computePos
+//------------------------------------------------------------------------
+void Window::computePos()
+{
+  Vec2<int> pos{};
+  emscripten_glfw3_window_get_position(asOpaquePtr(), &pos.x, &pos.y);
+  if(fPos != pos)
+  {
+    if(!isPointerLock())
+    {
+      // adjust the cursor position since the window has moved...
+      auto delta = fPos - pos;
+      setCursorPos({static_cast<double>(fMouse.fCursorPos.x + delta.x),
+                    static_cast<double>(fMouse.fCursorPos.y + delta.y)});
+    }
+    fPos = pos;
+    if(fPosCallback)
+      fPosCallback(asOpaquePtr(), pos.x, pos.y);
+  }
 }
 
 //------------------------------------------------------------------------
@@ -284,9 +307,6 @@ void Window::setCanvasSize(Vec2<int> const &iSize)
 
   if(sizeChanged)
   {
-    // make sure that the cursor stays in the window
-    setCursorPos({fMouse.fCursorPos.x, fMouse.fCursorPos.y});
-
     if(fSizeCallback)
       fSizeCallback(asOpaquePtr(), fSize.width, fSize.height);
   }
@@ -309,17 +329,35 @@ void Window::resize(Vec2<int> const &iSize)
 //------------------------------------------------------------------------
 void Window::setCursorPos(Vec2<double> const &iPos)
 {
-  // clamp to window when not in pointer lock mode
-  auto pos = isPointerLock() ? iPos : Vec2<double>{std::clamp(iPos.x, 0.0, static_cast<double>(fSize.width)),
-                                                   std::clamp(iPos.y, 0.0, static_cast<double>(fSize.height))};
-
-  if(fMouse.fCursorPos != pos)
+  if(fMouse.fCursorPos != iPos)
   {
-    fMouse.fCursorPos = pos;
+    fMouse.fCursorPos = iPos;
     if(fMouse.fCursorPosCallback)
       fMouse.fCursorPosCallback(asOpaquePtr(), fMouse.fCursorPos.x, fMouse.fCursorPos.y);
   }
 }
+
+//------------------------------------------------------------------------
+// Window::onGlobalMouseMove
+//------------------------------------------------------------------------
+void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
+{
+  if(isPointerLock())
+  {
+    fMouse.fCursorLockResidual.x += iEvent->movementX;
+    fMouse.fCursorLockResidual.y += iEvent->movementY;
+    auto cursorPos = fMouse.fCursorLockResidual;
+    // following SDL implementation to not lose sub-pixel motion
+    fMouse.fCursorLockResidual.x -= cursorPos.x;
+    fMouse.fCursorLockResidual.y -= cursorPos.y;
+    setCursorPos(cursorPos);
+  }
+  else
+  {
+    setCursorPos({static_cast<double>(iEvent->targetX - fPos.x), static_cast<double>(iEvent->targetY - fPos.y)});
+  }
+}
+
 
 //------------------------------------------------------------------------
 // Window::setOpacity
@@ -708,29 +746,6 @@ void Window::addOrRemoveEventListeners(bool iAdd)
 
   if(iAdd)
   {
-    // fOnMouseMove
-    fOnMouseMove
-      .target(selector)
-      .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-        Vec2<double> cursorPos{};
-        if(isPointerLock())
-        {
-          fMouse.fCursorLockResidual.x += iEvent->movementX;
-          fMouse.fCursorLockResidual.y += iEvent->movementY;
-          cursorPos = fMouse.fCursorLockResidual;
-          // following SDL implementation to not lose sub-pixel motion
-          fMouse.fCursorLockResidual.x -= cursorPos.x;
-          fMouse.fCursorLockResidual.y -= cursorPos.y;
-        }
-        else
-        {
-          cursorPos = {static_cast<double>(iEvent->targetX), static_cast<double>(iEvent->targetY)};
-        }
-        setCursorPos(cursorPos);
-        return true;
-      })
-      .add(emscripten_set_mousemove_callback_on_thread);
-
     // fOnMouseButtonDown
     fOnMouseButtonDown
       .target(selector)
@@ -818,7 +833,6 @@ void Window::addOrRemoveEventListeners(bool iAdd)
   }
   else
   {
-    fOnMouseMove.remove();
     fOnMouseButtonDown.remove();
     fOnMouseEnter.remove();
     fOnMouseLeave.remove();

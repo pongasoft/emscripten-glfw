@@ -117,6 +117,8 @@ private:
   bool onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent);
   bool onPointerUnlock();
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
+  void computeWindowPos();
+
   static double getPlatformTimerValue();
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
@@ -146,6 +148,7 @@ private:
   GLFWmonitorfun fMonitorCallback{};
   GLFWjoystickfun fJoystickCallback{};
 
+  EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
   EventListener<EmscriptenKeyboardEvent> fOnKeyUp{};
