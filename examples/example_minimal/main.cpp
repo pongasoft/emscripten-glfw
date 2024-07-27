@@ -18,6 +18,7 @@
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <emscripten/version.h>
 
 /**
  * The purpose of this example is to be as minimal as possible: initializes glfw, create window, then destroy it
@@ -27,6 +28,7 @@ int main()
 {
   // print the version on the console
   printf("%s\n", glfwGetVersionString());
+  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
 
   if(!glfwInit())
     return -1;
