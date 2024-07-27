@@ -4,14 +4,14 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240627](https://img.shields.io/badge/Latest-3.4.0.20240627-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240727](https://img.shields.io/badge/Latest-3.4.0.20240727-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - 3.1.62](https://img.shields.io/badge/emscripten-3.1.62-blue)](https://emscripten.org)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![Previous - 3.4.0.20240514](https://img.shields.io/badge/Previous-3.4.0.20240514-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - 3.1.63](https://img.shields.io/badge/emscripten-3.1.63-blue)](https://emscripten.org)
+[![Version - 3.4.0.20240627](https://img.shields.io/badge/Version-3.4.0.20240627-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-[![emscripten - 3.1.60](https://img.shields.io/badge/emscripten-3.1.60-blue)](https://emscripten.org)
 
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -31,8 +31,8 @@ Features
 
 Main supported features:
 * can create as many windows as you want, each one associated to a different canvas (use 
-  `emscripten_glfw_set_next_window_canvas_selector("#canvas2")` to specify which canvas to use)
-* resizable window/canvas (use `emscripten_glfw_make_canvas_resizable(...)` to make the canvas resizable by user.
+  `emscripten::glfw3::SetNextWindowCanvasSelector("#canvas2")` to specify which canvas to use)
+* resizable window/canvas (use `emscripten::glfw3::MakeCanvasResizable(...)` to make the canvas resizable by user.
   Use `"window"` as the resize selector for full frame canvas (ex: ImGui))
 * mouse (includes sticky button behavior)
 * keyboard (includes sticky key behavior)
@@ -44,6 +44,7 @@ Main supported features:
 * size constraints (size limits and aspect ratio)
 * visibility
 * focus
+* clipboard
 * timer
 
 Demo
@@ -51,7 +52,7 @@ Demo
 
 ![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240616/emscripten-glfw.png)
 
-Checkout the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
+Check out the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
 
 The [code](test/demo/src) for the demo is included in this project.
@@ -61,16 +62,16 @@ The demo shows 2 canvases each created via a `glfwCreateWindow` and shows how th
 
 - canvas1 is hi dpi aware (`glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE)`)
 - canvas2 is **not** hi dpi aware (but can be made so with the "Enable" Hi DPI Aware button)
-- canvas2 is fully resizable (use the square handle to resize) (`emscripten_glfw_make_canvas_resizable(window2, "#canvas2-container", "#canvas2-handle")`)
+- canvas2 is fully resizable (use the square handle to resize) (`emscripten::glfw3::MakeCanvasResizable(window2, "#canvas2-container", "#canvas2-handle")`)
 
 You can enable/disable each window/canvas independently:
 
 - When 2 (or more) canvases are present, the canvas that has focus can receive keyboard events. If no other element on 
   the page has focus, then the last canvas that had the focus will receive these events. Clicking with the left mouse 
   button on a canvas gives it focus.
-- When there is only 1 canvas, the implementation try to be smart about it and will route keyboard (and other relevant) 
-  events to the single canvas provided that nothing else has focus (the 'Change focus/Text' field is used to test 
-  this feature since clicking in the text field grabs the focus).
+- When there is only 1 canvas, the implementation tries to be smart about it and will route keyboard (and other relevant) 
+  events to the single canvas if nothing else has focus (the 'Change focus/Text' field is used to test 
+  this feature since clicking on the text field grabs the focus).
 
 The demo uses webgl to render a triangle (the hellow world of gpu rendering...).
 
@@ -101,7 +102,7 @@ Examples
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container/main.html">example_resizable_container</a> (<a href="examples/example_resizable_container">src</a>)</td>
     <td>The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
       surrounding div) driving its size. The container width is proportional to the size of the window and so as the
-      window gets resized so does the div and so does the canvas</td>
+      window gets resized so does the div, and so does the canvas</td>
   </tr>
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container_with_handle/main.html">example_resizable_container_with_handle</a> (<a href="examples/example_resizable_container_with_handle">src</a>)</td>
@@ -154,7 +155,8 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | emscripten | this port      |
 > |------------|----------------|
-> | 3.1.62     | 3.4.0.20240627 |
+> | TBD        | 3.4.0.20240727 |
+> | 3.1.63     | 3.4.0.20240627 |
 > | 3.1.60     | 3.4.0.20240514 |
 > | 3.1.57     | 3.4.0.20240318 |
 > | 3.1.56     | 1.1.0          |
@@ -220,11 +222,30 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
-#### 3.4.0.20240627 - 2024-06-27 | emscripten 3.1.62
+#### 3.4.0.20240727 - 2024-07-27 | emscripten TBD
+
+- Introduced C++ API (namespace `emscripten::glfw3`) included with `GLFW3/emscripten_glfw3.h`:
+  - provides a more correct API with sensible defaults (ex: `std::string_view` / `std::optional<std::string_view>` 
+    vs `char const *` which may or may not be `nullptr`)
+  - allow for C++ only API (ex: `std::future`)
+  - the C API is still available if you would rather stick to it
+- Implemented  `emscripten::glfw3::GetClipboardString` (C++ only) which provides a way of fetching the global
+  clipboard in a browser environment (`glfwGetClipboardString` is not the right API due to the asynchronous nature 
+  of the underlying platform API).
+- The cursor position is no longer clamped to the window size, and as a result, can have negative values or values
+  greater than the window size.
+  Note that GLFW implements a similar behavior on the macOS desktop platform.
+- Implemented `glfwSetWindowPosCallback`
+- Added support for GLFW Window Attribute `GLFW_HOVERED`
+- Fixed [#6](https://github.com/pongasoft/emscripten-glfw/issues/6): _`emscripten_glfw_make_canvas_resizable` does not clean up properly_.
+- Fixed an issue with opacity: when using opacity, the handle is not working unless its z-index is higher than the 
+  canvas z-index
+
+#### 3.4.0.20240627 - 2024-06-27 | emscripten 3.1.63
 
 - Fixed internal implementation to use `EM_BOOL` (PR [#5](https://github.com/pongasoft/emscripten-glfw/pull/5))
 
-#### 3.4.0.20240625 - 2024-06-25 | emscripten 3.1.62
+#### 3.4.0.20240625 - 2024-06-25 | emscripten 3.1.63
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
   Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
@@ -233,17 +254,17 @@ Release Notes
     - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released (later than when actually released, final state is consistent: "Key" in `Release` state)
     - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
 
-#### 3.4.0.20240617 - 2024-06-17 | emscripten 3.1.62
+#### 3.4.0.20240617 - 2024-06-17 | emscripten 3.1.63
 
 - Fixed [#3](https://github.com/pongasoft/emscripten-glfw/issues/3): _glfwGetKey must return one of `GLFW_PRESS` or `GLFW_RELEASE`_
 
-#### 3.4.0.20240616 - 2024-06-16 | emscripten 3.1.62
+#### 3.4.0.20240616 - 2024-06-16 | emscripten 3.1.63
 
 - Implemented `glfwGetClipboardString`. Note that due to the async (and restrictive) nature of the 
   `navigator.clipboard.readText` call, this synchronous API returns whatever was set via a previous call
   to `glfwSetClipboardString` and ignores the external clipboard entirely.
 
-#### 3.4.0.20240601 - 2024-06-01 | emscripten 3.1.62
+#### 3.4.0.20240601 - 2024-06-01 | emscripten 3.1.63
 
 - Fixed [#2](https://github.com/pongasoft/emscripten-glfw/issues/2): Dynamically changing HiDPI awareness does not trigger content callback
 

@@ -25,14 +25,14 @@ This library offers 2 ways depending on your needs:
 #### 1. Using javascript/Module
 
 Every emscripten application needs to define a `Module` variable in javascript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
-By convention in emscripten, the `Module["canvas"]` field represents the canvas that is associated to the window.
-To be backward compatible with this option, this library supports it, and it is the default. Obviously this can only
-work if there is only one window which is why there is another method.
+By convention in emscripten, the `Module["canvas"]` field represents the canvas associated to the window.
+To be backward compatible with this option, this library supports it, and it is the default. Obviously, this can only
+work if there is only one window, which is why there is another method.
 
-#### 2. Using `emscripten_glfw_set_next_window_canvas_selector`
+#### 2. Using `emscripten::glfw3::SetNextWindowCanvasSelector`
 
 This implementation offers an alternative way of specifying which canvas to associate to which window: the function
-`emscripten_glfw_set_next_window_canvas_selector` which must be called **prior** to calling `glfwCreateWindow`. The
+`emscripten::glfw3::SetNextWindowCanvasSelector` which must be called **prior** to calling `glfwCreateWindow`. The
 single argument to the function is a css path selector to the canvas.
 
 Example:
@@ -40,7 +40,7 @@ Example:
 ```cpp
 #include <GLFW/emscripten_glfw3.h> // contains the definitions
 
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
+emscripten::glfw3::SetNextWindowCanvasSelector("#canvas1");
 auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
 ```
 
@@ -53,26 +53,26 @@ GLFW deals with windows. Windows, in the context of a desktop application, are u
 the GLFW window hint/attribute `GLFW_RESIZABLE` lets you disable this feature). So how does this translate into the
 html/canvas world?
 
-In order to make the canvas resizable, and behave more like a window, this implementation offers a
-convenient API: `emscripten_glfw_make_canvas_resizable`:
+To make the canvas resizable, and behave more like a "traditional" window, this implementation offers a
+convenient API: `emscripten::glfw3::MakeCanvasResizable`:
 
 ```cpp
-int emscripten_glfw_make_canvas_resizable(GLFWwindow *window,
-                                          char const *canvasResizeSelector,
-                                          char const *handleSelector);
+int MakeCanvasResizable(GLFWwindow *window,
+                        std::string_view canvasResizeSelector,
+                        std::optional<std::string_view> handleSelector = std::nullopt);
 ```
 
-Since this library takes control of the size of the canvas, the idea behind this function is to specify which
+Since this library takes control of the canvas size, the idea behind this function is to specify which
 other (html) element dictates the size of the canvas. The parameter `canvasResizeSelector` defines the
 (css path) selector to this element.
 
-The 3 typical uses cases are:
+The 3 typical use cases are:
 
 #### 1. Full window
 
 The canvas fills the entire browser window, in which case the parameter `canvasResizeSelector` should simply
-be set to "window" and the `handleSelector` is `nullptr`. This use case can be found in application like ImGui
-where the canvas is the window.
+be set to "window" and the `handleSelector` is `std::nullopt`.
+This use case can be found in application like ImGui where the canvas is the window.
 
 Example code:
 
@@ -83,9 +83,9 @@ Example code:
 
 ```cpp
 // cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
+emscripten::glfw3::SetNextWindowCanvasSelector("#canvas1");
 auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
+emscripten::glfw3::MakeCanvasResizable(window, "window");
 ```
 
 #### 2. Container (`div`)
@@ -93,7 +93,7 @@ emscripten_glfw_make_canvas_resizable(window, "window", nullptr);
 The canvas is inside a `div`, in which case the `div` acts as a "container" and the `div` size is defined by
 CSS rules, like for example: `width: 75vw` so that when the page/browser gets resized, the `div` is resized
 automatically, which then triggers the canvas to be resized. In this case, the parameter `canvasResizeSelector`
-is the (css path) selector to this `div` and `handleSelector` is `nullptr`.
+is the (css path) selector to this `div` and `handleSelector` is `std::nullopt`.
 
 Example code:
 
@@ -112,9 +112,9 @@ Example code:
 
 ```cpp
 // cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
+emscripten::glfw3::SetNextWindowCanvasSelector("#canvas1");
 auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "#canvas1-container", nullptr);
+emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container");
 ```
 
 #### 3. Container + handle
@@ -154,9 +154,9 @@ Example code:
 
 ```cpp
 // cpp
-emscripten_glfw_set_next_window_canvas_selector("#canvas1");
+emscripten::glfw3::SetNextWindowCanvasSelector("#canvas1");
 auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
-emscripten_glfw_make_canvas_resizable(window, "#canvas1-container", "canvas1-handle");
+emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container", "canvas1-handle");
 ```
 
 > #### Note
@@ -165,8 +165,9 @@ emscripten_glfw_make_canvas_resizable(window, "#canvas1-container", "canvas1-han
 
 ## Fullscreen support
 
-GLFW has a concept of fullscreen window. This is quite tricky for this implementation due to the restrictions imposed
-by browsers to go fullscreen. Historically, emscripten has offered a way to do it from javascript by the means of a
+GLFW has a concept of a fullscreen window.
+This is quite tricky for this implementation due to the restrictions imposed by browsers to go fullscreen.
+Historically, emscripten has offered a way to do it from javascript by the means of a
 function that gets added automatically to the `Module` called `requestFullscreen`.
 
 This implementation adds another javascript function `Module.glfwRequestFullscreen(target, lockPointer, resizeCanvas)`
@@ -181,9 +182,10 @@ To be backward compatible with the current emscripten/glfw/javascript implementa
 `Module.requestFullscreen(lockPointer, resizeCanvas)` and the library does its best to determine which
 canvas to target.
 
-This implementation also offers a C version of this API:
+This implementation also offers a CPP and C version of this API:
 
 ```cpp
+void emscripten::glfw3::RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 ```
 
@@ -199,7 +201,7 @@ then from a user event call `Module.glfwRequestFullscreen`.
 ## Hi DPI support
 
 This implementation supports Hi DPI awareness. What this means is that if the browser window is on a screen that is
-Hi DPI/4k then it will properly adjust the dimension of the canvas to match the scale of the screen. If the window gets
+Hi DPI/4k, then it will properly adjust the dimension of the canvas to match the scale of the screen. If the window gets
 moved to a screen that is lower resolution, it will automatically change the scaling. You can set a callback to be
 notified of the changes (`glfwSetWindowContentScaleCallback`) or call the direct API `glfwGetWindowContentScale`.
 
@@ -222,9 +224,10 @@ glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disablin
 
 
 > #### Best practice
-> Almost all GLFW apis deal with screen coordinates which are independent of scaling. The only one which doesn't
-> is `glfwGetFramebufferSize` which returns the actual size of the surface which takes into account the scaling factor.
-> As a result, for most low level APIs (like OpenGL/webgl) you would use this call to set the viewport size.
+> Almost all GLFW apis deal with screen coordinates which are independent of scaling.
+> The only one that doesn't is `glfwGetFramebufferSize`
+> which returns the actual size of the surface which takes into account the scaling factor.
+> As a result, for most low-level APIs (like OpenGL/webgl) you would use this call to set the viewport size.
 >
 > Here is an example:
 > ```cpp
@@ -236,8 +239,7 @@ glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disablin
 ## Keyboard support
 
 This implementation supports the keyboard and uses the same mapping defined in emscripten for scancodes. You can check
-[KeyboardMapping.h](../src/cpp/emscripten/glfw3/KeyboardMapping.h) for the full mapping. This implementation
-uses `KeyboardEvent.key` to compute an accurate
+[KeyboardMapping.h](../src/cpp/emscripten/glfw3/KeyboardMapping.h) for the full mapping. This implementation uses `KeyboardEvent.key` to compute an accurate
 codepoint (provided to the `GLFWcharfun` callback) and not the deprecated  `KeyboardEvent.charcode` like other
 implementations.
 
@@ -253,8 +255,7 @@ which is widely supported by most current browsers.
 > If you want to disable joystick support entirely (and save some resources), you can use the `disableJoystick=true`
 > option if you use the port (or set the `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` compilation define).
 
-The mapping returned by this API (as defined [here](https://w3c.github.io/gamepad/#remapping)), is represented by this
-image:
+This [image](https://w3c.github.io/gamepad/#remapping), represents the mapping returned by this API (as defined here):
 
 ![Gamepad Mapping](standard_gamepad.svg)
 
@@ -278,13 +279,96 @@ image:
 > auto isGuidePressed = glfwGetGamepadState(jid, &state) == GLFW_TRUE && state.buttons[GLFW_GAMEPAD_BUTTON_GUIDE];
 > ```
 
+## Clipboard support
+
+In the context of the browser, getting access to the clipboard is a bit tricky:
+- there are restrictions imposed by the browser for obvious security reasons
+- the APIs to manage the clipboard are asynchronous
+
+This implementation maintains an "internal" clipboard, one that is always available whether the browser
+is authorized or not to access the external clipboard:
+- `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
+  external one (which may fail)
+- `glfwGetClipboardString` always return the contents of the internal clipboard
+- `emscripten::glfw3::GetClipboardString` tries to fetch the content of the external clipboard and if
+  successful, also copies it to the internal one
+
+Here is how you would access the external clipboard:
+
+```cpp
+// using global variable for the sake of this example
+static auto kClipboardString = std::future<emscripten::glfw3::ClipboardString>{};
+
+// main loop
+
+// this happens on frame N
+if(/* paste */) {
+  kClipboardString = emscripten::glfw3::GetClipboardString();
+}
+
+// ...
+
+// this happens on frame N + n (with n > 0 and usually n is 1)
+if(kClipboardString.valid() &&
+   kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+{
+  // since the internal clipboard is updated with the external value, you can simply
+  // call glfwGetClipboardString which will contain:
+  // - the value of the external clipboard if the call succeeded
+  // - the value of the internal clipboard if it failed
+
+  // auto clipboard = glfwGetClipboardString(window); 
+  
+  // clipboard handled, reset the future
+  kClipboardString = {};
+}
+```
+
+> #### Note
+> The previous code bypasses the error case entirely. If you want to handle it yourself, you can do
+> something like this:
+> ```cpp
+> if(kClipboardString.valid() &&
+>    kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+>   auto clipboard = kClipboardString.get();
+>   if(clipboard.hasValue()) {
+>     // handle external clipboard value by calling clipboard.value()
+>   } else {
+>     // there was an error accessing the clipboard:
+>     //   the error can be accessed with clipboard.error()
+>     // you can use the internal clipboard instead:
+>     //   glfwGetClipboardString()
+>   }
+>   // clipboard handled, reset the future
+>   kClipboardString = {};
+> }
+> ```
+
+
+
 ## Extensions
 
 This implementation offers a few extensions to the normal GLFW api necessary for this specific platform.
 
+### CPP extensions
+
+As explained previously, some CPP functions are defined in `<GLFW/emscripten_glfw3.h>`
+
+> #### Note
+> All functions are defined in the `emscripten::glfw3` namespace
+
+| Function                      | Notes                                                              |
+|-------------------------------|--------------------------------------------------------------------|
+| `SetNextWindowCanvasSelector` | to specify the association window <-> canvas                       |
+| `MakeCanvasResizable`         | to make the canvas resizable                                       |
+| `UnmakeCanvasResizable`       | to revert `emscripten_glfw_make_canvas_resizable`                  |
+| `IsWindowFullscreen`          | to check if the window is fullscreen                               |
+| `RequestFullscreen`           | to request fullscreen                                              |
+| `GetClipboardString`          | to retrieve the content of the global clipboard (asynchronous API) |
+
 ### C extensions
 
-As explained previously, some C functions are defined in `<GLFW/emscripten_glfw3.h>`:
+Similar to the CPP functions, C functions are defined in `<GLFW/emscripten_glfw3.h>`, with a C-like syntax
 
 | Function                                          | Notes                                             |
 |---------------------------------------------------|---------------------------------------------------|
@@ -311,7 +395,7 @@ This implementation adds the following functions to the `Module`:
 | `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwGetCanvasSelector`                                                                                                              |
 
 In addition, this implementation will check if the function `Module.glfwOnWindowCreated(glfwWindow, selector)` is
-defined in which case it will be called once the window is created. This allows to write code like this:
+defined in which case it will be called once the window is created. This allows writing code like this:
 
 ```javascript
 Module = {
@@ -351,7 +435,7 @@ using [`example_minimal`](../examples/example_minimal)
 This table contains the list of all the functions supported by this implementation with a few relevant notes
 
 > ### Note
-> GLFW 3.4 introduced the concept of platform. This implementation adds the `GLFW_PLATFORM_EMSCRIPTEN` define
+> GLFW 3.4 introduced the concept of a platform. This implementation adds the `GLFW_PLATFORM_EMSCRIPTEN` define
 > in `empscriptem-glfw3.h`: the value is reserved (in a comment), but it is not defined in `glfw3.h`.
 
 | Function                            | Notes                                                                                                                                                                                                                   |
@@ -394,7 +478,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwGetTimerValue`                 | Corresponds to `performance.now()` in javascript                                                                                                                                                                        |
 | `glfwGetVersion`                    |                                                                                                                                                                                                                         |
 | `glfwGetVersionString`              | "Emscripten/WebAssembly GLFW " + GLFW version                                                                                                                                                                           |
-| `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
+| `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_HOVERED`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                  |
 | `glfwGetWindowContentScale`         | If HiDPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`), then current monitor scale, otherwise `1.0`                                                                                                                   |
 | `glfwGetWindowFrameSize`            | Because a window is a canvas in this implementation, there is no edge => all 0                                                                                                                                          |
 | `glfwGetWindowMonitor`              | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
@@ -433,7 +517,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwSetWindowContentScaleCallback` | Callback only called if Hi DPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`)                                                                                                                                          |
 | `glfwSetWindowFocusCallback`        |                                                                                                                                                                                                                         |
 | `glfwSetWindowOpacity`              | Uses css style `opacity: xxx` for the canvas                                                                                                                                                                            |
-| `glfwSetWindowPosCallback`          | Returns callback provided: callback is never called                                                                                                                                                                     |
+| `glfwSetWindowPosCallback`          | Uses top/left of the value returned by `getBoundingClientRect(canvas)`)                                                                                                                                                 |
 | `glfwSetWindowRefreshCallback`      | Returns callback provided: callback is never called                                                                                                                                                                     |
 | `glfwSetWindowShouldClose`          |                                                                                                                                                                                                                         |
 | `glfwSetWindowSize`                 | Hi DPI Aware: set the size of the canvas (`canvas.width = size * scale`) + css style (`style.width = size`)                                                                                                             |
@@ -449,7 +533,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwWindowHintString`              | None                                                                                                                                                                                                                    |
 | `glfwWindowShouldClose`             |                                                                                                                                                                                                                         |
 
-## Non Supported functions
+## Non-Supported functions
 
 Note that these functions log a warning the first time they are called (which can be disabled via
 `EMSCRIPTEN_GLFW3_DISABLE_WARNING` define) and are doing nothing, returning the most "sensible" value
