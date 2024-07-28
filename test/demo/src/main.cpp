@@ -121,6 +121,8 @@ bool handleEvents()
   }
 }
 
+constexpr auto kGetClipboardStringValueSelector = ".GetClipboardString .value";
+
 //------------------------------------------------------------------------
 // one iteration of the loop
 //------------------------------------------------------------------------
@@ -137,14 +139,14 @@ bool iter()
     auto value = kClipboardString.get();
     if(value.hasValue())
     {
-      setHtmlValue(".GetClipboardString input[type='text']", value.value());
+      setHtmlValue(kGetClipboardStringValueSelector, value.value());
     }
     else
     {
       // convoluted way of doing it to test the API...
       auto error = value.hasError() ? value.value_or("Error: " + value.error()) : "Not Reached";
       printf("GetClipboardString: %s\n", value.error().c_str());
-      setHtmlValue(".GetClipboardString input[type='text']", error);
+      setHtmlValue(kGetClipboardStringValueSelector, error);
     }
     kClipboardString = {};
   }
@@ -199,7 +201,7 @@ int main()
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
   printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
-  setHtmlValue(".GetClipboardString input[type='text']", "-");
+  setHtmlValue(kGetClipboardStringValueSelector, "-");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
