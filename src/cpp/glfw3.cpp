@@ -1259,6 +1259,17 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window)
 }
 
 //------------------------------------------------------------------------
+// emscripten_glfw_get_clipboard_string
+//------------------------------------------------------------------------
+void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData)
+{
+  auto context = getContext();
+  if(context)
+    context->getClipboardString(callback, userData);
+}
+
+
+//------------------------------------------------------------------------
 // no implementation for the emscripten platform
 //------------------------------------------------------------------------
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)

@@ -54,7 +54,8 @@ struct Event
     toggleAspectRatio,
     updateTitle,
     setClipboardString,
-    asyncGetClipboardString
+    asyncCGetClipboardString,
+    asyncCPPGetClipboardString
   };
 
   Type fType;
@@ -83,10 +84,33 @@ std::optional<Event> popEvent()
 
 static auto kClipboardString = std::future<emscripten::glfw3::ClipboardString>{};
 
+static long kFrameCount = 0;
+
+//------------------------------------------------------------------------
+// GetClipboardHandler
+//------------------------------------------------------------------------
+void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
+{
+  constexpr auto kValueSelector = ".emscripten_glfw_get_clipboard_string .value";
+
+  auto frameCount = reinterpret_cast<long>(iUserData);
+  if(iClipboardString)
+  {
+    setHtmlValue(kValueSelector,
+                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | " + iClipboardString);
+  }
+  else
+  {
+    setHtmlValue(kValueSelector,
+                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | Error: " + iError);
+
+  }
+}
+
 //------------------------------------------------------------------------
 // handleEvents
 //------------------------------------------------------------------------
-bool handleEvents()
+bool handleEvents(long iFrameCount)
 {
   while(true)
   {
@@ -115,38 +139,42 @@ bool handleEvents()
       case Event::Type::toggleAspectRatio: if(triangle) triangle->toggleAspectRatio(); break;
       case Event::Type::updateTitle: if(triangle) triangle->updateTitle(); break;
       case Event::Type::setClipboardString: if(triangle) triangle->setClipboardString(); break;
-      case Event::Type::asyncGetClipboardString: kClipboardString = emscripten::glfw3::GetClipboardString(); break;
+      case Event::Type::asyncCGetClipboardString: emscripten_glfw_get_clipboard_string(GetClipboardHandler, reinterpret_cast<void *>(iFrameCount)); break;
+      case Event::Type::asyncCPPGetClipboardString: kClipboardString = emscripten::glfw3::GetClipboardString(); break;
       default: break;
     }
   }
 }
-
-constexpr auto kGetClipboardStringValueSelector = ".GetClipboardString .value";
 
 //------------------------------------------------------------------------
 // one iteration of the loop
 //------------------------------------------------------------------------
 bool iter()
 {
+
+  kFrameCount++;
+
   glfwPollEvents();
 
-  if(!handleEvents())
+  if(!handleEvents(kFrameCount))
     return false;
 
   if(kClipboardString.valid() &&
      kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
   {
+    constexpr auto kValueSelector = ".GetClipboardString .value";
+
     auto value = kClipboardString.get();
     if(value.hasValue())
     {
-      setHtmlValue(kGetClipboardStringValueSelector, value.value());
+      setHtmlValue(kValueSelector, value.value());
     }
     else
     {
       // convoluted way of doing it to test the API...
       auto error = value.hasError() ? value.value_or("Error: " + value.error()) : "Not Reached";
       printf("GetClipboardString: %s\n", value.error().c_str());
-      setHtmlValue(kGetClipboardStringValueSelector, error);
+      setHtmlValue(kValueSelector, error);
     }
     kClipboardString = {};
   }
@@ -201,7 +229,6 @@ int main()
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
   printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
-  setHtmlValue(kGetClipboardStringValueSelector, "-");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));

@@ -290,8 +290,8 @@ is authorized or not to access the external clipboard:
 - `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
   external one (which may fail)
 - `glfwGetClipboardString` always return the contents of the internal clipboard
-- `emscripten::glfw3::GetClipboardString` tries to fetch the content of the external clipboard and if
-  successful, also copies it to the internal one
+- `emscripten::glfw3::GetClipboardString` (resp. `emscripten_glfw_get_clipboard_string`) tries to fetch the 
+   content of the external clipboard and if successful, also copies it to the internal one
 
 Here is how you would access the external clipboard:
 
@@ -313,7 +313,7 @@ if(kClipboardString.valid() &&
    kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 {
   // since the internal clipboard is updated with the external value, you can simply
-  // call glfwGetClipboardString which will contain:
+  // call glfwGetClipboardString, which will contain:
   // - the value of the external clipboard if the call succeeded
   // - the value of the internal clipboard if it failed
 
@@ -322,6 +322,21 @@ if(kClipboardString.valid() &&
   // clipboard handled, reset the future
   kClipboardString = {};
 }
+```
+
+Using the C API:
+```c
+void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
+{
+  if(iError)
+    // handle error-case
+  else
+    // handle clipboard string
+}
+
+// main loop
+// userData = ...;
+emscripten_glfw_get_clipboard_string(GetClipboardHandler, userData);
 ```
 
 > #### Note
@@ -357,26 +372,27 @@ As explained previously, some CPP functions are defined in `<GLFW/emscripten_glf
 > #### Note
 > All functions are defined in the `emscripten::glfw3` namespace
 
-| Function                      | Notes                                                              |
-|-------------------------------|--------------------------------------------------------------------|
-| `SetNextWindowCanvasSelector` | to specify the association window <-> canvas                       |
-| `MakeCanvasResizable`         | to make the canvas resizable                                       |
-| `UnmakeCanvasResizable`       | to revert `emscripten_glfw_make_canvas_resizable`                  |
-| `IsWindowFullscreen`          | to check if the window is fullscreen                               |
-| `RequestFullscreen`           | to request fullscreen                                              |
-| `GetClipboardString`          | to retrieve the content of the global clipboard (asynchronous API) |
+| Function                      | Notes                                                                |
+|-------------------------------|----------------------------------------------------------------------|
+| `SetNextWindowCanvasSelector` | to specify the association window <-> canvas                         |
+| `MakeCanvasResizable`         | to make the canvas resizable                                         |
+| `UnmakeCanvasResizable`       | to revert `emscripten_glfw_make_canvas_resizable`                    |
+| `IsWindowFullscreen`          | to check if the window is fullscreen                                 |
+| `RequestFullscreen`           | to request fullscreen                                                |
+| `GetClipboardString`          | to retrieve the content of the external clipboard (asynchronous API) |
 
 ### C extensions
 
 Similar to the CPP functions, C functions are defined in `<GLFW/emscripten_glfw3.h>`, with a C-like syntax
 
-| Function                                          | Notes                                             |
-|---------------------------------------------------|---------------------------------------------------|
-| `emscripten_glfw_set_next_window_canvas_selector` | to specify the association window <-> canvas      |
-| `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                      |
-| `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable` |
-| `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen              |
-| `emscripten_glfw_request_fullscreen`              | to request fullscreen                             |
+| Function                                          | Notes                                                                |
+|---------------------------------------------------|----------------------------------------------------------------------|
+| `emscripten_glfw_set_next_window_canvas_selector` | to specify the association window <-> canvas                         |
+| `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                                         |
+| `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable`                    |
+| `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen                                 |
+| `emscripten_glfw_request_fullscreen`              | to request fullscreen                                                |
+| `emscripten_glfw_get_clipboard_string`            | to retrieve the content of the external clipboard (asynchronous API) |
 
 You can either include this file, or use an `extern "C" {}` section in your own code to define them
 
@@ -412,8 +428,8 @@ Module = {
 ## Implementation size
 
 This implementation being in C++ and implementing far more features than the `library_glfw.js` emscripten
-implementation, it has an impact on size. As of this writing, I ran the following experiment on both implementations
-using [`example_minimal`](../examples/example_minimal)
+implementation, it has an impact on size.
+As of initial release, I ran the following experiment on both implementations using [`example_minimal`](../examples/example_minimal)
 
 | Mode              | `library_glfw.js`                      | This implementation                      | Delta |
 |-------------------|----------------------------------------|------------------------------------------|-------|
@@ -429,6 +445,30 @@ using [`example_minimal`](../examples/example_minimal)
   (`EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`, `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` and
   `EMSCRIPTEN_GLFW3_DISABLE_WARNING`) for an even smaller footprint
 * Lastly, `.wasm` files compress extremely well, so it is worth serving them compressed
+
+
+## Implementation size (update)
+
+![emscripten - 3.1.64](https://img.shields.io/badge/emscripten-3.1.64-blue)
+![emscripten-glfw-3.4.0.20240627](https://img.shields.io/badge/emscripten--glfw-3.4.0.20240627-blue)
+
+```text
+> cd examples/example_minimal
+# using library_glfw.js
+> emcc -sUSE_GLFW=3 main.cpp -O2 -o /tmp/build/index.html
+# using contrib.glfw3
+> emcc --use-port=contrib.glfw3 main.cpp -O2 -o /tmp/build/index.html
+# using contrib.glfw3 (minimal)
+> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true main.cpp -O2 -o /tmp/build/index.html
+```
+
+| Mode              | `library_glfw.js`                      | This implementation                      | Delta |
+|-------------------|----------------------------------------|------------------------------------------|-------|
+| Release           | js: 104400, wasm: 13869, total: 118269 | js: 57024, wasm: 71214, total: 128238    | 1.08x |
+| Release (minimal) | -                                      | js: 54736, wasm: 63098, total: 117834    | 0.99x |
+
+> #### Note
+> The good news is that emscripten is improving and this implementation is benefitting from it.
 
 ## Supported functions
 
@@ -447,7 +487,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                                               |
 | `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                                                |
 | `glfwFocusWindow`                   | Calls javascript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
-| `glfwGetClipboardString`            | Due to async nature of the browser API, only returns what was set via `glfwSetClipboardString`                                                                                                                          |
+| `glfwGetClipboardString`            | See Clipboard Support section                                                                                                                                                                                           |
 | `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                                                        |
 | `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                                            |
 | `glfwGetError`                      |                                                                                                                                                                                                                         |
@@ -497,7 +537,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                                              |
 | `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                                                     |
 | `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                                                |
-| `glfwSetClipboardString`            | Uses `navigator.clipboard.writeText`                                                                                                                                                                                    |
+| `glfwSetClipboardString`            | Uses `navigator.clipboard.writeText`. See Clipboard Support section.                                                                                                                                                    |
 | `glfwSetCursor`                     | Uses css style `cursor: xxx` for the canvas                                                                                                                                                                             |
 | `glfwSetCursorEnterCallback`        | Listeners to `mouseenter` and `mouseleave` events                                                                                                                                                                       |
 | `glfwSetCursorPosCallback`          | Hi DPI aware                                                                                                                                                                                                            |

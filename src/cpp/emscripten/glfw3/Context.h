@@ -97,6 +97,7 @@ public:
   void setClipboardString(char const *iContent);
   char const *getClipboardString();
   std::future<ClipboardString> asyncGetClipboardString();
+  void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
 
 public:
   void onScaleChange();
@@ -126,6 +127,13 @@ private:
 #endif
 
 private:
+  struct ClipboardStringCallback
+  {
+    emscripten_glfw_clipboard_string_fun fCallback{};
+    void *fUserData{};
+  };
+
+private:
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   std::vector<std::shared_ptr<Window>> fWindows{};
 #else
@@ -139,7 +147,8 @@ private:
   float fScale{1.0f};
   double fInitialTime{getPlatformTimerValue()};
   std::optional<std::string> fInternalClipboardText{};
-  std::vector<std::promise<ClipboardString>> fExternalClipboardTextRequests{};
+  std::vector<std::promise<ClipboardString>> fExternalClipboardTextPromises{};
+  std::vector<ClipboardStringCallback> fExternalClipboardTextCallbacks{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};

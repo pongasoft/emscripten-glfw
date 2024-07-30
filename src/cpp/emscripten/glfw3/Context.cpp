@@ -977,9 +977,9 @@ void Context::setClipboardString(char const *iContent)
   {
     emscripten_glfw3_context_set_clipboard_string(iContent);
     fInternalClipboardText = iContent;
-    for(auto &promise: fExternalClipboardTextRequests)
+    for(auto &promise: fExternalClipboardTextPromises)
       promise.set_value(ClipboardString::fromValue(iContent));
-    fExternalClipboardTextRequests.clear();
+    fExternalClipboardTextPromises.clear();
   }
 }
 
@@ -999,9 +999,22 @@ char const *Context::getClipboardString()
 //------------------------------------------------------------------------
 std::future<ClipboardString> Context::asyncGetClipboardString()
 {
-  if(fExternalClipboardTextRequests.empty())
+  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
     emscripten_glfw3_context_async_get_clipboard_string();
-  return fExternalClipboardTextRequests.emplace_back().get_future();
+  return fExternalClipboardTextPromises.emplace_back().get_future();
+}
+
+//------------------------------------------------------------------------
+// Context::getClipboardString
+//------------------------------------------------------------------------
+void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData)
+{
+  if(!iCallback)
+    return;
+
+  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
+    emscripten_glfw3_context_async_get_clipboard_string();
+  fExternalClipboardTextCallbacks.emplace_back(ClipboardStringCallback{iCallback, iUserData});
 }
 
 //------------------------------------------------------------------------
@@ -1009,19 +1022,16 @@ std::future<ClipboardString> Context::asyncGetClipboardString()
 //------------------------------------------------------------------------
 void Context::onClipboardString(char const *iText, char const *iErrorMessage)
 {
-  if(iText)
-  {
-    for(auto &promise: fExternalClipboardTextRequests)
-      promise.set_value(ClipboardString::fromValue(iText));
-  }
-  else if(iErrorMessage)
-  {
-    for(auto &promise: fExternalClipboardTextRequests)
-      promise.set_value(ClipboardString::fromError(iErrorMessage));
-  }
-  fExternalClipboardTextRequests.clear();
-
   fInternalClipboardText = iText ? std::optional<std::string>(iText) : std::nullopt;
+
+  for(auto &promise: fExternalClipboardTextPromises)
+    promise.set_value(iText ? ClipboardString::fromValue(iText) : ClipboardString::fromError(iErrorMessage));
+  fExternalClipboardTextPromises.clear();
+
+  for(auto &callback: fExternalClipboardTextCallbacks)
+    callback.fCallback(callback.fUserData, iText, iErrorMessage);
+  fExternalClipboardTextCallbacks.clear();
+
 }
 
 }

@@ -305,6 +305,24 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
  * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
 int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas);
 
+/**
+ * The `glfwGetClipboardString` function does not work well in a browser environment due to the fact that the
+ * Javascript API to access the clipboard is asynchronous. This function provides an alternative way to retrieve
+ * the clipboard in this environment.
+ *
+ * Note 1: Due to the restrictions imposed by browsers in accessing the clipboard, `error` will contain the
+ *         error message and `clipboardString` will be null when there is an error.
+ * Note 2: This implementation also maintains an "internal" clipboard, one that is always available whether the browser
+ *         is authorized or not to access the external clipboard:
+ *         - `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
+ *            external one (which may fail)
+ *         - `glfwGetClipboardString` always return the contents of the internal clipboard
+ *         - `emscripten_glfw_get_clipboard_string` tries to fetch the content of the external clipboard and if
+ *           successful, also copies it to the internal one
+ */
+typedef void (* emscripten_glfw_clipboard_string_fun)(void *userData, char const *clipboardString, char const *error);
+void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData);
+
 #ifdef __cplusplus
 }
 #endif
