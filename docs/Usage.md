@@ -297,30 +297,18 @@ Here is how you would access the external clipboard:
 
 ```cpp
 // using global variable for the sake of this example
-static auto kClipboardString = std::future<emscripten::glfw3::ClipboardString>{};
+static emscripten::glfw3::FutureClipboardString kClipboard{};
 
 // main loop
 
-// this happens on frame N
+// on paste event (happens at frame N)
 if(/* paste */) {
-  kClipboardString = emscripten::glfw3::GetClipboardString();
+  kClipboard = emscripten::glfw3::GetClipboardString();
 }
 
-// ...
-
-// this happens on frame N + n (with n > 0 and usually n is 1)
-if(kClipboardString.valid() &&
-   kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-{
-  // since the internal clipboard is updated with the external value, you can simply
-  // call glfwGetClipboardString, which will contain:
-  // - the value of the external clipboard if the call succeeded
-  // - the value of the internal clipboard if it failed
-
-  // auto clipboard = glfwGetClipboardString(window); 
-  
-  // clipboard handled, reset the future
-  kClipboardString = {};
+// on each frame: this happens on frame N + n (with n > 0)
+if(kClipboard) {
+  auto value = kClipboard.fetchValue(); // use value
 }
 ```
 
@@ -338,28 +326,6 @@ void GetClipboardHandler(void *iUserData, char const *iClipboardString, char con
 // userData = ...;
 emscripten_glfw_get_clipboard_string(GetClipboardHandler, userData);
 ```
-
-> #### Note
-> The previous code bypasses the error case entirely. If you want to handle it yourself, you can do
-> something like this:
-> ```cpp
-> if(kClipboardString.valid() &&
->    kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
->   auto clipboard = kClipboardString.get();
->   if(clipboard.hasValue()) {
->     // handle external clipboard value by calling clipboard.value()
->   } else {
->     // there was an error accessing the clipboard:
->     //   the error can be accessed with clipboard.error()
->     // you can use the internal clipboard instead:
->     //   glfwGetClipboardString()
->   }
->   // clipboard handled, reset the future
->   kClipboardString = {};
-> }
-> ```
-
-
 
 ## Extensions
 

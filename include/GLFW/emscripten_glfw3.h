@@ -37,14 +37,13 @@ namespace emscripten::glfw3 {
  * Value returned by `GetClipboardString`: encapsulates the fact that the API can return an error (due to restrictions
  * imposed by browser when accessing the clipboard).
  *
- * Note: Accessing `value()` when there is an error will throw an exception. You should make sure to check for errors
- * or use the `value_or()` API.
+ * Note: Accessing `value()` when there is an error simply returns the internal clipboard
  */
 struct ClipboardString
 {
   bool hasValue() const { return fValue.has_value(); }
   bool hasError() const { return fError.has_value(); }
-  std::string const &value() const { return fValue.value(); }
+  std::string value() const { return hasValue() ? *fValue : glfwGetClipboardString(nullptr); }
   std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
   std::string const &error() const { return *fError; }
 
@@ -56,6 +55,33 @@ private:
 
   std::optional<std::string> fValue{};
   std::optional<std::string> fError{};
+};
+
+/**
+ * Helper class to make the code easier to write
+ *
+ * ```cpp
+ * using namespace emscripten::glfw3;
+ * FutureClipboardString clipboard{};
+ *
+ * // on paste event
+ * clipboard = GetClipboardString();
+ *
+ * // on each frame
+ * if(clipboard)
+ * {
+ *   clipboard.fetchValue();
+ * }
+ * ```
+ */
+struct FutureClipboardString
+{
+  FutureClipboardString &operator=(std::future<ClipboardString> iFuture) { fFuture = std::move(iFuture); return *this; };
+  explicit operator bool() const { return fFuture.valid() && fFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
+  ClipboardString fetch() { auto res = fFuture.get(); fFuture = {}; return res; }
+  std::string fetchValue() { return fetch().value(); }
+private:
+  std::future<ClipboardString> fFuture{};
 };
 
 /**

@@ -82,7 +82,7 @@ std::optional<Event> popEvent()
     return std::nullopt;
 }
 
-static auto kClipboardString = std::future<emscripten::glfw3::ClipboardString>{};
+static emscripten::glfw3::FutureClipboardString kClipboardString{};
 
 static long kFrameCount = 0;
 
@@ -159,12 +159,11 @@ bool iter()
   if(!handleEvents(kFrameCount))
     return false;
 
-  if(kClipboardString.valid() &&
-     kClipboardString.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+  if(kClipboardString)
   {
     constexpr auto kValueSelector = ".GetClipboardString .value";
 
-    auto value = kClipboardString.get();
+    auto value = kClipboardString.fetch();
     if(value.hasValue())
     {
       setHtmlValue(kValueSelector, value.value());
@@ -176,7 +175,6 @@ bool iter()
       printf("GetClipboardString: %s\n", value.error().c_str());
       setHtmlValue(kValueSelector, error);
     }
-    kClipboardString = {};
   }
 
   for(auto it = kTriangles.begin(); it != kTriangles.end();)
