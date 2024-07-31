@@ -222,6 +222,14 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+#### 3.4.0.20240731 - 2024-07-31 | emscripten TBD
+
+- Added `emscripten_glfw_get_clipboard_string` the C version of  `emscripten::glfw3::GetClipboardString` to
+  retrieve the clipboard asynchronously
+- Added a helper class `emscripten::glfw3::FutureClipboardString` to greatly simplify the more frequent use-cases
+- `GetClipboardString::value()` now returns the internal clipboard in case of error, instead of throwing exception
+- Added `optimizationLevel` option to the emscripten port
+
 #### 3.4.0.20240727 - 2024-07-27 | emscripten TBD
 
 - Introduced C++ API (namespace `emscripten::glfw3`) included with `GLFW3/emscripten_glfw3.h`:
@@ -229,7 +237,7 @@ Release Notes
     vs `char const *` which may or may not be `nullptr`)
   - allow for C++ only API (ex: `std::future`)
   - the C API is still available if you would rather stick to it
-- Implemented  `emscripten::glfw3::GetClipboardString` (C++ only) which provides a way of fetching the global
+- Implemented  `emscripten::glfw3::GetClipboardString` which provides a way of fetching the global
   clipboard in a browser environment (`glfwGetClipboardString` is not the right API due to the asynchronous nature 
   of the underlying platform API).
 - The cursor position is no longer clamped to the window size, and as a result, can have negative values or values
