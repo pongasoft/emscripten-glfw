@@ -4,9 +4,9 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![Latest - 3.4.0.20240727](https://img.shields.io/badge/Latest-3.4.0.20240727-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
-[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![Latest - 3.4.0.20240731](https://img.shields.io/badge/Latest-3.4.0.20240731-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
 [![emscripten - 3.1.63](https://img.shields.io/badge/emscripten-3.1.63-blue)](https://emscripten.org)
@@ -155,6 +155,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20240731 |
 > | TBD        | 3.4.0.20240727 |
 > | 3.1.63     | 3.4.0.20240627 |
 > | 3.1.60     | 3.4.0.20240514 |
