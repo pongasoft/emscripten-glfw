@@ -980,6 +980,9 @@ void Context::setClipboardString(char const *iContent)
     for(auto &promise: fExternalClipboardTextPromises)
       promise.set_value(ClipboardString::fromValue(iContent));
     fExternalClipboardTextPromises.clear();
+    for(auto &callback: fExternalClipboardTextCallbacks)
+      callback.fCallback(callback.fUserData, iContent, nullptr);
+    fExternalClipboardTextCallbacks.clear();
   }
 }
 
