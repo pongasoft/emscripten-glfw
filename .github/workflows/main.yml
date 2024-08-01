@@ -36,7 +36,9 @@ jobs:
 
       - name: Configure CMake Project
         working-directory: ${{github.workspace}}/emscripten-glfw
-        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/emscripten/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release .
+        run: |
+          source ${{github.workspace}}/emscripten/emsdk_env.sh
+          emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release .
 
       - name: Compile all
         working-directory: ${{github.workspace}}/emscripten-glfw/build
@@ -48,7 +50,9 @@ jobs:
 
       - name: Configure CMake Project (small)
         working-directory: ${{github.workspace}}/emscripten-glfw
-        run: cmake -B build-small -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/emscripten/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN_GLFW3_DISABLE_JOYSTICK=ON -DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT=ON .
+        run: |
+          source ${{github.workspace}}/emscripten/emsdk_env.sh
+          emcmake cmake -B build-small -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN_GLFW3_DISABLE_JOYSTICK=ON -DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT=ON .
 
       - name: Compile all (small)
         working-directory: ${{github.workspace}}/emscripten-glfw/build-small
@@ -63,7 +67,8 @@ jobs:
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           mkdir build-with-port
-          emcc --use-port=contrib.glfw3 examples/example_minimal/main.cpp -o build-with-port/index.html
+          emcc --version
+          emcc --use-port=contrib.glfw3 examples/example_minimal/main.cpp -O2 -o build-with-port/index.html
           ls -l build-with-port
 
       - name: Compile with port (small)
@@ -71,5 +76,6 @@ jobs:
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           mkdir build-with-port-small
-          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal/main.cpp -o build-with-port-small/index.html
+          emcc --version
+          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal/main.cpp -O2 -o build-with-port-small/index.html
           ls -l build-with-port-small
