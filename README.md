@@ -5,7 +5,7 @@ This project is an emscripten port of GLFW written in C++ for the web/wasm platf
 GLFW API is 3.4.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
-[![Latest - 3.4.0.20240731](https://img.shields.io/badge/Latest-3.4.0.20240731-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240804](https://img.shields.io/badge/Latest-3.4.0.20240804-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
@@ -155,6 +155,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20240804 |
 > | TBD        | 3.4.0.20240731 |
 > | TBD        | 3.4.0.20240727 |
 > | 3.1.63     | 3.4.0.20240627 |
@@ -223,6 +224,11 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+#### 3.4.0.20240804 - 2024-08-04 | emscripten TBD
+
+- Fixed `nullptr` issue when clipboard is emtpy
+- Fixed the internal clipboard being wiped on asynchronous callback error
+
 #### 3.4.0.20240731 - 2024-07-31 | emscripten TBD
 
 - Added `emscripten_glfw_get_clipboard_string` the C version of  `emscripten::glfw3::GetClipboardString` to
