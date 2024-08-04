@@ -43,7 +43,7 @@ struct ClipboardString
 {
   bool hasValue() const { return fValue.has_value(); }
   bool hasError() const { return fError.has_value(); }
-  std::string value() const { return hasValue() ? *fValue : glfwGetClipboardString(nullptr); }
+  std::string value() const { return hasValue() ? *fValue : safeString(glfwGetClipboardString(nullptr)); }
   std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
   std::string const &error() const { return *fError; }
 
@@ -52,6 +52,7 @@ struct ClipboardString
 
 private:
   ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError);
+  static inline std::string safeString(char const *s) { return s ? s : ""; }
 
   std::optional<std::string> fValue{};
   std::optional<std::string> fError{};

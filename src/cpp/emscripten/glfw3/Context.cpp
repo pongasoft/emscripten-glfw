@@ -1025,7 +1025,8 @@ void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback,
 //------------------------------------------------------------------------
 void Context::onClipboardString(char const *iText, char const *iErrorMessage)
 {
-  fInternalClipboardText = iText ? std::optional<std::string>(iText) : std::nullopt;
+  if(iText)
+    fInternalClipboardText = iText;
 
   for(auto &promise: fExternalClipboardTextPromises)
     promise.set_value(iText ? ClipboardString::fromValue(iText) : ClipboardString::fromError(iErrorMessage));

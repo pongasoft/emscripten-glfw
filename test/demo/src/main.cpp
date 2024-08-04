@@ -172,7 +172,7 @@ bool iter()
     {
       // convoluted way of doing it to test the API...
       auto error = value.hasError() ? value.value_or("Error: " + value.error()) : "Not Reached";
-      printf("GetClipboardString: %s\n", value.error().c_str());
+      printf("GetClipboardString: %s | %s\n", value.value().c_str(), value.error().c_str());
       setHtmlValue(kValueSelector, error);
     }
   }
