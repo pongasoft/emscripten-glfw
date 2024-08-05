@@ -92,17 +92,20 @@ static long kFrameCount = 0;
 void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
 {
   constexpr auto kValueSelector = ".emscripten_glfw_get_clipboard_string .value";
+  constexpr auto kErrorSelector = ".emscripten_glfw_get_clipboard_string .error";
 
   auto frameCount = reinterpret_cast<long>(iUserData);
   if(iClipboardString)
   {
     setHtmlValue(kValueSelector,
                  "Frames: " + std::to_string(kFrameCount - frameCount) + " | " + iClipboardString);
+    setHtmlValue(kErrorSelector, "-");
   }
   else
   {
-    setHtmlValue(kValueSelector,
-                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | Error: " + iError);
+    setHtmlValue(kValueSelector, "-");
+    setHtmlValue(kErrorSelector,
+                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | " + iError);
 
   }
 }
@@ -151,7 +154,6 @@ bool handleEvents(long iFrameCount)
 //------------------------------------------------------------------------
 bool iter()
 {
-
   kFrameCount++;
 
   glfwPollEvents();
@@ -162,19 +164,12 @@ bool iter()
   if(kClipboardString)
   {
     constexpr auto kValueSelector = ".GetClipboardString .value";
+    constexpr auto kErrorSelector = ".GetClipboardString .error";
 
     auto value = kClipboardString.fetch();
-    if(value.hasValue())
-    {
-      setHtmlValue(kValueSelector, value.value());
-    }
-    else
-    {
-      // convoluted way of doing it to test the API...
-      auto error = value.hasError() ? value.value_or("Error: " + value.error()) : "Not Reached";
-      printf("GetClipboardString: %s | %s\n", value.value().c_str(), value.error().c_str());
-      setHtmlValue(kValueSelector, error);
-    }
+    setHtmlValue(kValueSelector, value.value_or("-"));
+    setHtmlValue(kErrorSelector, value.hasError() ? value.error().c_str() : "-");
+    printf("GetClipboardString: %s | %s\n", value.value().c_str(), value.hasError() ? value.error().c_str() : "-");
   }
 
   for(auto it = kTriangles.begin(); it != kTriangles.end();)
@@ -227,6 +222,8 @@ int main()
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
   printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
+  setHtmlValue(".GetClipboardString .value", "-"); setHtmlValue(".GetClipboardString .error", "-");
+  setHtmlValue(".emscripten_glfw_get_clipboard_string .value", "-"); setHtmlValue(".emscripten_glfw_get_clipboard_string .error", "-");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
