@@ -53,9 +53,6 @@ struct Event
     toggleSizeLimits,
     toggleAspectRatio,
     updateTitle,
-    setClipboardString,
-    asyncCGetClipboardString,
-    asyncCPPGetClipboardString
   };
 
   Type fType;
@@ -82,38 +79,10 @@ std::optional<Event> popEvent()
     return std::nullopt;
 }
 
-static emscripten::glfw3::FutureClipboardString kClipboardString{};
-
-static long kFrameCount = 0;
-
-//------------------------------------------------------------------------
-// GetClipboardHandler
-//------------------------------------------------------------------------
-void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
-{
-  constexpr auto kValueSelector = ".emscripten_glfw_get_clipboard_string .value";
-  constexpr auto kErrorSelector = ".emscripten_glfw_get_clipboard_string .error";
-
-  auto frameCount = reinterpret_cast<long>(iUserData);
-  if(iClipboardString)
-  {
-    setHtmlValue(kValueSelector,
-                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | " + iClipboardString);
-    setHtmlValue(kErrorSelector, "-");
-  }
-  else
-  {
-    setHtmlValue(kValueSelector, "-");
-    setHtmlValue(kErrorSelector,
-                 "Frames: " + std::to_string(kFrameCount - frameCount) + " | " + iError);
-
-  }
-}
-
 //------------------------------------------------------------------------
 // handleEvents
 //------------------------------------------------------------------------
-bool handleEvents(long iFrameCount)
+bool handleEvents()
 {
   while(true)
   {
@@ -141,9 +110,6 @@ bool handleEvents(long iFrameCount)
       case Event::Type::toggleSizeLimits: if(triangle) triangle->toggleSizeLimits(); break;
       case Event::Type::toggleAspectRatio: if(triangle) triangle->toggleAspectRatio(); break;
       case Event::Type::updateTitle: if(triangle) triangle->updateTitle(); break;
-      case Event::Type::setClipboardString: if(triangle) triangle->setClipboardString(); break;
-      case Event::Type::asyncCGetClipboardString: emscripten_glfw_get_clipboard_string(GetClipboardHandler, reinterpret_cast<void *>(iFrameCount)); break;
-      case Event::Type::asyncCPPGetClipboardString: kClipboardString = emscripten::glfw3::GetClipboardString(); break;
       default: break;
     }
   }
@@ -154,23 +120,10 @@ bool handleEvents(long iFrameCount)
 //------------------------------------------------------------------------
 bool iter()
 {
-  kFrameCount++;
-
   glfwPollEvents();
 
-  if(!handleEvents(kFrameCount))
+  if(!handleEvents())
     return false;
-
-  if(kClipboardString)
-  {
-    constexpr auto kValueSelector = ".GetClipboardString .value";
-    constexpr auto kErrorSelector = ".GetClipboardString .error";
-
-    auto value = kClipboardString.fetch();
-    setHtmlValue(kValueSelector, value.value_or("-"));
-    setHtmlValue(kErrorSelector, value.hasError() ? value.error().c_str() : "-");
-    printf("GetClipboardString: %s | %s\n", value.value().c_str(), value.hasError() ? value.error().c_str() : "-");
-  }
 
   for(auto it = kTriangles.begin(); it != kTriangles.end();)
   {

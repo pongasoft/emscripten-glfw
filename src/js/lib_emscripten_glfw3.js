@@ -13,12 +13,14 @@ let emscripten_glfw3_impl = {
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
     `,
   $GLFW3: {
+    fDestructors: [],
     fWindowContexts: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
     fWindowResizeCallback: null,
     fClipboardStringCallback: null,
     fRequestFullscreen: null,
+    fDeferredActions: [],
     fContext: null,
     fCSSValues: null, // key is element, value is {property_name: property_value}
     fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004, GLFW_PLATFORM_ERROR: 0x00010008},
@@ -44,6 +46,32 @@ let emscripten_glfw3_impl = {
       if(GLFW3.fWindowResizeCallback) {
         {{{ makeDynCall('vppii', 'GLFW3.fWindowResizeCallback') }}}(GLFW3.fContext, glfwWindow, width, height);
       }
+    },
+
+
+    // onMouseDown
+    onMouseDown(e) {
+      requestAnimationFrame(GLFW3.executeDeferredActions);
+    },
+
+    // onKeyDown
+    onKeyDown(e) {
+      requestAnimationFrame(GLFW3.executeDeferredActions);
+    },
+
+    //! executeDeferredActions
+    executeDeferredActions() {
+      if(GLFW3.fDeferredActions.length > 0)
+      {
+        for(let action of GLFW3.fDeferredActions)
+          action();
+        GLFW3.fDeferredActions.length = 0;
+      }
+    },
+
+    //! defer
+    defer(action) {
+      GLFW3.fDeferredActions.push(action);
     },
 
     //! findContextByCanvas
@@ -308,8 +336,8 @@ let emscripten_glfw3_impl = {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
-    GLFW3.fWindowContexts = {};
 
+    GLFW3.fWindowContexts = {};
     GLFW3.fCSSValues = new Map();
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
@@ -317,8 +345,23 @@ let emscripten_glfw3_impl = {
     GLFW3.fRequestFullscreen = requestFullscreen;
     GLFW3.fErrorHandler = errorHandler;
     GLFW3.fContext = context;
+
+    // handle scale change
     GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + scale + 'dppx)');
     GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
+    GLFW3.fDestructors.push(() => {
+      if(GLFW3.fScaleMQL) {
+        GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
+      }
+    });
+
+    // handle mouse
+    document.addEventListener('mousedown', GLFW3.onMouseDown);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('mousedown', GLFW3.onMouseDown); });
+
+    // handle keyboard
+    document.addEventListener('keydown', GLFW3.onKeyDown);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('keydown', GLFW3.onKeyDown); });
   },
 
   //! emscripten_glfw3_context_is_any_element_focused
@@ -371,9 +414,8 @@ let emscripten_glfw3_impl = {
     GLFW3.fWindowResizeCallback = null;
     GLFW3.fClipboardStringCallback = null;
     GLFW3.fRequestFullscreen = null;
-    if(GLFW3.fScaleMQL) {
-      GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
-    }
+    for(let destructor of GLFW3.fDestructors)
+      destructor();
     GLFW3.fContext = null;
   },
 
@@ -585,8 +627,10 @@ let emscripten_glfw3_impl = {
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
-    navigator.clipboard.writeText(content).then(null, function(err) {
-      GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
+    GLFW3.defer(() => {
+      navigator.clipboard.writeText(content).then(null, function(err) {
+        GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
+      });
     });
   },
 

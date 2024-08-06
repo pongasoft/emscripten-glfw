@@ -165,6 +165,7 @@ std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow,
 //------------------------------------------------------------------------
 bool Triangle::render()
 {
+  fFrameCount++;
   glfwMakeContextCurrent(fWindow);
   glClearColor(fBgRed, fBgGreen, fBgBlue, fBgAlpha);
   int width = 0, height = 0;
@@ -402,7 +403,6 @@ void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods
 {
   setHtmlValue(window, "glfwSetKeyCallback", "%d:%d:%s:%d", key, scancode, actionToString(action), mods);
   reinterpret_cast<Triangle *>(glfwGetWindowUserPointer(window))->onKeyChange(key, scancode, action, mods);
-
 }
 void onCharChange(GLFWwindow* window, unsigned int codepoint)
 {
@@ -605,10 +605,18 @@ void Triangle::updateValues()
                actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_MIDDLE)),
                actionToString(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_RIGHT)));
 
-  setHtmlValue(fWindow, "glfwGetKey", "A:%s|Q:%s|Z:%s",
+  setHtmlValue(fWindow, "glfwGetKey", "A:%s|C:%s|Q:%s|V:%s|Z:%s",
                actionToString(glfwGetKey(fWindow, GLFW_KEY_A)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_C)),
                actionToString(glfwGetKey(fWindow, GLFW_KEY_Q)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_V)),
                actionToString(glfwGetKey(fWindow, GLFW_KEY_Z)));
+
+  setHtmlValue(fWindow, "glfwGetKey2", "SFT:%s|CTL:%s|ALT:%s|SUP:%s",
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_LEFT_SHIFT)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_LEFT_CONTROL)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_LEFT_ALT)),
+               actionToString(glfwGetKey(fWindow, GLFW_KEY_LEFT_SUPER)));
 
   glfwGetWindowContentScale(fWindow, &xf, &yf);
   setHtmlValue(fWindow, "glfwGetWindowContentScale", "%.2fx%.2f", xf, yf);
@@ -633,9 +641,58 @@ void Triangle::updateValues()
   auto scaleFramebuffer = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
   setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(scaleFramebuffer));
   setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_framebuffer", "%s", scaleFramebuffer ? "Disable" : "Enable");
+
+  if(fClipboardString)
+  {
+    constexpr auto kValueSelector = ".GetClipboardString .value";
+    constexpr auto kErrorSelector = ".GetClipboardString .error";
+
+    auto value = fClipboardString.fetch();
+    setHtmlValue(kValueSelector, value.value_or("-"));
+    setHtmlValue(kErrorSelector, value.hasError() ? value.error().c_str() : "-");
+    printf("GetClipboardString: [%ld] | %s | %s\n",
+           fFrameCount - fClipboardRequestFrame,
+           value.value().c_str(),
+           value.hasError() ? value.error().c_str() : "-");
+  }
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
+
+
+//------------------------------------------------------------------------
+// GetClipboardHandler
+//------------------------------------------------------------------------
+void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
+{
+  reinterpret_cast<Triangle *>(iUserData)->onClipboard(iClipboardString, iError);
+}
+
+//------------------------------------------------------------------------
+// onClipboard
+//------------------------------------------------------------------------
+void Triangle::onClipboard(char const *iClipboardString, char const *iError)
+{
+  constexpr auto kValueSelector = ".emscripten_glfw_get_clipboard_string .value";
+  constexpr auto kErrorSelector = ".emscripten_glfw_get_clipboard_string .error";
+
+  if(iClipboardString)
+  {
+    setHtmlValue(kValueSelector,
+                 "Frames: " + std::to_string(fFrameCount - fClipboardRequestFrame) + " | " + iClipboardString);
+    setHtmlValue(kErrorSelector, "-");
+  }
+  else
+  {
+    setHtmlValue(kValueSelector, "-");
+    setHtmlValue(kErrorSelector,
+                 "Frames: " + std::to_string(fFrameCount - fClipboardRequestFrame) + " | " + iError);
+
+  }
+
+  fClipboardRequestFrame = 0;
+}
+
 
 //------------------------------------------------------------------------
 // Triangle::onKeyChange
@@ -652,7 +709,27 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
   {
     switch(iKey)
     {
-      case GLFW_KEY_C: // toggle between input mode GLFW_CURSOR_HIDDEN / GLFW_CURSOR_NORMAL
+      case GLFW_KEY_S: // Save to clipboard
+      {
+        setClipboardString();
+        break;
+      }
+
+      case GLFW_KEY_A: // Asynchronous fetch from clipboard (C API)
+      {
+        fClipboardRequestFrame = fFrameCount;
+        emscripten_glfw_get_clipboard_string(GetClipboardHandler, reinterpret_cast<void *>(this));
+        break;
+      }
+
+      case GLFW_KEY_G: // Asynchronous fetch from clipboard (CPP)
+      {
+        fClipboardRequestFrame = fFrameCount;
+        fClipboardString = emscripten::glfw3::GetClipboardString();
+        break;
+      }
+
+      case GLFW_KEY_H: // toggle between input mode GLFW_CURSOR_HIDDEN / GLFW_CURSOR_NORMAL
       {
         auto mode = glfwGetInputMode(fWindow, GLFW_CURSOR);
         if(mode == GLFW_CURSOR_NORMAL)
@@ -661,6 +738,7 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
           glfwSetInputMode(fWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         break;
       }
+
       case GLFW_KEY_L: // lock / unlock the pointer
       {
         auto mode = glfwGetInputMode(fWindow, GLFW_CURSOR);
@@ -672,18 +750,22 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
       }
 
       case GLFW_KEY_RIGHT_BRACKET: // cycle through cursor
+      {
         fCursor++;
         if(fCursor >= kCursors.size())
           fCursor = 0;
         glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
         break;
+      }
 
       case GLFW_KEY_LEFT_BRACKET: // cycle through cursor
+      {
         fCursor--;
         if(fCursor < 0)
           fCursor = kCursors.size() - 1;
         glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
         break;
+      }
 
       case GLFW_KEY_4: // toggle hi dpi aware
         toggleHiDPIAware();

@@ -92,7 +92,7 @@
 
     .table-bordered {
       font-family: monospace;
-      font-size: smaller;
+      font-size: xx-small;
       flex: auto;
     }
 
@@ -174,6 +174,7 @@
     <tr class="glfwGetInputMode_GLFW_CURSOR"><td>glfwGetInputMode(GLFW_CURSOR)</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetMouseButton"><td>glfwGetMouseButton</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetKey"><td>glfwGetKey</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
+    <tr class="glfwGetKey2"><td>glfwGetKey [Left]</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetWindowSize"><td>glfwGetWindowSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetFramebufferSize"><td>glfwGetFramebufferSize</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
     <tr class="glfwGetWindowContentScale"><td>glfwGetWindowContentScale</td><td class="canvas1">-</td><td class="canvas2">-</td></tr>
@@ -201,7 +202,7 @@
     </tbody>
   </table>
 </div>
-<h3 class="clear-float">Actions</h3>
+<h4 class="clear-float">Actions</h4>
 <div id="actions">
   <table class="table-bordered">
     <thead>
@@ -260,11 +261,6 @@
       <td><input class="canvas1" type="button" value="Update title" onclick="Module.pushEvent('update_title', '#canvas1')"></td>
       <td><input class="canvas2" type="button" value="Update title" onclick="Module.pushEvent('update_title', '#canvas2')"></td>
     </tr>
-    <tr class="glfwSetClipboardString">
-      <td class="action">glfwSetClipboardString</td>
-      <td><input class="canvas1" type="button" value="Copy to Clipboard" onclick="Module.pushEvent('set_clipboard_string', '#canvas1')"></td>
-      <td><input class="canvas2" type="button" value="Copy to Clipboard" onclick="Module.pushEvent('set_clipboard_string', '#canvas2')"></td>
-    </tr>
     <tr>
       <td class="action">glfwSetWindowShouldClose</td>
       <td><input type="button" value="Close" onclick="Module.pushEvent('close', '#canvas1')"></td>
@@ -306,7 +302,6 @@
     <tr class="GetClipboardString">
       <td class="action">GetClipboardString (async)</td>
       <td colspan="2">
-        <input type="button" value="Paste" onclick="Module.pushEvent('async_get_cpp_clipboard_string');">
         <label>V <input class="value" type="text" value="-" disabled></label>
         <label>E <input class="error" type="text" value="-" disabled></label>
       </td>
@@ -314,7 +309,6 @@
     <tr class="emscripten_glfw_get_clipboard_string">
       <td class="action">emscripten_glfw_get_clipboard_string</td>
       <td colspan="2">
-        <input type="button" value="Paste" onclick="Module.pushEvent('async_get_c_clipboard_string');">
         <label>V <input class="value" type="text" value="-" disabled></label>
         <label>E <input class="error" type="text" value="-" disabled></label>
       </td>
@@ -334,7 +328,10 @@
     <tr><th>Action</th><th>Use CTRL + &lt;key&gt;</th></tr>
     </thead>
     <tbody>
-    <tr><td class="action">Hide/Show Cursor</td><td>"C"</td></tr>
+    <tr><td class="action">Save to clipboard</td><td>"S"</td></tr>
+    <tr><td class="action">emscripten_glfw_get_clipboard_string</td><td>"A"</td></tr>
+    <tr><td class="action">GetClipboardString</td><td>"G"</td></tr>
+    <tr><td class="action">Hide/Show Cursor</td><td>"H"</td></tr>
     <tr><td class="action">Lock/Unlock Cursor</td><td>"L" (ESC will unlock as well)</td></tr>
     <tr><td class="action">Cycle Cursor</td><td>"[" &amp; "]"</td></tr>
     <tr><td class="action">Toggle Hi DPI Aware</td><td>"4"</td></tr>
@@ -369,7 +366,7 @@
       exit: 1, toggle_show: 2, zoom_in: 3, zoom_out: 4, zoom_reset: 5,
       opacity_30: 6, opacity_60: 7, opacity_100: 8, close: 9, toggle_hi_dpi_aware: 10,
       toggle_resizable: 11, toggle_size_limits: 12, toggle_aspect_ratio: 13,
-      update_title: 14, set_clipboard_string: 15, async_get_c_clipboard_string: 16, async_get_cpp_clipboard_string: 17
+      update_title: 14
     },
     events: [],
     hasEvents: () => { return Module.events.length > 0; },

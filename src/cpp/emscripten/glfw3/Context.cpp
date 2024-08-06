@@ -21,7 +21,6 @@
 #include <emscripten/html5.h>
 
 #include "ErrorHandler.h"
-#include "../../../../include/GLFW/emscripten_glfw3.h"
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
 #include "Joystick.h"

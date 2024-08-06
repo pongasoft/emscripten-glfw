@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <GLES3/gl3.h>
+#include <GLFW/emscripten_glfw3.h>
 
 struct GLFWwindow;
 
@@ -53,6 +54,7 @@ public:
   bool shouldClose() const;
   constexpr char const *getName() const { return fName; };
   void onKeyChange(int iKey, int scancode, int iAction, int iMods);
+  void onClipboard(char const *iClipboardString, char const *iError);
 
   void registerCallbacks();
 
@@ -81,6 +83,9 @@ private:
   int fCursor{};
   bool fHasSizeLimits{};
   bool fHasAspectRatio{};
+  long fFrameCount{};
+  long fClipboardRequestFrame{};
+  emscripten::glfw3::FutureClipboardString fClipboardString{};
 };
 
 
