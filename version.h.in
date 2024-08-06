@@ -20,10 +20,7 @@
 #ifndef EMSCRIPTEN_GLFW_VERSION_H
 #define EMSCRIPTEN_GLFW_VERSION_H
 
-namespace emscripten::glfw3 {
-
-#define D_EMSCRIPTEN_GLFW_VERSION_STR "@emscripten-glfw_VERSION@"
-
-}
+#define EMSCRIPTEN_GLFW_VERSION_STR "@emscripten-glfw_VERSION@"
+#define EMSCRIPTEN_GLFW_PORT_VERSION @emscripten-glfw_PORT_VERSION@
 
 #endif
