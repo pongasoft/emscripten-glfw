@@ -18,6 +18,7 @@ let emscripten_glfw3_impl = {
     fScaleMQL: null,
     fScaleChangeCallback: null,
     fWindowResizeCallback: null,
+    fKeyboardCallback: null,
     fClipboardStringCallback: null,
     fRequestFullscreen: null,
     fDeferredActions: [],
@@ -54,9 +55,32 @@ let emscripten_glfw3_impl = {
       requestAnimationFrame(GLFW3.executeDeferredActions);
     },
 
-    // onKeyDown
-    onKeyDown(e) {
-      requestAnimationFrame(GLFW3.executeDeferredActions);
+    // onKeyboardEvent
+    onKeyboardEvent(e) {
+      if(e.type === 'keydown')
+        requestAnimationFrame(GLFW3.executeDeferredActions);
+
+      if(GLFW3.fKeyboardCallback)
+      {
+        const code = stringToNewUTF8(e.code);
+        const key = stringToNewUTF8(e.key);
+        // see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+        var codepoint = e.key.charCodeAt(0);
+        if(codepoint < 0x7f && e.key.length > 1)
+          // case when eventKey is something like "Tab" (eventKey.charCodeAt(0) would be "T")
+          codepoint = 0;
+        var modifierBits = 0;
+        if(e.shiftKey) modifierBits |= 0x0001;
+        if(e.ctrlKey) modifierBits |= 0x0002;
+        if(e.altKey) modifierBits |= 0x0004;
+        if(e.metaKey) modifierBits |= 0x0008;
+        // if(e.getModifierState('CapsLock')) modifierBits |= 0x0010;
+        // if(e.getModifierState('NumLock')) modifierBits |= 0x0020;
+        if({{{ makeDynCall('ipippiii', 'GLFW3.fKeyboardCallback') }}}(GLFW3.fContext, e.type === 'keydown', code, key, e.repeat, codepoint, modifierBits))
+          e.preventDefault();
+        _free(key);
+        _free(code);
+      }
     },
 
     //! executeDeferredActions
@@ -317,22 +341,9 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  //! emscripten_glfw3_context_to_codepoint
-  // see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-  emscripten_glfw3_context_to_codepoint: (eventKey) => {
-    // TODO: the eventKey gets copied back and forth between C and javascript a few too many times IMO (try to fix)
-    eventKey = UTF8ToString(eventKey);
-    const codepoint = eventKey.charCodeAt(0);
-    if(codepoint < 0x7f && eventKey.length > 1)
-      // case when eventKey is something like "Tab" (eventKey.charCodeAt(0) would be "T")
-      return 0;
-    else
-      return codepoint;
-  },
-
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, clipboardStringCallback, requestFullscreen, errorHandler) => {
+  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardStringCallback, requestFullscreen, errorHandler) => {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
@@ -341,6 +352,7 @@ let emscripten_glfw3_impl = {
     GLFW3.fCSSValues = new Map();
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
+    GLFW3.fKeyboardCallback = keyboardCallback;
     GLFW3.fClipboardStringCallback = clipboardStringCallback;
     GLFW3.fRequestFullscreen = requestFullscreen;
     GLFW3.fErrorHandler = errorHandler;
@@ -360,8 +372,10 @@ let emscripten_glfw3_impl = {
     GLFW3.fDestructors.push(() => { document.removeEventListener('mousedown', GLFW3.onMouseDown); });
 
     // handle keyboard
-    document.addEventListener('keydown', GLFW3.onKeyDown);
-    GLFW3.fDestructors.push(() => { document.removeEventListener('keydown', GLFW3.onKeyDown); });
+    document.addEventListener('keydown', GLFW3.onKeyboardEvent);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('keydown', GLFW3.onKeyboardEvent); });
+    document.addEventListener('keyup', GLFW3.onKeyboardEvent);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('keyup', GLFW3.onKeyboardEvent); });
   },
 
   //! emscripten_glfw3_context_is_any_element_focused
@@ -412,6 +426,7 @@ let emscripten_glfw3_impl = {
     GLFW3.fCSSValues = null;
     GLFW3.fScaleChangeCallback = null;
     GLFW3.fWindowResizeCallback = null;
+    GLFW3.fKeyboardCallback = null;
     GLFW3.fClipboardStringCallback = null;
     GLFW3.fRequestFullscreen = null;
     for(let destructor of GLFW3.fDestructors)

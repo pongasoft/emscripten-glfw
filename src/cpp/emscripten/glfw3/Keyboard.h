@@ -31,6 +31,16 @@ using glfw_key_state_t = int; // ex: GLFW_RELEASE
 class Keyboard
 {
 public:
+  struct Event
+  {
+    char const *code;
+    char const *key;
+    bool repeat;
+    int codepoint;
+    int modifierBits;
+  };
+
+public:
   glfw_key_state_t getKeyState(glfw_key_t iKey);
 //  bool isKeyPressed(glfw_key_t iKey) const { return getKeyState(iKey) != GLFW_RELEASE; }
   constexpr bool isShiftPressed() const { return isValidKeyPressed(GLFW_KEY_LEFT_SHIFT) || isValidKeyPressed(GLFW_KEY_RIGHT_SHIFT); }
@@ -42,10 +52,10 @@ public:
   inline GLFWcharfun setCharCallback(GLFWcharfun iCallback) { return std::exchange(fCharCallback, iCallback); }
 
   void setInputModeLockKeyMods(bool iValue) { fInputModeLockKeyMods = iValue; }
-  int computeCallbackModifierBits(EmscriptenKeyboardEvent const *iKeyboardEvent = nullptr) const;
+  int computeCallbackModifierBits() const;
 
-  bool onKeyDown(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
-  bool onKeyUp(GLFWwindow *iWindow, const EmscriptenKeyboardEvent *iKeyboardEvent);
+  bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent);
+  bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent);
   void resetAllKeys(GLFWwindow *iWindow);
   void resetKeysOnSuperRelease(GLFWwindow *iWindow);
 

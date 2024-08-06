@@ -107,6 +107,8 @@ public:
   int requestPointerLock(GLFWwindow *iWindow);
   void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);
   void onFocus(GLFWwindow *iWindow) { fLastKnownFocusedWindow = iWindow; }
+  bool onKeyDown(Keyboard::Event const &iEvent);
+  bool onKeyUp(Keyboard::Event const &iEvent);
 
 private:
   Context();
@@ -159,8 +161,6 @@ private:
 
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
-  EventListener<EmscriptenKeyboardEvent> fOnKeyDown{};
-  EventListener<EmscriptenKeyboardEvent> fOnKeyUp{};
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};

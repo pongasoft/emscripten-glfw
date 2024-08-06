@@ -171,8 +171,8 @@ protected:
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
-  inline bool onKeyDown(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iKeyboardEvent); }
-  inline bool onKeyUp(const EmscriptenKeyboardEvent *iKeyboardEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iKeyboardEvent); }
+  inline bool onKeyDown(Keyboard::Event const &iEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent); }
+  inline bool onKeyUp(Keyboard::Event const &iEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent); }
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);

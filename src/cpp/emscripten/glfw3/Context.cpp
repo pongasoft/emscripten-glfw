@@ -29,6 +29,7 @@
 extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
+using KeyboardCallback = bool (*)(emscripten::glfw3::Context *, bool, char const *, char const *, bool, int, int);
 using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, char const *, char const *);
 using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
@@ -36,7 +37,7 @@ using ErrorHandler = void (*)(int, char const *);
 
 void emscripten_glfw3_context_init(emscripten::glfw3::Context *iContext,
                                    float iScale,
-                                   ScaleChangeCallback, WindowResizeCallback, ClipboardStringCallback, RequestFullscreen, ErrorHandler);
+                                   ScaleChangeCallback, WindowResizeCallback, KeyboardCallback, ClipboardStringCallback, RequestFullscreen, ErrorHandler);
 void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
@@ -79,6 +80,24 @@ void ContextWindowResizeCallback(Context *iContext, GLFWwindow *iWindow, int iWi
 }
 
 //------------------------------------------------------------------------
+// ContextKeyboardCallback
+//------------------------------------------------------------------------
+bool ContextKeyboardCallback(emscripten::glfw3::Context *iContext,
+                             bool iKeyDown,
+                             char const *iCode,
+                             char const *iKey,
+                             bool iRepeat,
+                             int iCodepoint,
+                             int iModifierBits)
+{
+  Keyboard::Event event{iCode, iKey, iRepeat, iCodepoint, iModifierBits};
+  if(iKeyDown)
+    return iContext->onKeyDown(event);
+  else
+    return iContext->onKeyUp(event);
+}
+
+//------------------------------------------------------------------------
 // ContextClipboardStringCallback
 //------------------------------------------------------------------------
 void ContextClipboardStringCallback(Context *iContext, char const *iClipboardString, char const *iErrorMessage)
@@ -104,6 +123,7 @@ Context::Context()
                                 fScale,
                                 ContextScaleChangeCallback,
                                 ContextWindowResizeCallback,
+                                ContextKeyboardCallback,
                                 ContextClipboardStringCallback,
                                 emscripten_glfw_request_fullscreen,
                                 ContextErrorHandler);
@@ -177,33 +197,6 @@ void Context::addOrRemoveEventListeners(bool iAdd)
       })
       .add(emscripten_set_mouseup_callback_on_thread);
 
-    // fOnKeyDown
-    fOnKeyDown
-      .target(EMSCRIPTEN_EVENT_TARGET_WINDOW)
-      .listener([this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
-        bool handled = false;
-        auto w = findFocusedOrSingleWindow();
-        if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
-          handled |= w->onKeyDown(iEvent);
-        return handled;
-      })
-      .add(emscripten_set_keydown_callback_on_thread);
-
-    // fOnKeyUp
-    fOnKeyUp
-      .target(EMSCRIPTEN_EVENT_TARGET_WINDOW)
-      .listener([this](int iEventType, const EmscriptenKeyboardEvent *iEvent) {
-#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
-        bool handled = false;
-        for(auto &w: fWindows)
-          handled |= w->onKeyUp(iEvent);
-        return handled;
-#else
-        return fSingleWindow && fSingleWindow->onKeyUp(iEvent);
-#endif
-      })
-      .add(emscripten_set_keyup_callback_on_thread);
-
     // fOnFullscreenChange
     fOnFullscreenChange
       .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
@@ -246,8 +239,6 @@ void Context::addOrRemoveEventListeners(bool iAdd)
   {
     fOnMouseMove.remove();
     fOnMouseButtonUp.remove();
-    fOnKeyDown.remove();
-    fOnKeyUp.remove();
     fOnFullscreenChange.remove();
     fOnPointerLockChange.remove();
     fOnPointerLockError.remove();
@@ -257,6 +248,33 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnGamepadDisconnected.remove();
 #endif
   }
+}
+
+//------------------------------------------------------------------------
+// Context::onKeyDown
+//------------------------------------------------------------------------
+bool Context::onKeyDown(Keyboard::Event const &iEvent)
+{
+  bool handled = false;
+  auto w = findFocusedOrSingleWindow();
+  if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
+    handled |= w->onKeyDown(iEvent);
+  return handled;
+}
+
+//------------------------------------------------------------------------
+// Context::onKeyUp
+//------------------------------------------------------------------------
+bool Context::onKeyUp(Keyboard::Event const &iEvent)
+{
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+  bool handled = false;
+  for(auto &w: fWindows)
+    handled |= w->onKeyUp(iEvent);
+  return handled;
+#else
+  return fSingleWindow && fSingleWindow->onKeyUp(iEvent);
+#endif
 }
 
 //------------------------------------------------------------------------

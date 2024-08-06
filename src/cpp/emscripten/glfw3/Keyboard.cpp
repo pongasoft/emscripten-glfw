@@ -20,10 +20,6 @@
 #include "Config.h"
 #include "ErrorHandler.h"
 
-extern "C" {
-int emscripten_glfw3_context_to_codepoint(char const *);
-}
-
 namespace emscripten::glfw3 {
 
 //------------------------------------------------------------------------
@@ -58,16 +54,16 @@ glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey)
 //------------------------------------------------------------------------
 // Window::computeCallbackModifierBits
 //------------------------------------------------------------------------
-int Keyboard::computeCallbackModifierBits(EmscriptenKeyboardEvent const *iKeyboardEvent) const
+int Keyboard::computeCallbackModifierBits() const
 {
   int bits = 0;
-  if(iKeyboardEvent ? toCBool(iKeyboardEvent->shiftKey) : isShiftPressed())
+  if(isShiftPressed())
     bits |= GLFW_MOD_SHIFT;
-  if(iKeyboardEvent ? toCBool(iKeyboardEvent->ctrlKey) : isControlPressed())
+  if(isControlPressed())
     bits |= GLFW_MOD_CONTROL;
-  if(iKeyboardEvent ? toCBool(iKeyboardEvent->altKey) : isAltPressed())
+  if(isAltPressed())
     bits |= GLFW_MOD_ALT;
-  if(iKeyboardEvent ? toCBool(iKeyboardEvent->metaKey) : isSuperPressed())
+  if(isSuperPressed())
     bits |= GLFW_MOD_SUPER;
 
   // TODO need to implement my own event callback... to call e.getModifierState("CapsLock") and e.getModifierState("NumLock")
@@ -84,9 +80,9 @@ int Keyboard::computeCallbackModifierBits(EmscriptenKeyboardEvent const *iKeyboa
 //------------------------------------------------------------------------
 // Keyboard::onKeyDown
 //------------------------------------------------------------------------
-bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyboardEvent)
+bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
 {
-  auto scancode = getKeyScancode(iKeyboardEvent->code);
+  auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
 
   if(key != GLFW_KEY_UNKNOWN)
@@ -95,13 +91,13 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
 
     if(fKeyCallback)
     {
-      fKeyCallback(iWindow, key, scancode, iKeyboardEvent->repeat ? GLFW_REPEAT : GLFW_PRESS, computeCallbackModifierBits(iKeyboardEvent));
+      fKeyCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
     }
   }
 
   if(fCharCallback) {
-    if(auto codepoint = emscripten_glfw3_context_to_codepoint(iKeyboardEvent->key); codepoint > 0)
-      fCharCallback(iWindow, codepoint);
+    if(iEvent.codepoint > 0)
+      fCharCallback(iWindow, iEvent.codepoint);
   }
 
   return true;
@@ -110,9 +106,9 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKe
 //------------------------------------------------------------------------
 // Keyboard::onKeyUp
 //------------------------------------------------------------------------
-bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyboardEvent)
+bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
 {
-  auto scancode = getKeyScancode(iKeyboardEvent->code);
+  auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
 
   if(key == GLFW_KEY_UNKNOWN)
@@ -127,7 +123,7 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, EmscriptenKeyboardEvent const *iKeyb
     fKeyStates[key] = fStickyKeys ? kStickyPress : state;
 
     if(fKeyCallback)
-      fKeyCallback(iWindow, key, scancode, state, computeCallbackModifierBits(iKeyboardEvent));
+      fKeyCallback(iWindow, key, scancode, state, iEvent.modifierBits);
   }
 
   if(wasSuperPressed && !isSuperPressed())
