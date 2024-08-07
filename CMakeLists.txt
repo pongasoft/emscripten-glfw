@@ -8,6 +8,7 @@ set(emscripten-glfw_GLFW_VERSION "3.4.0")
 
 set(emscripten-glfw_PORT_VERSION "${emscripten-glfw_RELEASE_YEAR}${emscripten-glfw_RELEASE_MONTH}${emscripten-glfw_RELEASE_DAY}")
 set(emscripten-glfw_VERSION "${emscripten-glfw_GLFW_VERSION}.${emscripten-glfw_PORT_VERSION}")
+set(emscripten-glfw_VERSION_AS_NUMBER "340${emscripten-glfw_PORT_VERSION}")
 set(emscripten-glfw_RELEASE_DATE "${emscripten-glfw_RELEASE_YEAR}-${emscripten-glfw_RELEASE_MONTH}-${emscripten-glfw_RELEASE_DAY}")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
@@ -56,11 +57,12 @@ endif()
 
 # This is very convoluted, but the only way I found for the zip file
 # checksum to not change every time CMake is rerun
-configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/version.h")
-file(SHA256 "${CMAKE_CURRENT_BINARY_DIR}/version.h" NEW_VERSION_HASH)
-file(SHA256 "${CMAKE_CURRENT_LIST_DIR}/src/cpp/emscripten/glfw3/version.h" OLD_VERSION_HASH)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h")
+set(VERSION_FILE "${CMAKE_CURRENT_LIST_DIR}/include/GLFW/emscripten_glfw3_version.h")
+file(SHA256 "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" NEW_VERSION_HASH)
+file(SHA256 "${VERSION_FILE}" OLD_VERSION_HASH)
 if(NOT ${NEW_VERSION_HASH} STREQUAL ${OLD_VERSION_HASH})
-  configure_file("${CMAKE_CURRENT_BINARY_DIR}/version.h" "${CMAKE_CURRENT_LIST_DIR}/src/cpp/emscripten/glfw3/version.h")
+  configure_file("${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" "${VERSION_FILE}")
 endif()
 
 add_library(${target} ${glfw3_sources})

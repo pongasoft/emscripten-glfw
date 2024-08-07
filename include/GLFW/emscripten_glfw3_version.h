@@ -20,7 +20,13 @@
 #ifndef EMSCRIPTEN_GLFW_VERSION_H
 #define EMSCRIPTEN_GLFW_VERSION_H
 
-#define EMSCRIPTEN_GLFW_VERSION_STR "3.4.0.20240804"
-#define EMSCRIPTEN_GLFW_PORT_VERSION 20240804
+// this version number is comparable and can be used in #if statements
+// #if EMSCRIPTEN_GLFW_VERSION >= 34020240801
+// .... code that can be used past a certain release
+// #endif
+#define EMSCRIPTEN_GLFW_VERSION 34020240804
+
+#define EMSCRIPTEN_GLFW_VERSION_STR "34020240804"
+#define EMSCRIPTEN_GLFW_FULL_VERSION_STR "3.4.0.20240804"
 
 #endif

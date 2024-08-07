@@ -17,11 +17,11 @@
  */
 
 #include "../../include/GLFW/emscripten_glfw3.h"
+#include "../../include/GLFW/emscripten_glfw3_version.h"
 #include "emscripten/glfw3/Context.h"
 #include <memory>
 #include "emscripten/glfw3/ErrorHandler.h"
 #include "emscripten/glfw3/Keyboard.h"
-#include "emscripten/glfw3/version.h"
 
 using namespace emscripten::glfw3;
 
@@ -176,7 +176,7 @@ GLFWAPI const char* glfwGetVersionString(void)
     mkstr(GLFW_VERSION_MAJOR) "."
     mkstr(GLFW_VERSION_MINOR) "."
     mkstr(GLFW_VERSION_REVISION) " | Emscripten | pongasoft/emscripten-glfw@v"
-    EMSCRIPTEN_GLFW_VERSION_STR EMSCRIPTEN_GLFW_VERSION_NW EMSCRIPTEN_GLFW_VERSION_NJ EMSCRIPTEN_GLFW_VERSION_SW
+    EMSCRIPTEN_GLFW_FULL_VERSION_STR EMSCRIPTEN_GLFW_VERSION_NW EMSCRIPTEN_GLFW_VERSION_NJ EMSCRIPTEN_GLFW_VERSION_SW
     ;
   return kVersionString;
 }
