@@ -210,6 +210,14 @@ bool IsWindowFullscreen(GLFWwindow *window);
  * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
 int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 
+/**
+ * When the Super (`GLFW_KEY_LEFT_SUPER` or `GLFW_KEY_RIGHT_SUPER`) key is being held in a browser environment,
+ * and any other key is being pressed, the up event for this key is never triggered.
+ * This implementation tries to detect this scenario and implements a workaround.
+ * This set of APIs lets you adjust the timeout used (default to 525ms). */
+int GetSuperPlusKeyTimeout();
+void SetSuperPlusKeyTimeout(int timeoutMilliseconds);
+
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus

@@ -733,7 +733,7 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
       fMouse.fButtonStates[lastButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState,fKeyboard.computeCallbackModifierBits());
+        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
     }
   }
 
@@ -765,7 +765,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
             focus();
 
           if(fMouse.fButtonCallback)
-            fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeCallbackModifierBits());
+            fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
         }
         return true;
       })

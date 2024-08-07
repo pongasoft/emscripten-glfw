@@ -1423,4 +1423,26 @@ int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
     return EMSCRIPTEN_RESULT_FAILED;
 }
 
+//------------------------------------------------------------------------
+// GetSuperPlusKeyTimeout
+//------------------------------------------------------------------------
+int GetSuperPlusKeyTimeout()
+{
+  auto context = getContext();
+  if(context)
+    return context->getSuperPlusKeyTimeout();
+  else
+    return 0;
+}
+
+//------------------------------------------------------------------------
+// SetSuperPlusKeyTimeout
+//------------------------------------------------------------------------
+void SetSuperPlusKeyTimeout(int timeoutMilliseconds)
+{
+  auto context = getContext();
+  if(context)
+    context->setSuperPlusKeyTimeout(timeoutMilliseconds);
+}
+
 }

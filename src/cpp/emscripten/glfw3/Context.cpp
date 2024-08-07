@@ -952,6 +952,16 @@ void Context::pollEvents()
 {
   computeWindowPos();
 
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+  for(auto &w: fWindows)
+  {
+    w->handleSuperPlusKeys(fSuperPlusKeyTimeout);
+  }
+#else
+  if(fSingleWindow)
+    fSingleWindow->handleSuperPlusKeys(fSuperPlusKeyTimeout);
+#endif
+
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   if(fPresentJoystickCount > 0)
     fPresentJoystickCount = Joystick::pollJoysticks();

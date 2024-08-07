@@ -99,6 +99,9 @@ public:
   std::future<ClipboardString> asyncGetClipboardString();
   void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
 
+  int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
+  void setSuperPlusKeyTimeout(int iTimeoutMilliseconds) { fSuperPlusKeyTimeout = iTimeoutMilliseconds; }
+
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
@@ -168,6 +171,8 @@ private:
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
+
+  int fSuperPlusKeyTimeout{525}; // milliseconds
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   int fPresentJoystickCount{};

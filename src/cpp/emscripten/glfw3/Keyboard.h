@@ -21,6 +21,7 @@
 
 #include <GLFW/glfw3.h>
 #include <array>
+#include <map>
 #include <emscripten/html5.h>
 #include "KeyboardMapping.h"
 
@@ -38,6 +39,8 @@ public:
     bool repeat;
     int codepoint;
     int modifierBits;
+
+    constexpr bool isSuperPressed() const { return modifierBits & GLFW_MOD_SUPER; }
   };
 
 public:
@@ -52,12 +55,15 @@ public:
   inline GLFWcharfun setCharCallback(GLFWcharfun iCallback) { return std::exchange(fCharCallback, iCallback); }
 
   void setInputModeLockKeyMods(bool iValue) { fInputModeLockKeyMods = iValue; }
-  int computeCallbackModifierBits() const;
+  int computeModifierBits() const;
 
   bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent);
   bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent);
   void resetAllKeys(GLFWwindow *iWindow);
+  void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
   void resetKeysOnSuperRelease(GLFWwindow *iWindow);
+  inline bool hasSuperPlusKeys() const { return !fSuperPlusKeys.empty(); }
+  void handleSuperPlusKeys(GLFWwindow *iWindow, int iTimeout);
 
   void setStickyKeys(bool iStickyKeys);
   bool getStickyKeys() const { return fStickyKeys; };
@@ -74,9 +80,16 @@ private:
   // constexpr when we know that the key is a valid key
   constexpr glfw_key_state_t getValidKeyState(glfw_key_t iKey) const { return fKeyStates[iKey]; }
   constexpr bool isValidKeyPressed(glfw_key_t iKey) const { return getValidKeyState(iKey) != GLFW_RELEASE; }
+  static constexpr bool isSpecialKey(glfw_key_t iKey) {
+    return iKey == GLFW_KEY_LEFT_SHIFT   || iKey == GLFW_KEY_RIGHT_SHIFT   ||
+           iKey == GLFW_KEY_LEFT_CONTROL || iKey == GLFW_KEY_RIGHT_CONTROL ||
+           iKey == GLFW_KEY_LEFT_ALT     || iKey == GLFW_KEY_RIGHT_ALT     ||
+           iKey == GLFW_KEY_LEFT_SUPER   || iKey == GLFW_KEY_RIGHT_SUPER;
+  }
 
 private:
   std::array<glfw_key_state_t, GLFW_KEY_LAST + 1> fKeyStates{GLFW_RELEASE};
+  std::map<glfw_key_t, int> fSuperPlusKeys{};
   bool fInputModeLockKeyMods{};
   bool fStickyKeys{};
   GLFWkeyfun fKeyCallback{};

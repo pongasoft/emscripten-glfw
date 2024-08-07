@@ -20,6 +20,10 @@
 #include "Config.h"
 #include "ErrorHandler.h"
 
+extern "C" {
+double emscripten_glfw3_context_get_now();
+}
+
 namespace emscripten::glfw3 {
 
 //------------------------------------------------------------------------
@@ -52,9 +56,9 @@ glfw_key_state_t Keyboard::getKeyState(glfw_key_t iKey)
 }
 
 //------------------------------------------------------------------------
-// Window::computeCallbackModifierBits
+// Keyboard::computeModifierBits
 //------------------------------------------------------------------------
-int Keyboard::computeCallbackModifierBits() const
+int Keyboard::computeModifierBits() const
 {
   int bits = 0;
   if(isShiftPressed())
@@ -85,6 +89,19 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
 
+  // handling Super + Key
+  if(iEvent.isSuperPressed() && !isSpecialKey(key))
+  {
+    // the issue is that the Up event is NEVER received... so we work around in multiple ways
+    if(fSuperPlusKeys.find(key) == fSuperPlusKeys.end() && iEvent.repeat)
+    {
+      // case when we have issued a key up event due to timeout... so we are ignoring
+      return true;
+    }
+    // we store the current time (processed in handleSuperPlusKeys)
+    fSuperPlusKeys[key] = static_cast<int>(emscripten_glfw3_context_get_now());
+  }
+
   if(key != GLFW_KEY_UNKNOWN)
   {
     fKeyStates[key] = GLFW_PRESS;
@@ -95,7 +112,8 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
     }
   }
 
-  if(fCharCallback) {
+  if(fCharCallback)
+  {
     if(iEvent.codepoint > 0)
       fCharCallback(iWindow, iEvent.codepoint);
   }
@@ -113,6 +131,8 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
 
   if(key == GLFW_KEY_UNKNOWN)
     return false;
+
+  fSuperPlusKeys.erase(key);
 
   const glfw_key_state_t state = GLFW_RELEASE;
 
@@ -132,6 +152,21 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
   return true;
 }
 
+
+//------------------------------------------------------------------------
+// Keyboard::resetKey
+//------------------------------------------------------------------------
+void Keyboard::resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits)
+{
+  if(fKeyStates[iKey] != GLFW_RELEASE && fKeyStates[iKey] != kStickyPress)
+  {
+    fKeyStates[iKey] = GLFW_RELEASE;
+
+    if(fKeyCallback)
+      fKeyCallback(iWindow, iKey, getKeyScancode(iKey), GLFW_RELEASE, modifierBits);
+  }
+}
+
 //------------------------------------------------------------------------
 // Keyboard::resetAllKeys
 //------------------------------------------------------------------------
@@ -139,14 +174,9 @@ void Keyboard::resetAllKeys(GLFWwindow *iWindow)
 {
   for(auto key = 0; key < fKeyStates.size(); key++)
   {
-    if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
-    {
-      fKeyStates[key] = GLFW_RELEASE;
-
-      if(fKeyCallback)
-        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, 0);
-    }
+    resetKey(iWindow, key, 0);
   }
+  fSuperPlusKeys.clear();
 }
 
 //------------------------------------------------------------------------
@@ -170,25 +200,35 @@ void Keyboard::setStickyKeys(bool iStickyKeys)
 //------------------------------------------------------------------------
 void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
 {
-  auto modifierBits = computeCallbackModifierBits();
+  auto modifierBits = computeModifierBits();
 
-  for(auto key = 0; key < fKeyStates.size(); key++)
+  for(auto &[key, _]: fSuperPlusKeys)
   {
-    if(key == GLFW_KEY_LEFT_SHIFT   || key == GLFW_KEY_RIGHT_SHIFT   ||
-       key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL ||
-       key == GLFW_KEY_LEFT_ALT     || key == GLFW_KEY_RIGHT_ALT     ||
-       key == GLFW_KEY_LEFT_SUPER   || key == GLFW_KEY_RIGHT_SUPER)
+    resetKey(iWindow, key, modifierBits);
+  }
+
+  fSuperPlusKeys.clear();
+}
+
+//------------------------------------------------------------------------
+// Keyboard::handleSuperPlusKeys
+//------------------------------------------------------------------------
+void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, int iTimeout)
+{
+  auto modifierBits = computeModifierBits();
+
+  auto now = static_cast<int>(emscripten_glfw3_context_get_now());
+
+  for(auto it = fSuperPlusKeys.begin(); it != fSuperPlusKeys.end();)
+  {
+    if(it->second + iTimeout <= now)
     {
-      // the special keys properly receive key up events...
-      continue;
+      resetKey(iWindow, it->first, modifierBits);
+      it = fSuperPlusKeys.erase(it);
     }
-
-    if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
+    else
     {
-      fKeyStates[key] = GLFW_RELEASE;
-
-      if(fKeyCallback)
-        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifierBits);
+      ++it;
     }
   }
 }
