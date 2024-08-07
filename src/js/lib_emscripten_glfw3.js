@@ -93,8 +93,8 @@ let emscripten_glfw3_impl = {
       }
     },
 
-    //! defer
-    defer(action) {
+    //! deferAction
+    deferAction(action) {
       GLFW3.fDeferredActions.push(action);
     },
 
@@ -642,7 +642,7 @@ let emscripten_glfw3_impl = {
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
-    GLFW3.defer(() => {
+    GLFW3.deferAction(() => {
       navigator.clipboard.writeText(content).then(null, function(err) {
         GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
       });

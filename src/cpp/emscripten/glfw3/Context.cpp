@@ -1015,12 +1015,23 @@ char const *Context::getClipboardString()
 }
 
 //------------------------------------------------------------------------
+// Context::maybeFetchExternalClipboard
+//------------------------------------------------------------------------
+void Context::maybeFetchExternalClipboard()
+{
+  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
+  {
+    fExternalClipboardRequestTime = getPlatformTimerValue();
+    emscripten_glfw3_context_async_get_clipboard_string();
+  }
+}
+
+//------------------------------------------------------------------------
 // Context::asyncGetClipboardString
 //------------------------------------------------------------------------
 std::future<ClipboardString> Context::asyncGetClipboardString()
 {
-  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
-    emscripten_glfw3_context_async_get_clipboard_string();
+  maybeFetchExternalClipboard();
   return fExternalClipboardTextPromises.emplace_back().get_future();
 }
 
@@ -1032,8 +1043,7 @@ void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback,
   if(!iCallback)
     return;
 
-  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
-    emscripten_glfw3_context_async_get_clipboard_string();
+  maybeFetchExternalClipboard();
   fExternalClipboardTextCallbacks.emplace_back(ClipboardStringCallback{iCallback, iUserData});
 }
 
@@ -1053,6 +1063,22 @@ void Context::onClipboardString(char const *iText, char const *iErrorMessage)
     callback.fCallback(callback.fUserData, iText, iErrorMessage);
   fExternalClipboardTextCallbacks.clear();
 
+  // When the browser shows a "Paste" popup for security reasons, all keyboard events
+  // are lost => we must reset the keys in this instance otherwise we can't recover
+  if(fExternalClipboardRequestTime > 0)
+  {
+    if(getPlatformTimerValue() - fExternalClipboardRequestTime > 250)
+    {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+      for(auto &w: fWindows)
+        w->resetAllKeys();
+#else
+      if(fSingleWindow)
+        fSingleWindow->resetAllKeys();
+#endif
+    }
+    fExternalClipboardRequestTime = 0;
+  }
 }
 
 }

@@ -173,6 +173,7 @@ protected:
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
   inline bool onKeyDown(Keyboard::Event const &iEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent); }
   inline bool onKeyUp(Keyboard::Event const &iEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent); }
+  void resetAllKeys() { fKeyboard.resetAllKeys(asOpaquePtr()); }
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);

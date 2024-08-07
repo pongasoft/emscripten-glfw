@@ -137,8 +137,6 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
 //------------------------------------------------------------------------
 void Keyboard::resetAllKeys(GLFWwindow *iWindow)
 {
-  auto modifiedBits = computeCallbackModifierBits();
-
   for(auto key = 0; key < fKeyStates.size(); key++)
   {
     if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
@@ -146,7 +144,7 @@ void Keyboard::resetAllKeys(GLFWwindow *iWindow)
       fKeyStates[key] = GLFW_RELEASE;
 
       if(fKeyCallback)
-        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifiedBits);
+        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, 0);
     }
   }
 }
@@ -172,7 +170,7 @@ void Keyboard::setStickyKeys(bool iStickyKeys)
 //------------------------------------------------------------------------
 void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
 {
-  auto modifiedBits = computeCallbackModifierBits();
+  auto modifierBits = computeCallbackModifierBits();
 
   for(auto key = 0; key < fKeyStates.size(); key++)
   {
@@ -190,7 +188,7 @@ void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
       fKeyStates[key] = GLFW_RELEASE;
 
       if(fKeyCallback)
-        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifiedBits);
+        fKeyCallback(iWindow, key, getKeyScancode(key), GLFW_RELEASE, modifierBits);
     }
   }
 }
