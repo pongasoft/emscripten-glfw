@@ -99,8 +99,13 @@ public:
   std::future<ClipboardString> asyncGetClipboardString();
   void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
 
+  // keyboard
   int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
   void setSuperPlusKeyTimeout(int iTimeoutMilliseconds) { fSuperPlusKeyTimeout = iTimeoutMilliseconds; }
+
+
+  // misc
+  void openURL(std::string_view url, std::optional<std::string_view> target);
 
 public:
   void onScaleChange();

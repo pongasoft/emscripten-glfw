@@ -649,6 +649,17 @@ let emscripten_glfw3_impl = {
     });
   },
 
+  // emscripten_glfw3_context_open_url
+  emscripten_glfw3_context_open_url: (url, target) => {
+    if(url) {
+      url = UTF8ToString(url);
+      target = target ? UTF8ToString(target) : null;
+      GLFW3.deferAction(() => {
+        window.open(url, target);
+      });
+    }
+  },
+
 }
 
 autoAddDeps(emscripten_glfw3_impl, '$GLFW3')

@@ -49,6 +49,7 @@ public:
   void toggleAspectRatio();
   void updateTitle();
   void setClipboardString();
+  void setAltClickURL(std::string_view iURL) { fAltClickURL = iURL;}
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;
@@ -86,6 +87,8 @@ private:
   long fFrameCount{};
   long fClipboardRequestFrame{};
   emscripten::glfw3::FutureClipboardString fClipboardString{};
+  bool fLeftMouseClicked{false};
+  std::optional<std::string> fAltClickURL{};
 };
 
 

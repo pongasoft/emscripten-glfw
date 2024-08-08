@@ -49,6 +49,7 @@ int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelecto
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 void emscripten_glfw3_context_async_get_clipboard_string();
+void emscripten_glfw3_context_open_url(char const *, char const *);
 }
 
 namespace emscripten::glfw3 {
@@ -1089,6 +1090,14 @@ void Context::onClipboardString(char const *iText, char const *iErrorMessage)
     }
     fExternalClipboardRequestTime = 0;
   }
+}
+
+//------------------------------------------------------------------------
+// Context::openURL
+//------------------------------------------------------------------------
+void Context::openURL(std::string_view url, std::optional<std::string_view> target)
+{
+  emscripten_glfw3_context_open_url(url.data(), target ? target->data() : nullptr);
 }
 
 }

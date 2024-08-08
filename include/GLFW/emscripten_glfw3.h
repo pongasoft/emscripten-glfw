@@ -218,6 +218,12 @@ int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 int GetSuperPlusKeyTimeout();
 void SetSuperPlusKeyTimeout(int timeoutMilliseconds);
 
+/**
+ * Convenient call to open a url.
+ *
+ * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options */
+void OpenURL(std::string_view url, std::optional<std::string_view> target = std::nullopt);
+
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus
@@ -357,6 +363,13 @@ int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, 
  */
 typedef void (* emscripten_glfw_clipboard_string_fun)(void *userData, char const *clipboardString, char const *error);
 void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData);
+
+/**
+ * Convenient call to open a url
+ *
+ * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options
+ *               (`nullptr` is valid) */
+void emscripten_glfw_open_url(char const *url, char const *target);
 
 #ifdef __cplusplus
 }

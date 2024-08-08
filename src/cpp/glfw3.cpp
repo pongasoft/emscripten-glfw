@@ -1268,6 +1268,21 @@ void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun c
     context->getClipboardString(callback, userData);
 }
 
+//------------------------------------------------------------------------
+// emscripten_glfw_get_clipboard_string
+//------------------------------------------------------------------------
+void emscripten_glfw_open_url(char const *url, char const *target)
+{
+  if(!url)
+  {
+    ErrorHandler::instance().logError(GLFW_INVALID_VALUE, "url cannot be null");
+    return;
+  }
+
+  auto context = getContext();
+  if(context)
+    context->openURL(url, target == nullptr ? std::nullopt : std::optional<std::string_view>(target));
+}
 
 //------------------------------------------------------------------------
 // no implementation for the emscripten platform
@@ -1445,4 +1460,13 @@ void SetSuperPlusKeyTimeout(int timeoutMilliseconds)
     context->setSuperPlusKeyTimeout(timeoutMilliseconds);
 }
 
+//------------------------------------------------------------------------
+// OpenURL
+//------------------------------------------------------------------------
+void OpenURL(std::string_view url, std::optional<std::string_view> target)
+{
+  auto context = getContext();
+  if(context)
+    context->openURL(url, target);
+}
 }

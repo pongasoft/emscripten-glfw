@@ -585,6 +585,19 @@ void Triangle::updateValues()
   float xf, yf;
   int xi, yi;
 
+  // detecting left mouse click
+  if(!fLeftMouseClicked && glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+  {
+    fLeftMouseClicked = true;
+    // Alt + LMB => open url
+    if(fAltClickURL && glfwGetKey(fWindow, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+      emscripten::glfw3::OpenURL(*fAltClickURL);
+  }
+
+  if(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+  {
+    fLeftMouseClicked = false;
+  }
 
   glfwGetWindowSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetWindowSize", "%dx%d", xi, yi);

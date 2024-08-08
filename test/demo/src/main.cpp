@@ -217,6 +217,7 @@ int main()
       glfwTerminate();
       return -1;
     }
+    window1Triangle->setAltClickURL("https://github.com/pongasoft/emscripten-glfw");
     window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
     kTriangles.emplace_back(window1Triangle);
   }
@@ -229,6 +230,7 @@ int main()
       glfwTerminate();
       return -1;
     }
+    window2Triangle->setAltClickURL("https://github.com/pongasoft");
     window2Triangle->setBgColor(1.0f, 0, 0.5f);
     kTriangles.emplace_back(window2Triangle);
   }
