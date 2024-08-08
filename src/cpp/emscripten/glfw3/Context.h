@@ -129,7 +129,7 @@ private:
   bool onPointerUnlock();
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
   void computeWindowPos();
-  void maybeFetchExternalClipboard();
+  bool maybeFetchExternalClipboard();
 
   static double getPlatformTimerValue();
 
@@ -163,6 +163,7 @@ private:
   std::vector<std::promise<ClipboardString>> fExternalClipboardTextPromises{};
   std::vector<ClipboardStringCallback> fExternalClipboardTextCallbacks{};
   double fExternalClipboardRequestTime{};
+  double fExternalClipboardReceivedTime{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};

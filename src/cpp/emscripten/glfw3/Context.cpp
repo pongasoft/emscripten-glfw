@@ -520,7 +520,7 @@ bool Context::onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent)
 //------------------------------------------------------------------------
 std::shared_ptr<Window> Context::findWindow(GLFWwindow *iWindow) const
 {
-  // shortcut for most frequent use-case
+  // shortcut for the most frequent use-case
   if(fCurrentWindowOpaquePtr == iWindow)
     return fCurrentWindow;
 
@@ -1003,6 +1003,7 @@ void Context::setClipboardString(char const *iContent)
 {
   if(iContent)
   {
+    fExternalClipboardReceivedTime = getPlatformTimerValue();
     emscripten_glfw3_context_set_clipboard_string(iContent);
     fInternalClipboardText = iContent;
     for(auto &promise: fExternalClipboardTextPromises)
@@ -1028,13 +1029,25 @@ char const *Context::getClipboardString()
 //------------------------------------------------------------------------
 // Context::maybeFetchExternalClipboard
 //------------------------------------------------------------------------
-void Context::maybeFetchExternalClipboard()
+bool Context::maybeFetchExternalClipboard()
 {
   if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
   {
+    auto window = findFocusedOrSingleWindow();
+    if(window && // there is a window
+       window->fLastFocusedTime > 0 &&  // it is currently focused
+       fExternalClipboardReceivedTime > 0 && // we have a clipboard
+       window->fLastFocusedTime < fExternalClipboardReceivedTime) // the window has not lost focus since then
+    {
+      // we have determined that the clipboard that we received last cannot have changed because the window
+      // never lost focus, so there is no need to fetch it again
+      return false;
+    }
+
     fExternalClipboardRequestTime = getPlatformTimerValue();
     emscripten_glfw3_context_async_get_clipboard_string();
   }
+  return true;
 }
 
 //------------------------------------------------------------------------
@@ -1042,8 +1055,14 @@ void Context::maybeFetchExternalClipboard()
 //------------------------------------------------------------------------
 std::future<ClipboardString> Context::asyncGetClipboardString()
 {
-  maybeFetchExternalClipboard();
-  return fExternalClipboardTextPromises.emplace_back().get_future();
+  if(maybeFetchExternalClipboard())
+    return fExternalClipboardTextPromises.emplace_back().get_future();
+  else
+  {
+    auto promise = std::promise<ClipboardString>{};
+    promise.set_value(ClipboardString::fromValue(fInternalClipboardText ? *fInternalClipboardText : ""));
+    return promise.get_future();
+  }
 }
 
 //------------------------------------------------------------------------
@@ -1054,8 +1073,10 @@ void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback,
   if(!iCallback)
     return;
 
-  maybeFetchExternalClipboard();
-  fExternalClipboardTextCallbacks.emplace_back(ClipboardStringCallback{iCallback, iUserData});
+  if(maybeFetchExternalClipboard())
+    fExternalClipboardTextCallbacks.emplace_back(ClipboardStringCallback{iCallback, iUserData});
+  else
+    iCallback(iUserData, fInternalClipboardText ? fInternalClipboardText->c_str() : "", nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -1063,6 +1084,8 @@ void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback,
 //------------------------------------------------------------------------
 void Context::onClipboardString(char const *iText, char const *iErrorMessage)
 {
+  fExternalClipboardReceivedTime = iErrorMessage ? 0 : getPlatformTimerValue();
+
   if(iText)
     fInternalClipboardText = iText;
 
@@ -1075,7 +1098,7 @@ void Context::onClipboardString(char const *iText, char const *iErrorMessage)
   fExternalClipboardTextCallbacks.clear();
 
   // When the browser shows a "Paste" popup for security reasons, all keyboard events
-  // are lost => we must reset the keys in this instance otherwise we can't recover
+  // are lost => we must reset the keys in this instance, otherwise we can't recover
   if(fExternalClipboardRequestTime > 0)
   {
     if(getPlatformTimerValue() - fExternalClipboardRequestTime > 250)

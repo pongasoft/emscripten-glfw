@@ -42,6 +42,7 @@ int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
 int emscripten_glfw3_context_gl_make_context_current(GLFWwindow *iWindow);
 int emscripten_glfw3_context_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
 int emscripten_glfw3_context_unmake_canvas_resizable(GLFWwindow *window);
+double emscripten_glfw3_context_get_now();
 }
 
 namespace emscripten::glfw3 {
@@ -706,9 +707,13 @@ bool Window::onFocusChange(bool iFocus)
 {
   fFocused = iFocus;
   if(!isFocused())
+  {
+    fLastFocusedTime = 0;
     fKeyboard.resetAllKeys(asOpaquePtr());
+  }
   else
   {
+    fLastFocusedTime = emscripten_glfw3_context_get_now();
     fContext->onFocus(asOpaquePtr());
     emscripten_glfw3_context_set_title(getTitle());
   }

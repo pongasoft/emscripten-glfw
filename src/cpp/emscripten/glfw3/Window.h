@@ -206,6 +206,7 @@ private:
   bool fDestroyed{};
   bool fHovered{};
   bool fFocused{};
+  double fLastFocusedTime{};
   bool fVisible{true};
   bool fFullscreen{};
   bool fFocusOnMouse{true};
