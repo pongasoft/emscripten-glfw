@@ -50,7 +50,7 @@ Main supported features:
 Demo
 ----
 
-![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240727/emscripten-glfw.png)
+<a href="https://pongasoft.github.io/emscripten-glfw/test/demo/main.html">![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240727/emscripten-glfw.png)</a>
 
 Check out the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
@@ -226,7 +226,7 @@ Release Notes
 -------------
 #### 3.4.0.20240804 - 2024-08-04 | emscripten TBD
 
-- Fixed `nullptr` issue when clipboard is emtpy
+- Fixed `nullptr` issue when clipboard is empty
 - Fixed the internal clipboard being wiped on asynchronous callback error
 
 #### 3.4.0.20240731 - 2024-07-31 | emscripten TBD
