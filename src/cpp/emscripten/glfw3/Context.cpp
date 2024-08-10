@@ -259,7 +259,7 @@ bool Context::onKeyDown(Keyboard::Event const &iEvent)
   bool handled = false;
   auto w = findFocusedOrSingleWindow();
   if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
-    handled |= w->onKeyDown(iEvent);
+    handled |= w->onKeyDown(iEvent, fKeyHandledCallback);
   return handled;
 }
 
@@ -271,7 +271,7 @@ bool Context::onKeyUp(Keyboard::Event const &iEvent)
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   bool handled = false;
   for(auto &w: fWindows)
-    handled |= w->onKeyUp(iEvent);
+    handled |= w->onKeyUp(iEvent, fKeyHandledCallback);
   return handled;
 #else
   return fSingleWindow && fSingleWindow->onKeyUp(iEvent);
@@ -548,14 +548,19 @@ std::shared_ptr<Window> Context::findFocusedOrSingleWindow() const
   }
   else
   {
+    std::shared_ptr<Window> hoveredWindow{};
     for(auto &w: fWindows)
     {
       if(w->isFocused())
         return w;
+      if(w->isHovered())
+        hoveredWindow = w;
     }
+    if(hoveredWindow)
+      return hoveredWindow;
+    else
+      return findWindow(fLastKnownFocusedWindow);
   }
-
-  return findWindow(fLastKnownFocusedWindow);
 #else
   return fSingleWindow;
 #endif

@@ -84,7 +84,7 @@ int Keyboard::computeModifierBits() const
 //------------------------------------------------------------------------
 // Keyboard::onKeyDown
 //------------------------------------------------------------------------
-bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
+bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback)
 {
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
@@ -102,14 +102,17 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
     fSuperPlusKeys[key] = static_cast<int>(emscripten_glfw3_context_get_now());
   }
 
+  auto handled = false;
+
   if(key != GLFW_KEY_UNKNOWN)
   {
     fKeyStates[key] = GLFW_PRESS;
 
     if(fKeyCallback)
-    {
       fKeyCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
-    }
+
+    handled = !iKeyHandledCallback ||
+              iKeyHandledCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
   }
 
   if(fCharCallback)
@@ -118,13 +121,13 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent)
       fCharCallback(iWindow, iEvent.codepoint);
   }
 
-  return true;
+  return handled;
 }
 
 //------------------------------------------------------------------------
 // Keyboard::onKeyUp
 //------------------------------------------------------------------------
-bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
+bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback)
 {
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
@@ -138,18 +141,24 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent)
 
   bool wasSuperPressed = isSuperPressed();
 
+  auto handled = false;
+
   if(fKeyStates[key] != GLFW_RELEASE && fKeyStates[key] != kStickyPress)
   {
     fKeyStates[key] = fStickyKeys ? kStickyPress : state;
 
     if(fKeyCallback)
       fKeyCallback(iWindow, key, scancode, state, iEvent.modifierBits);
+
+    handled = !iKeyHandledCallback ||
+              iKeyHandledCallback(iWindow, key, scancode, state, iEvent.modifierBits);
+
   }
 
   if(wasSuperPressed && !isSuperPressed())
     resetKeysOnSuperRelease(iWindow);
 
-  return true;
+  return handled;
 }
 
 

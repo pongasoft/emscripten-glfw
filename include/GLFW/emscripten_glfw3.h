@@ -224,6 +224,10 @@ void SetSuperPlusKeyTimeout(int timeoutMilliseconds);
  * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options */
 void OpenURL(std::string_view url, std::optional<std::string_view> target = std::nullopt);
 
+using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
+
+key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
+
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus

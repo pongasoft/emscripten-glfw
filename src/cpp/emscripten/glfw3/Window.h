@@ -89,6 +89,8 @@ public:
   constexpr bool isFocused() const { return fFocused; }
   void focus();
 
+  constexpr bool isHovered() const { return fHovered; }
+
   constexpr bool isFullscreen() const { return fFullscreen; }
 
   constexpr bool isPointerLock() const { return fMouse.isPointerLock(); }
@@ -171,8 +173,8 @@ protected:
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
-  inline bool onKeyDown(Keyboard::Event const &iEvent) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent); }
-  inline bool onKeyUp(Keyboard::Event const &iEvent) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent); }
+  inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iKeyHandledCallback); }
+  inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iKeyHandledCallback); }
   void resetAllKeys() { fKeyboard.resetAllKeys(asOpaquePtr()); }
   void handleSuperPlusKeys(int iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
   bool onFocusChange(bool iFocus);

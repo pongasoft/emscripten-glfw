@@ -1461,6 +1461,18 @@ void SetSuperPlusKeyTimeout(int timeoutMilliseconds)
 }
 
 //------------------------------------------------------------------------
+// SetKeyHandledCallback
+//------------------------------------------------------------------------
+key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback)
+{
+  auto context = getContext();
+  if(context)
+    return context->setKeyHandledCallback(std::move(callback));
+  else
+    return {};
+}
+
+//------------------------------------------------------------------------
 // OpenURL
 //------------------------------------------------------------------------
 void OpenURL(std::string_view url, std::optional<std::string_view> target)

@@ -102,7 +102,7 @@ public:
   // keyboard
   int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
   void setSuperPlusKeyTimeout(int iTimeoutMilliseconds) { fSuperPlusKeyTimeout = iTimeoutMilliseconds; }
-
+  key_handled_fun_t setKeyHandledCallback(key_handled_fun_t iCallback) { return std::exchange(fKeyHandledCallback, std::move(iCallback)); }
 
   // misc
   void openURL(std::string_view url, std::optional<std::string_view> target);
@@ -172,12 +172,15 @@ private:
   GLFWmonitorfun fMonitorCallback{};
   GLFWjoystickfun fJoystickCallback{};
 
+  // mouse
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
 
+  // keyboard
+  key_handled_fun_t fKeyHandledCallback{};
   int fSuperPlusKeyTimeout{525}; // milliseconds
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK

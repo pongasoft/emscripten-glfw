@@ -20,6 +20,7 @@
 #define EMSCRIPTEN_GLFW_KEYBOARD_H
 
 #include <GLFW/glfw3.h>
+#include <GLFW/emscripten_glfw3.h>
 #include <array>
 #include <map>
 #include <emscripten/html5.h>
@@ -57,8 +58,8 @@ public:
   void setInputModeLockKeyMods(bool iValue) { fInputModeLockKeyMods = iValue; }
   int computeModifierBits() const;
 
-  bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent);
-  bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent);
+  bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback);
+  bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback);
   void resetAllKeys(GLFWwindow *iWindow);
   void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
   void resetKeysOnSuperRelease(GLFWwindow *iWindow);
