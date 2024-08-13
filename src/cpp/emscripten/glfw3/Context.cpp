@@ -30,7 +30,7 @@ extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
 using KeyboardCallback = bool (*)(emscripten::glfw3::Context *, bool, char const *, char const *, bool, int, int);
-using ClipboardStringCallback = char const *(*)(emscripten::glfw3::Context *, int, char const *, char const *);
+using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, int, char const *, char const *);
 using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
 
@@ -101,25 +101,21 @@ bool ContextKeyboardCallback(emscripten::glfw3::Context *iContext,
 //------------------------------------------------------------------------
 // ContextClipboardStringCallback
 //------------------------------------------------------------------------
-char const *ContextClipboardStringCallback(Context *iContext, int iAction, char const *iText, char const *iError)
+void ContextClipboardStringCallback(Context *iContext, int iAction, char const *iText, char const *iError)
 {
   switch(iAction)
   {
     case 0:
-      // paste listener
-      iContext->onPaste(iText);
+      // cut/copy/paste listener
+      iContext->onCutCopyOrPaste(iText);
       break;
 
     case 1:
-      // copy listener
-      return iContext->onCopy(iText);
-
-    case 2:
       // navigator.clipboard.readText
       iContext->onTextRead(iText, iError);
       break;
 
-    case 3:
+    case 2:
       // navigator.clipboard.writeText
       iContext->onTextWritten(iText, iError);
       break;
@@ -128,8 +124,6 @@ char const *ContextClipboardStringCallback(Context *iContext, int iAction, char 
       // not reached
       break;
   }
-
-  return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -1081,15 +1075,6 @@ void Context::onTextRead(char const *iText, char const *iError)
         fSingleWindow->resetAllKeys();
 #endif
   }
-}
-
-//------------------------------------------------------------------------
-// Context::onCopy
-//------------------------------------------------------------------------
-char const *Context::onCopy(char const *iTextSelection)
-{
-  auto const &selection = fClipboard.onCopy(iTextSelection);
-  return selection ? selection->c_str() : nullptr;
 }
 
 //------------------------------------------------------------------------

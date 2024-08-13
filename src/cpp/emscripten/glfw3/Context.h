@@ -99,7 +99,6 @@ public:
   char const *getClipboardString();
   std::future<ClipboardString> asyncGetClipboardString();
   void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
-  clipboard_selection_fun_t setClipboardSelectionCallback(clipboard_selection_fun_t iCallback) { return fClipboard.setClipboardSelectionCallback(std::move(iCallback)); }
 
   // keyboard
   int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
@@ -112,8 +111,7 @@ public:
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
-  void onPaste(char const *iText) { fClipboard.onPaste(iText); }
-  char const *onCopy(char const *iTextSelection);
+  void onCutCopyOrPaste(char const *iText) { fClipboard.onCutCopyOrPaste(iText); }
   void onTextRead(char const *iText, char const *iError);
   void onTextWritten(char const *iText, char const *iError) { fClipboard.onTextWritten(iText, iError); };
   int requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);

@@ -1378,19 +1378,6 @@ std::future<ClipboardString> GetClipboardString()
   }
 }
 
-
-//------------------------------------------------------------------------
-// SetClipboardSelectionCallback
-//------------------------------------------------------------------------
-clipboard_selection_fun_t SetClipboardSelectionCallback(std::function<std::optional<std::string>()> callback)
-{
-  auto context = getContext();
-  if(context)
-    return context->setClipboardSelectionCallback(std::move(callback));
-  else
-    return {};
-}
-
 //------------------------------------------------------------------------
 // SetNextWindowCanvasSelector
 //------------------------------------------------------------------------

@@ -230,7 +230,6 @@ int main()
       glfwTerminate();
       return -1;
     }
-    window2Triangle->setAltClickURL("https://github.com/pongasoft");
     window2Triangle->setBgColor(1.0f, 0, 0.5f);
     kTriangles.emplace_back(window2Triangle);
   }
@@ -252,14 +251,6 @@ int main()
     }
     // let the application handle it
     return true;
-  });
-
-  emscripten::glfw3::SetClipboardSelectionCallback([window1, window2] () -> std::optional<std::string> {
-    if(window1 && glfwGetWindowAttrib(window1, GLFW_FOCUSED) == GLFW_TRUE)
-      return glfwGetWindowTitle(window1);
-    if(window2 && glfwGetWindowAttrib(window2, GLFW_FOCUSED) == GLFW_TRUE)
-      return glfwGetWindowTitle(window2);
-    return std::nullopt;
   });
 
   emscripten_set_main_loop(loop, 0, GLFW_FALSE);

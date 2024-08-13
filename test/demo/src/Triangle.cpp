@@ -589,9 +589,14 @@ void Triangle::updateValues()
   if(!fLeftMouseClicked && glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
   {
     fLeftMouseClicked = true;
-    // Alt + LMB => open url
-    if(fAltClickURL && glfwGetKey(fWindow, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-      emscripten::glfw3::OpenURL(*fAltClickURL);
+    // Alt + LMB => open url or copy to clipboard
+    if(glfwGetKey(fWindow, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    {
+      if(fAltClickURL)
+        emscripten::glfw3::OpenURL(*fAltClickURL);
+      else
+        setClipboardString();
+    }
   }
 
   if(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -787,6 +792,26 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
       default:
         // ignore
         break;
+    }
+  }
+
+  // Handle CMD + <iKey>
+  if(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED) == GLFW_TRUE)
+  {
+    if(iAction == GLFW_PRESS && (iMods & GLFW_MOD_SUPER))
+    {
+      switch(iKey)
+      {
+        case GLFW_KEY_C: // Save to clipboard
+        case GLFW_KEY_X: // Save to clipboard
+        {
+          setClipboardString();
+          break;
+        }
+        default:
+          // ignore
+          break;
+      }
     }
   }
 }

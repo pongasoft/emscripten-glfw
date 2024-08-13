@@ -20,7 +20,6 @@
 
 extern "C" {
 double emscripten_glfw3_context_get_now();
-double emscripten_glfw3_context_get_frame_count();
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 void emscripten_glfw3_context_async_get_clipboard_string();
 }
@@ -30,21 +29,11 @@ namespace emscripten::glfw3 {
 namespace clipboard {
 
 //------------------------------------------------------------------------
-// clipboard::Timing::reset
-//------------------------------------------------------------------------
-void Timing::reset()
-{
-  fTime = 0;
-  fFrame = 0;
-}
-
-//------------------------------------------------------------------------
 // clipboard::Timing::update
 //------------------------------------------------------------------------
 void Timing::update()
 {
   fTime = emscripten_glfw3_context_get_now();
-  fFrame = emscripten_glfw3_context_get_frame_count();
 }
 
 }
@@ -94,17 +83,7 @@ void OSClipboard::writeText(char const *iText)
 void OSClipboard::onTextWritten(char const *iText, char const *iError)
 {
   update(iText, iError);
-  printf("OSClipboard::onTextWritten: [%s] [%s] [%.0f] [%.0f]\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime, fLastModified.fFrame);
-}
-
-//------------------------------------------------------------------------
-// OSClipboard::invalidate
-//------------------------------------------------------------------------
-void OSClipboard::invalidate()
-{
-  fText = std::nullopt;
-  fError = std::nullopt;
-  fLastModified.reset();
+  printf("OSClipboard::onTextWritten: [%s] [%s] [%.0f]\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime);
 }
 
 //------------------------------------------------------------------------
@@ -124,7 +103,7 @@ bool OSClipboard::readText(double iLastKnownFocusedTime)
       return false;
     }
     fReadRequest.update();
-    printf("OSClipboard::readText(%.0f): [%.0f] [%.0f]\n", iLastKnownFocusedTime, fReadRequest.fTime, fReadRequest.fFrame);
+    printf("OSClipboard::readText(%.0f): [%.0f]\n", iLastKnownFocusedTime, fReadRequest.fTime);
     emscripten_glfw3_context_async_get_clipboard_string();
   }
   return true;
@@ -136,41 +115,18 @@ bool OSClipboard::readText(double iLastKnownFocusedTime)
 double OSClipboard::onTextRead(char const *iText, char const *iError)
 {
   update(iText, iError);
-  printf("OSClipboard::onTextRead: [%s] [%s] [%.0f] [%.0f] -> %.0f\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime, fLastModified.fFrame, fLastModified.fTime - fReadRequest.fTime);
+  printf("OSClipboard::onTextRead: [%s] [%s] [%.0f] -> %.0f\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime, fLastModified.fTime - fReadRequest.fTime);
   return fLastModified.fTime - fReadRequest.fTime;
 }
 
 //------------------------------------------------------------------------
-// OSClipboard::pasteText
+// OSClipboard::setText
 //------------------------------------------------------------------------
-void OSClipboard::pasteText(char const *iText)
+void OSClipboard::setText(char const *iText)
 {
   update(iText, nullptr);
-  printf("OSClipboard::pasteText: [%s] [%.0f] [%.0f]\n", iText ? iText : "", fLastModified.fTime, fLastModified.fFrame);
+  printf("OSClipboard::setText: [%s] [%.0f]\n", iText ? iText : "", fLastModified.fTime);
 }
-
-//------------------------------------------------------------------------
-// OSClipboard::getSelection
-//------------------------------------------------------------------------
-std::optional<std::string> const &OSClipboard::fetchSelection(char const *iTextSelection)
-{
-  if(iTextSelection)
-  {
-    update(iTextSelection, nullptr);
-    fSelection = std::nullopt;
-    printf("OSClipboard::getSelection (selected): [%s] [%.0f] [%.0f]\n", iTextSelection, fLastModified.fTime, fLastModified.fFrame);
-  }
-  else
-  {
-    fSelection = fSelectionCallback ? fSelectionCallback() : std::nullopt;
-    if(fSelection)
-      update(fSelection->c_str(), nullptr);
-    printf("OSClipboard::getSelection (provided): -> [%s]\n", fSelection ? fSelection->c_str() : "");
-  }
-
-  return fSelection;
-}
-
 
 //------------------------------------------------------------------------
 // Clipboard::setText

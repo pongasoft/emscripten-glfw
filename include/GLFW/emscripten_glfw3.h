@@ -103,9 +103,6 @@ private:
  */
 std::future<ClipboardString> GetClipboardString();
 
-using clipboard_selection_fun_t = std::function<std::optional<std::string>()>;
-clipboard_selection_fun_t SetClipboardSelectionCallback(clipboard_selection_fun_t callback);
-
 /**
  * Before calling `glfwCreateWindow` you can communicate to the library which canvas to use by calling this function.
  * Conceptually this is similar to a window hint (must be called **prior** to creating the window).

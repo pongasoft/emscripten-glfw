@@ -30,11 +30,8 @@ namespace clipboard {
 
 struct Timing
 {
-  void reset();
   void update();
-
   double fTime{};
-  double fFrame{};
 };
 
 using text_t = std::optional<std::string>;
@@ -51,8 +48,6 @@ public:
   constexpr clipboard::Timing const &getLastModified() const { return fLastModified; }
   clipboard::text_t const &getText() const { return fText; }
 
-  void invalidate();
-
   // navigator.clipboard.writeText
   void writeText(char const *iText);
   void onTextWritten(char const *iText, char const *iError);
@@ -61,12 +56,8 @@ public:
   bool readText(double iLastKnownFocusedTime);
   double onTextRead(char const *iText, char const *iError);
 
-  // "paste" listener
-  void pasteText(char const *iText);
-
-  // "copy" listener
-  clipboard::text_t const &fetchSelection(char const *iTextSelection);
-  clipboard_selection_fun_t setSelectionCallback(std::function<clipboard::text_t()> iCallback) { return std::exchange(fSelectionCallback, std::move(iCallback)); }
+  // "paste"/"cut"/"copy" listener
+  void setText(char const *iText);
 
   friend class Clipboard;
 
@@ -85,8 +76,6 @@ private:
   std::optional<std::string> fError{};
   clipboard::Timing fLastModified{};
   clipboard::Timing fReadRequest{};
-  clipboard_selection_fun_t fSelectionCallback{};
-  std::optional<std::string> fSelection{};
   std::vector<std::promise<ClipboardString>> fTextPromises{};
   std::vector<ClipboardStringCallback> fTextCallbacks{};
 };
@@ -94,8 +83,7 @@ private:
 class Clipboard
 {
 public:
-  void onPaste(char const *iText) { fOSClipboard.pasteText(iText); }
-  clipboard::text_t const &onCopy(char const *iTextSelection) { return fOSClipboard.fetchSelection(iTextSelection); };
+  void onCutCopyOrPaste(char const *iText) { fOSClipboard.setText(iText); }
   double onTextRead(char const *iText, char const *iError) { return fOSClipboard.onTextRead(iText, iError); };
   void onTextWritten(char const *iText, char const *iError) { fOSClipboard.onTextWritten(iText, iError); };
 
@@ -104,8 +92,6 @@ public:
 
   std::future<ClipboardString> asyncGetClipboardString(double iLastKnownFocusedTime);
   void getClipboardString(double iLastKnownFocusedTime, emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
-
-  clipboard_selection_fun_t setClipboardSelectionCallback(clipboard_selection_fun_t iCallback) { return fOSClipboard.setSelectionCallback(std::move(iCallback)); }
 
 private:
   clipboard::text_t fText{};
