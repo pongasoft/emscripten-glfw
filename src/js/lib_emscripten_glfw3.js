@@ -19,9 +19,10 @@ let emscripten_glfw3_impl = {
     fScaleChangeCallback: null,
     fWindowResizeCallback: null,
     fKeyboardCallback: null,
-    fClipboardStringCallback: null,
+    fClipboardCallback: null,
     fRequestFullscreen: null,
     fDeferredActions: [],
+    fFrameCount: 0,
     fContext: null,
     fCSSValues: null, // key is element, value is {property_name: property_value}
     fErrorCodes: {GLFW_INVALID_VALUE: 0x00010004, GLFW_PLATFORM_ERROR: 0x00010008},
@@ -49,6 +50,45 @@ let emscripten_glfw3_impl = {
       }
     },
 
+    onNewFrame() {
+      if(GLFW3.fContext) {
+        GLFW3.fFrameCount++;
+        requestAnimationFrame(GLFW3.onNewFrame);
+      }
+    },
+
+    //! onPaste
+    onPaste(e) {
+      console.log('detected paste...');
+      e.preventDefault();
+      let clipboardData = e.clipboardData || window.clipboardData;
+      let pastedData = clipboardData.getData('text/plain');
+      if(pastedData !== '' && GLFW3.fClipboardCallback) {
+        const pastedString = stringToNewUTF8(pastedData);
+        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 0, pastedString, null);
+        _free(pastedString);
+      }
+    },
+
+    //! onCutOrCopy
+    onCutOrCopy(e) {
+      console.log(`detected ${e.type}... [${window.getSelection()?.toString()}]`);
+      if(GLFW3.fClipboardCallback) {
+        const windowSelection = window.getSelection();
+        if(windowSelection && windowSelection.toString() !== '') {
+          const selection = stringToNewUTF8(windowSelection.toString());
+          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 1, selection, null);
+          _free(selection);
+        } else {
+          const newSelection = {{{ makeDynCall('ppipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 1, null, null);
+          if(newSelection) {
+            console.log(`${e.type} => ${UTF8ToString(newSelection)}`);
+            e.clipboardData.setData('text/plain', UTF8ToString(newSelection));
+            e.preventDefault();
+          }
+        }
+      }
+    },
 
     // onMouseDown
     onMouseDown(e) {
@@ -343,7 +383,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardStringCallback, requestFullscreen, errorHandler) => {
+  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardCallback, requestFullscreen, errorHandler) => {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
@@ -353,7 +393,7 @@ let emscripten_glfw3_impl = {
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
     GLFW3.fKeyboardCallback = keyboardCallback;
-    GLFW3.fClipboardStringCallback = clipboardStringCallback;
+    GLFW3.fClipboardCallback = clipboardCallback;
     GLFW3.fRequestFullscreen = requestFullscreen;
     GLFW3.fErrorHandler = errorHandler;
     GLFW3.fContext = context;
@@ -376,6 +416,17 @@ let emscripten_glfw3_impl = {
     GLFW3.fDestructors.push(() => { document.removeEventListener('keydown', GLFW3.onKeyboardEvent); });
     document.addEventListener('keyup', GLFW3.onKeyboardEvent);
     GLFW3.fDestructors.push(() => { document.removeEventListener('keyup', GLFW3.onKeyboardEvent); });
+
+    // handle clipboard
+    document.addEventListener('cut', GLFW3.onCutOrCopy);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('cut', GLFW3.onCutOrCopy); });
+    document.addEventListener('copy', GLFW3.onCutOrCopy);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('copy', GLFW3.onCutOrCopy); });
+    document.addEventListener('paste', GLFW3.onPaste);
+    GLFW3.fDestructors.push(() => { document.removeEventListener('paste', GLFW3.onPaste); });
+
+    // frame management
+    requestAnimationFrame(GLFW3.onNewFrame);
   },
 
   //! emscripten_glfw3_context_is_any_element_focused
@@ -414,6 +465,11 @@ let emscripten_glfw3_impl = {
     return performance.now();
   },
 
+  //! emscripten_glfw3_context_get_frame_count
+  emscripten_glfw3_context_get_frame_count: () => {
+    return GLFW3.fFrameCount;
+  },
+
   //! emscripten_glfw3_context_set_title
   emscripten_glfw3_context_set_title: (title) => {
     if(title)
@@ -427,7 +483,7 @@ let emscripten_glfw3_impl = {
     GLFW3.fScaleChangeCallback = null;
     GLFW3.fWindowResizeCallback = null;
     GLFW3.fKeyboardCallback = null;
-    GLFW3.fClipboardStringCallback = null;
+    GLFW3.fClipboardCallback = null;
     GLFW3.fRequestFullscreen = null;
     for(let destructor of GLFW3.fDestructors)
       destructor();
@@ -622,16 +678,16 @@ let emscripten_glfw3_impl = {
   emscripten_glfw3_context_async_get_clipboard_string: () => {
     navigator.clipboard.readText()
       .then(text => {
-        if(GLFW3.fClipboardStringCallback) {
+        if(GLFW3.fClipboardCallback) {
           const string = stringToNewUTF8(text);
-          {{{ makeDynCall('vppp', 'GLFW3.fClipboardStringCallback') }}}(GLFW3.fContext, string, null);
+          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, string, null);
           _free(string);
         }
       })
       .catch(err => {
-        if(GLFW3.fClipboardStringCallback) {
+        if(GLFW3.fClipboardCallback) {
           const errorString = stringToNewUTF8(`${err}`);
-          {{{ makeDynCall('vppp', 'GLFW3.fClipboardStringCallback') }}}(GLFW3.fContext, null, errorString);
+          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, null, errorString);
           _free(errorString);
         } else {
           GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot get clipboard string [${err}]`);
@@ -643,9 +699,23 @@ let emscripten_glfw3_impl = {
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
     GLFW3.deferAction(() => {
-      navigator.clipboard.writeText(content).then(null, function(err) {
-        GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
-      });
+      navigator.clipboard.writeText(content)
+        .then(() => {
+          if(GLFW3.fClipboardCallback) {
+            const string = stringToNewUTF8(content);
+            {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 3, string, null);
+            _free(string);
+          }
+        })
+        .catch(err => {
+          if(GLFW3.fClipboardCallback) {
+            const errorString = stringToNewUTF8(`${err}`);
+            {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 3, null, errorString);
+            _free(errorString);
+          } else {
+            GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
+          }
+        })
     });
   },
 

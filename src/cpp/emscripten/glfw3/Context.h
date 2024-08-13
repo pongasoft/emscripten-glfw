@@ -23,6 +23,7 @@
 #include <GLFW/glfw3.h>
 #include "Window.h"
 #include "Monitor.h"
+#include "Clipboard.h"
 #include <string>
 #include <optional>
 #include <future>
@@ -98,6 +99,7 @@ public:
   char const *getClipboardString();
   std::future<ClipboardString> asyncGetClipboardString();
   void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
+  clipboard_selection_fun_t setClipboardSelectionCallback(clipboard_selection_fun_t iCallback) { return fClipboard.setClipboardSelectionCallback(std::move(iCallback)); }
 
   // keyboard
   int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
@@ -110,7 +112,10 @@ public:
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
-  void onClipboardString(char const *iText, char const *iErrorMessage);
+  void onPaste(char const *iText) { fClipboard.onPaste(iText); }
+  char const *onCopy(char const *iTextSelection);
+  void onTextRead(char const *iText, char const *iError);
+  void onTextWritten(char const *iText, char const *iError) { fClipboard.onTextWritten(iText, iError); };
   int requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
   int requestPointerLock(GLFWwindow *iWindow);
   void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);
@@ -129,20 +134,12 @@ private:
   bool onPointerUnlock();
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
   void computeWindowPos();
-  bool maybeFetchExternalClipboard();
 
   static double getPlatformTimerValue();
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   bool onGamepadConnectionChange(EmscriptenGamepadEvent const *iEvent);
 #endif
-
-private:
-  struct ClipboardStringCallback
-  {
-    emscripten_glfw_clipboard_string_fun fCallback{};
-    void *fUserData{};
-  };
 
 private:
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
@@ -159,11 +156,7 @@ private:
   double fInitialTime{getPlatformTimerValue()};
 
   // clipboard
-  std::optional<std::string> fInternalClipboardText{};
-  std::vector<std::promise<ClipboardString>> fExternalClipboardTextPromises{};
-  std::vector<ClipboardStringCallback> fExternalClipboardTextCallbacks{};
-  double fExternalClipboardRequestTime{};
-  double fExternalClipboardReceivedTime{};
+  Clipboard fClipboard{};
 
   std::optional<Window::FullscreenRequest> fFullscreenRequest{};
   std::optional<Window::PointerLockRequest> fPointerLockRequest{};

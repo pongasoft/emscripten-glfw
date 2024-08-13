@@ -30,7 +30,7 @@ extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
 using KeyboardCallback = bool (*)(emscripten::glfw3::Context *, bool, char const *, char const *, bool, int, int);
-using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, char const *, char const *);
+using ClipboardStringCallback = char const *(*)(emscripten::glfw3::Context *, int, char const *, char const *);
 using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
 
@@ -101,9 +101,35 @@ bool ContextKeyboardCallback(emscripten::glfw3::Context *iContext,
 //------------------------------------------------------------------------
 // ContextClipboardStringCallback
 //------------------------------------------------------------------------
-void ContextClipboardStringCallback(Context *iContext, char const *iClipboardString, char const *iErrorMessage)
+char const *ContextClipboardStringCallback(Context *iContext, int iAction, char const *iText, char const *iError)
 {
-  iContext->onClipboardString(iClipboardString, iErrorMessage);
+  switch(iAction)
+  {
+    case 0:
+      // paste listener
+      iContext->onPaste(iText);
+      break;
+
+    case 1:
+      // copy listener
+      return iContext->onCopy(iText);
+
+    case 2:
+      // navigator.clipboard.readText
+      iContext->onTextRead(iText, iError);
+      break;
+
+    case 3:
+      // navigator.clipboard.writeText
+      iContext->onTextWritten(iText, iError);
+      break;
+
+    default:
+      // not reached
+      break;
+  }
+
+  return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -1006,18 +1032,7 @@ glfw_bool_t Context::isExtensionSupported(char const *extension)
 //------------------------------------------------------------------------
 void Context::setClipboardString(char const *iContent)
 {
-  if(iContent)
-  {
-    fExternalClipboardReceivedTime = getPlatformTimerValue();
-    emscripten_glfw3_context_set_clipboard_string(iContent);
-    fInternalClipboardText = iContent;
-    for(auto &promise: fExternalClipboardTextPromises)
-      promise.set_value(ClipboardString::fromValue(iContent));
-    fExternalClipboardTextPromises.clear();
-    for(auto &callback: fExternalClipboardTextCallbacks)
-      callback.fCallback(callback.fUserData, iContent, nullptr);
-    fExternalClipboardTextCallbacks.clear();
-  }
+  fClipboard.setText(iContent);
 }
 
 //------------------------------------------------------------------------
@@ -1025,34 +1040,8 @@ void Context::setClipboardString(char const *iContent)
 //------------------------------------------------------------------------
 char const *Context::getClipboardString()
 {
-  if(fInternalClipboardText)
-    return fInternalClipboardText->c_str();
-  else
-    return nullptr;
-}
-
-//------------------------------------------------------------------------
-// Context::maybeFetchExternalClipboard
-//------------------------------------------------------------------------
-bool Context::maybeFetchExternalClipboard()
-{
-  if(fExternalClipboardTextPromises.empty() && fExternalClipboardTextCallbacks.empty())
-  {
-    auto window = findFocusedOrSingleWindow();
-    if(window && // there is a window
-       window->fLastFocusedTime > 0 &&  // it is currently focused
-       fExternalClipboardReceivedTime > 0 && // we have a clipboard
-       window->fLastFocusedTime < fExternalClipboardReceivedTime) // the window has not lost focus since then
-    {
-      // we have determined that the clipboard that we received last cannot have changed because the window
-      // never lost focus, so there is no need to fetch it again
-      return false;
-    }
-
-    fExternalClipboardRequestTime = getPlatformTimerValue();
-    emscripten_glfw3_context_async_get_clipboard_string();
-  }
-  return true;
+  auto const &text = fClipboard.getText();
+  return text ? text->c_str() : nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -1060,14 +1049,8 @@ bool Context::maybeFetchExternalClipboard()
 //------------------------------------------------------------------------
 std::future<ClipboardString> Context::asyncGetClipboardString()
 {
-  if(maybeFetchExternalClipboard())
-    return fExternalClipboardTextPromises.emplace_back().get_future();
-  else
-  {
-    auto promise = std::promise<ClipboardString>{};
-    promise.set_value(ClipboardString::fromValue(fInternalClipboardText ? *fInternalClipboardText : ""));
-    return promise.get_future();
-  }
+  auto window = findFocusedOrSingleWindow();
+  return fClipboard.asyncGetClipboardString(window ? window->fLastFocusedTime : 0);
 }
 
 //------------------------------------------------------------------------
@@ -1078,46 +1061,35 @@ void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback,
   if(!iCallback)
     return;
 
-  if(maybeFetchExternalClipboard())
-    fExternalClipboardTextCallbacks.emplace_back(ClipboardStringCallback{iCallback, iUserData});
-  else
-    iCallback(iUserData, fInternalClipboardText ? fInternalClipboardText->c_str() : "", nullptr);
+  auto window = findFocusedOrSingleWindow();
+  fClipboard.getClipboardString(window ? window->fLastFocusedTime : 0, iCallback, iUserData);
+}
+
+
+//------------------------------------------------------------------------
+// Context::onTextRead
+//------------------------------------------------------------------------
+void Context::onTextRead(char const *iText, char const *iError)
+{
+  if(fClipboard.onTextRead(iText, iError) > 250)
+  {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+    for(auto &w: fWindows)
+      w->resetAllKeys();
+#else
+    if(fSingleWindow)
+        fSingleWindow->resetAllKeys();
+#endif
+  }
 }
 
 //------------------------------------------------------------------------
-// Context::onClipboardString
+// Context::onCopy
 //------------------------------------------------------------------------
-void Context::onClipboardString(char const *iText, char const *iErrorMessage)
+char const *Context::onCopy(char const *iTextSelection)
 {
-  fExternalClipboardReceivedTime = iErrorMessage ? 0 : getPlatformTimerValue();
-
-  if(iText)
-    fInternalClipboardText = iText;
-
-  for(auto &promise: fExternalClipboardTextPromises)
-    promise.set_value(iText ? ClipboardString::fromValue(iText) : ClipboardString::fromError(iErrorMessage));
-  fExternalClipboardTextPromises.clear();
-
-  for(auto &callback: fExternalClipboardTextCallbacks)
-    callback.fCallback(callback.fUserData, iText, iErrorMessage);
-  fExternalClipboardTextCallbacks.clear();
-
-  // When the browser shows a "Paste" popup for security reasons, all keyboard events
-  // are lost => we must reset the keys in this instance, otherwise we can't recover
-  if(fExternalClipboardRequestTime > 0)
-  {
-    if(getPlatformTimerValue() - fExternalClipboardRequestTime > 250)
-    {
-#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
-      for(auto &w: fWindows)
-        w->resetAllKeys();
-#else
-      if(fSingleWindow)
-        fSingleWindow->resetAllKeys();
-#endif
-    }
-    fExternalClipboardRequestTime = 0;
-  }
+  auto const &selection = fClipboard.onCopy(iTextSelection);
+  return selection ? selection->c_str() : nullptr;
 }
 
 //------------------------------------------------------------------------

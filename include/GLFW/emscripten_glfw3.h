@@ -30,6 +30,7 @@
 #include <future>
 #include <string>
 #include <optional>
+#include <functional>
 
 namespace emscripten::glfw3 {
 
@@ -101,6 +102,9 @@ private:
  *           successful, also copies it to the internal one
  */
 std::future<ClipboardString> GetClipboardString();
+
+using clipboard_selection_fun_t = std::function<std::optional<std::string>()>;
+clipboard_selection_fun_t SetClipboardSelectionCallback(clipboard_selection_fun_t callback);
 
 /**
  * Before calling `glfwCreateWindow` you can communicate to the library which canvas to use by calling this function.

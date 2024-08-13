@@ -2,6 +2,8 @@ LICENSE.txt
 external/GLFW/glfw3.h
 include/GLFW/emscripten_glfw3.h
 include/GLFW/emscripten_glfw3_version.h
+src/cpp/emscripten/glfw3/Clipboard.h
+src/cpp/emscripten/glfw3/Clipboard.cpp
 src/cpp/emscripten/glfw3/Config.h
 src/cpp/emscripten/glfw3/Context.cpp
 src/cpp/emscripten/glfw3/Context.h

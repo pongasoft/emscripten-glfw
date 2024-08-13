@@ -241,7 +241,26 @@ int main()
   if(window1 && window2)
     glfwFocusWindow(window1);
 
-  Triangle::registerNoWindowCallbacks();
+  Triangle::registerNoWindowCallbacks(); 
+
+  emscripten::glfw3::SetKeyHandledCallback([](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if((mods & (GLFW_MOD_SUPER | GLFW_MOD_CONTROL)) != 0 && action == GLFW_PRESS)
+    {
+      if(key == GLFW_KEY_V || key == GLFW_KEY_C || key == GLFW_KEY_X)
+        // let the browser handle it
+        return false;
+    }
+    // let the application handle it
+    return true;
+  });
+
+  emscripten::glfw3::SetClipboardSelectionCallback([window1, window2] () -> std::optional<std::string> {
+    if(window1 && glfwGetWindowAttrib(window1, GLFW_FOCUSED) == GLFW_TRUE)
+      return glfwGetWindowTitle(window1);
+    if(window2 && glfwGetWindowAttrib(window2, GLFW_FOCUSED) == GLFW_TRUE)
+      return glfwGetWindowTitle(window2);
+    return std::nullopt;
+  });
 
   emscripten_set_main_loop(loop, 0, GLFW_FALSE);
 }

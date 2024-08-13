@@ -28,6 +28,7 @@ option(EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT "Disable multi window suppo
 set(target "glfw3")
 
 set(glfw3_headers
+    src/cpp/emscripten/glfw3/Clipboard.h
     src/cpp/emscripten/glfw3/Config.h
     src/cpp/emscripten/glfw3/Context.h
     src/cpp/emscripten/glfw3/Cursor.h
@@ -44,6 +45,7 @@ set(glfw3_headers
 
 set(glfw3_sources
     src/cpp/glfw3.cpp
+    src/cpp/emscripten/glfw3/Clipboard.cpp
     src/cpp/emscripten/glfw3/Context.cpp
     src/cpp/emscripten/glfw3/ErrorHandler.cpp
     src/cpp/emscripten/glfw3/Keyboard.cpp
