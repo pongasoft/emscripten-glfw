@@ -51,7 +51,6 @@ let emscripten_glfw3_impl = {
 
     //! onPaste
     onPaste(e) {
-      console.log('detected paste...');
       e.preventDefault();
       let clipboardData = e.clipboardData || window.clipboardData;
       let pastedData = clipboardData.getData('text/plain');
@@ -64,7 +63,6 @@ let emscripten_glfw3_impl = {
 
     //! onCutOrCopy
     onCutOrCopy(e) {
-      console.log(`detected ${e.type}... [${window.getSelection()?.toString()}]`);
       if(GLFW3.fClipboardCallback) {
         const windowSelection = window.getSelection();
         if(windowSelection && windowSelection.toString() !== '') {
@@ -72,7 +70,6 @@ let emscripten_glfw3_impl = {
           {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 0, selection, null);
           _free(selection);
         } else {
-          console.log(`onCutOrCopy: ${e.type} => no selection`);
           // this is to prevent the browser to beep on empty clipboard
           e.clipboardData.setData('text/plain', ' ');
           e.preventDefault();
@@ -82,7 +79,6 @@ let emscripten_glfw3_impl = {
 
     // onMouseEvent
     onMouseEvent(e) {
-      console.log(`detected mouse ${e.type}...`);
       requestAnimationFrame(GLFW3.executeDeferredActions);
     },
 
@@ -116,7 +112,6 @@ let emscripten_glfw3_impl = {
 
     //! executeDeferredActions
     executeDeferredActions() {
-      console.log(`executeDeferredActions action ${GLFW3.fDeferredActions.length}`);
       if(GLFW3.fDeferredActions.length > 0)
       {
         for(let action of GLFW3.fDeferredActions)
@@ -127,7 +122,6 @@ let emscripten_glfw3_impl = {
 
     //! deferAction
     deferAction(action) {
-      console.log(`deferring action`);
       GLFW3.fDeferredActions.push(action);
     },
 
@@ -664,7 +658,6 @@ let emscripten_glfw3_impl = {
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
-    console.log('emscripten_glfw3_context_set_clipboard_string');
     GLFW3.deferAction(() => {
       navigator.clipboard.writeText(content)
         .then(() => {

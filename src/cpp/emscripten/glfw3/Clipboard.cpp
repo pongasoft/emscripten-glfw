@@ -60,7 +60,6 @@ void OSClipboard::update(char const *iText, char const *iError)
 //------------------------------------------------------------------------
 void OSClipboard::writeText(char const *iText)
 {
-  printf("OSClipboard::writeText: [%s]\n", iText ? iText : "");
   if(iText)
   {
     update(iText, nullptr);
@@ -74,7 +73,6 @@ void OSClipboard::writeText(char const *iText)
 void OSClipboard::onTextWritten(char const *iText, char const *iError)
 {
   update(iText, iError);
-  printf("OSClipboard::onTextWritten: [%s] [%s] [%.0f]\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime);
 }
 
 //------------------------------------------------------------------------
@@ -83,7 +81,6 @@ void OSClipboard::onTextWritten(char const *iText, char const *iError)
 double OSClipboard::onTextRead(char const *iText, char const *iError)
 {
   update(iText, iError);
-  printf("OSClipboard::onTextRead: [%s] [%s] [%.0f] -> %.0f\n", iText ? iText : "", iError ? iError : "", fLastModified.fTime, fLastModified.fTime - fReadRequest.fTime);
   return fLastModified.fTime - fReadRequest.fTime;
 }
 
@@ -93,7 +90,6 @@ double OSClipboard::onTextRead(char const *iText, char const *iError)
 void OSClipboard::setText(char const *iText)
 {
   update(iText, nullptr);
-  printf("OSClipboard::setText: [%s] [%.0f]\n", iText ? iText : "", fLastModified.fTime);
 }
 
 //------------------------------------------------------------------------
