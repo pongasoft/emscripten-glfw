@@ -48,7 +48,6 @@ GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
-void emscripten_glfw3_context_async_get_clipboard_string();
 void emscripten_glfw3_context_open_url(char const *, char const *);
 }
 
@@ -1037,28 +1036,6 @@ char const *Context::getClipboardString()
   auto const &text = fClipboard.getText();
   return text ? text->c_str() : nullptr;
 }
-
-//------------------------------------------------------------------------
-// Context::asyncGetClipboardString
-//------------------------------------------------------------------------
-std::future<ClipboardString> Context::asyncGetClipboardString()
-{
-  auto window = findFocusedOrSingleWindow();
-  return fClipboard.asyncGetClipboardString(window ? window->fLastFocusedTime : 0);
-}
-
-//------------------------------------------------------------------------
-// Context::getClipboardString
-//------------------------------------------------------------------------
-void Context::getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData)
-{
-  if(!iCallback)
-    return;
-
-  auto window = findFocusedOrSingleWindow();
-  fClipboard.getClipboardString(window ? window->fLastFocusedTime : 0, iCallback, iUserData);
-}
-
 
 //------------------------------------------------------------------------
 // Context::onTextRead

@@ -1263,9 +1263,7 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window)
 //------------------------------------------------------------------------
 void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData)
 {
-  auto context = getContext();
-  if(context)
-    context->getClipboardString(callback, userData);
+  logNotImplemented("[[deprecated]] emscripten_glfw_get_clipboard_string");
 }
 
 //------------------------------------------------------------------------
@@ -1367,15 +1365,9 @@ ClipboardString::ClipboardString(std::optional<std::string> iValue, std::optiona
 //------------------------------------------------------------------------
 std::future<ClipboardString> GetClipboardString()
 {
-  auto context = getContext();
-  if(context)
-    return context->asyncGetClipboardString();
-  else
-  {
-    std::promise<ClipboardString> p;
-    p.set_value(ClipboardString::fromError("GLFW has not been initialized"));
-    return p.get_future();
-  }
+  std::promise<ClipboardString> p;
+  p.set_value(ClipboardString::fromError("emscripten::glfw3::GetClipboardString is deprecated"));
+  return p.get_future();
 }
 
 //------------------------------------------------------------------------

@@ -97,8 +97,6 @@ public:
   // clipboard
   void setClipboardString(char const *iContent);
   char const *getClipboardString();
-  std::future<ClipboardString> asyncGetClipboardString();
-  void getClipboardString(emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
 
   // keyboard
   int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }

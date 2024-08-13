@@ -53,7 +53,6 @@ public:
   void onTextWritten(char const *iText, char const *iError);
 
   // navigator.clipboard.readText
-  bool readText(double iLastKnownFocusedTime);
   double onTextRead(char const *iText, char const *iError);
 
   // "paste"/"cut"/"copy" listener
@@ -65,19 +64,10 @@ private:
   void update(char const *iText, char const *iError);
 
 private:
-  struct ClipboardStringCallback
-  {
-    emscripten_glfw_clipboard_string_fun fCallback{};
-    void *fUserData{};
-  };
-
-private:
   std::optional<std::string> fText{};
   std::optional<std::string> fError{};
   clipboard::Timing fLastModified{};
   clipboard::Timing fReadRequest{};
-  std::vector<std::promise<ClipboardString>> fTextPromises{};
-  std::vector<ClipboardStringCallback> fTextCallbacks{};
 };
 
 class Clipboard
@@ -89,9 +79,6 @@ public:
 
   void setText(char const *iText);
   clipboard::text_t const &getText() const;
-
-  std::future<ClipboardString> asyncGetClipboardString(double iLastKnownFocusedTime);
-  void getClipboardString(double iLastKnownFocusedTime, emscripten_glfw_clipboard_string_fun iCallback, void *iUserData = nullptr);
 
 private:
   clipboard::text_t fText{};

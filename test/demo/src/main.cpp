@@ -175,8 +175,6 @@ int main()
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
   printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
-  setHtmlValue(".GetClipboardString .value", "-"); setHtmlValue(".GetClipboardString .error", "-");
-  setHtmlValue(".emscripten_glfw_get_clipboard_string .value", "-"); setHtmlValue(".emscripten_glfw_get_clipboard_string .error", "-");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
@@ -217,7 +215,7 @@ int main()
       glfwTerminate();
       return -1;
     }
-    window1Triangle->setAltClickURL("https://github.com/pongasoft/emscripten-glfw");
+    window1Triangle->setClickURL("https://github.com/pongasoft/emscripten-glfw");
     window1Triangle->setBgColor(0.5f, 0.5f, 0.5f);
     kTriangles.emplace_back(window1Triangle);
   }
@@ -230,6 +228,7 @@ int main()
       glfwTerminate();
       return -1;
     }
+    window2Triangle->setClickURL("https://github.com/pongasoft");
     window2Triangle->setBgColor(1.0f, 0, 0.5f);
     kTriangles.emplace_back(window2Triangle);
   }

@@ -35,75 +35,6 @@
 namespace emscripten::glfw3 {
 
 /**
- * Value returned by `GetClipboardString`: encapsulates the fact that the API can return an error (due to restrictions
- * imposed by browser when accessing the clipboard).
- *
- * Note: Accessing `value()` when there is an error simply returns the internal clipboard
- */
-struct ClipboardString
-{
-  bool hasValue() const { return fValue.has_value(); }
-  bool hasError() const { return fError.has_value(); }
-  std::string value() const { return hasValue() ? *fValue : safeString(glfwGetClipboardString(nullptr)); }
-  std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
-  std::string const &error() const { return *fError; }
-
-  static ClipboardString fromValue(std::string iValue);
-  static ClipboardString fromError(std::string iError);
-
-private:
-  ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError);
-  static inline std::string safeString(char const *s) { return s ? s : ""; }
-
-  std::optional<std::string> fValue{};
-  std::optional<std::string> fError{};
-};
-
-/**
- * Helper class to make the code easier to write
- *
- * ```cpp
- * using namespace emscripten::glfw3;
- * FutureClipboardString clipboard{};
- *
- * // on paste event
- * clipboard = GetClipboardString();
- *
- * // on each frame
- * if(clipboard)
- * {
- *   clipboard.fetchValue();
- * }
- * ```
- */
-struct FutureClipboardString
-{
-  FutureClipboardString &operator=(std::future<ClipboardString> iFuture) { fFuture = std::move(iFuture); return *this; };
-  explicit operator bool() const { return fFuture.valid() && fFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
-  ClipboardString fetch() { auto res = fFuture.get(); fFuture = {}; return res; }
-  std::string fetchValue() { return fetch().value(); }
-private:
-  std::future<ClipboardString> fFuture{};
-};
-
-/**
- * The `glfwGetClipboardString` function does not work well in a browser environment due to the fact that the
- * Javascript API to access the clipboard is asynchronous. This function provides an alternative way to retrieve
- * the clipboard in this environment.
- *
- * Note 1: Due to the restrictions imposed by browsers in accessing the clipboard, the value returned by the future
- *         can contain an error. Note that the future itself will never be in error (no exception).
- * Note 2: This implementation also maintains an "internal" clipboard, one that is always available whether the browser
- *         is authorized or not to access the external clipboard:
- *         - `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
- *            external one (which may fail)
- *         - `glfwGetClipboardString` always return the contents of the internal clipboard
- *         - `emscripten::glfw3::GetClipboardString` tries to fetch the content of the external clipboard and if
- *           successful, also copies it to the internal one
- */
-std::future<ClipboardString> GetClipboardString();
-
-/**
  * Before calling `glfwCreateWindow` you can communicate to the library which canvas to use by calling this function.
  * Conceptually this is similar to a window hint (must be called **prior** to creating the window).
  *
@@ -229,6 +160,49 @@ using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int sc
 
 key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
 
+/**
+ * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation.
+ * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
+ */
+struct [[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]]  ClipboardString
+{
+  bool hasValue() const { return fValue.has_value(); }
+  bool hasError() const { return fError.has_value(); }
+  std::string value() const { return hasValue() ? *fValue : safeString(glfwGetClipboardString(nullptr)); }
+  std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
+  std::string const &error() const { return *fError; }
+
+  static ClipboardString fromValue(std::string iValue);
+  static ClipboardString fromError(std::string iError);
+
+private:
+  ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError);
+  static inline std::string safeString(char const *s) { return s ? s : ""; }
+
+  std::optional<std::string> fValue{};
+  std::optional<std::string> fError{};
+};
+
+/**
+ * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
+ * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
+ */
+struct [[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]] FutureClipboardString
+{
+  FutureClipboardString &operator=(std::future<ClipboardString> iFuture) { fFuture = std::move(iFuture); return *this; };
+  explicit operator bool() const { return fFuture.valid() && fFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
+  ClipboardString fetch() { auto res = fFuture.get(); fFuture = {}; return res; }
+  std::string fetchValue() { return fetch().value(); }
+private:
+  std::future<ClipboardString> fFuture{};
+};
+
+/**
+ * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
+ * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
+ */
+[[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]]
+std::future<ClipboardString> GetClipboardString();
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus
@@ -352,19 +326,8 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
 int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas);
 
 /**
- * The `glfwGetClipboardString` function does not work well in a browser environment due to the fact that the
- * Javascript API to access the clipboard is asynchronous. This function provides an alternative way to retrieve
- * the clipboard in this environment.
- *
- * Note 1: Due to the restrictions imposed by browsers in accessing the clipboard, `error` will contain the
- *         error message and `clipboardString` will be null when there is an error.
- * Note 2: This implementation also maintains an "internal" clipboard, one that is always available whether the browser
- *         is authorized or not to access the external clipboard:
- *         - `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
- *            external one (which may fail)
- *         - `glfwGetClipboardString` always return the contents of the internal clipboard
- *         - `emscripten_glfw_get_clipboard_string` tries to fetch the content of the external clipboard and if
- *           successful, also copies it to the internal one
+ * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
+ * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
  */
 typedef void (* emscripten_glfw_clipboard_string_fun)(void *userData, char const *clipboardString, char const *error);
 void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData);

@@ -49,13 +49,14 @@ public:
   void toggleAspectRatio();
   void updateTitle();
   void setClipboardString();
-  void setAltClickURL(std::string_view iURL) { fAltClickURL = iURL;}
+  void setClickURL(std::string_view iURL) { fClickURL = iURL;}
 
   void setBgColor(GLfloat iRed, GLfloat iGreen, GLfloat iBlue, GLfloat iAlpha = 1.0f);
   bool shouldClose() const;
   constexpr char const *getName() const { return fName; };
   void onKeyChange(int iKey, int scancode, int iAction, int iMods);
-  void onClipboard(char const *iClipboardString, char const *iError);
+  void onMouseChange(int button, int action, int mods);
+  void handleMouseEvents();
 
   void registerCallbacks();
 
@@ -68,6 +69,11 @@ private:
            char const *iResizeContainerSelector,
            char const *iResizeHandleSelector,
            GLuint iProgram, GLint iVertexPositionAttribLocation, GLuint iTriangleGeoVAO);
+
+  struct MouseEvent
+  {
+    bool fClicked{};
+  };
 
 private:
   GLFWwindow *fWindow;
@@ -84,11 +90,8 @@ private:
   int fCursor{};
   bool fHasSizeLimits{};
   bool fHasAspectRatio{};
-  long fFrameCount{};
-  long fClipboardRequestFrame{};
-  emscripten::glfw3::FutureClipboardString fClipboardString{};
-  bool fLeftMouseClicked{false};
-  std::optional<std::string> fAltClickURL{};
+  std::optional<MouseEvent> fLMBEventThisFrame{};
+  std::string fClickURL{};
 };
 
 

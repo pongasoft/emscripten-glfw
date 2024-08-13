@@ -165,7 +165,6 @@ std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow,
 //------------------------------------------------------------------------
 bool Triangle::render()
 {
-  fFrameCount++;
   glfwMakeContextCurrent(fWindow);
   glClearColor(fBgRed, fBgGreen, fBgBlue, fBgAlpha);
   int width = 0, height = 0;
@@ -302,6 +301,11 @@ void showHTMLElement(std::string_view iElementSelector)
 }
 
 //------------------------------------------------------------------------
+// getLMBAction
+//------------------------------------------------------------------------
+EM_JS(int, getLMBAction, (char const *iAction), { return Module.getLMBAction(UTF8ToString(iAction)); })
+
+//------------------------------------------------------------------------
 // setHtmlValue
 //------------------------------------------------------------------------
 template<typename... Args>
@@ -382,14 +386,8 @@ void onPosChange(GLFWwindow *window, int x, int y)
 }
 void onMouseButtonChange(GLFWwindow* window, int button, int action, int mods)
 {
-//  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-//  {
-//    int wx, wy, fbx, fby;
-//    glfwGetWindowSize(window, &wx, &wy);
-//    glfwGetFramebufferSize(window, &fbx, &fby);
-//    printf("%dx%d | %dx%d\n", wx, wy, fbx, fby);
-//  }
   setHtmlValue(window, "glfwSetMouseButtonCallback", "%d:%s:%d", button, actionToString(action), mods);
+  reinterpret_cast<Triangle *>(glfwGetWindowUserPointer(window))->onMouseChange(button, action, mods);
 }
 void onCursorEnterChange(GLFWwindow* window, int entered)
 {
@@ -585,24 +583,7 @@ void Triangle::updateValues()
   float xf, yf;
   int xi, yi;
 
-  // detecting left mouse click
-  if(!fLeftMouseClicked && glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-  {
-    fLeftMouseClicked = true;
-    // Alt + LMB => open url or copy to clipboard
-    if(glfwGetKey(fWindow, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-    {
-      if(fAltClickURL)
-        emscripten::glfw3::OpenURL(*fAltClickURL);
-      else
-        setClipboardString();
-    }
-  }
-
-  if(glfwGetMouseButton(fWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-  {
-    fLeftMouseClicked = false;
-  }
+  handleMouseEvents();
 
   glfwGetWindowSize(fWindow, &xi, &yi);
   setHtmlValue(fWindow, "glfwGetWindowSize", "%dx%d", xi, yi);
@@ -659,57 +640,9 @@ void Triangle::updateValues()
   auto scaleFramebuffer = glfwGetWindowAttrib(fWindow, GLFW_SCALE_FRAMEBUFFER);
   setHtmlValue(fWindow, "glfwGetWindowAttrib-scale_framebuffer", "%s", glfwBoolToString(scaleFramebuffer));
   setHtmlValue(fWindow, "glfwSetWindowAttrib-scale_framebuffer", "%s", scaleFramebuffer ? "Disable" : "Enable");
-
-  if(fClipboardString)
-  {
-    constexpr auto kValueSelector = ".GetClipboardString .value";
-    constexpr auto kErrorSelector = ".GetClipboardString .error";
-
-    auto value = fClipboardString.fetch();
-    setHtmlValue(kValueSelector, value.value_or("-"));
-    setHtmlValue(kErrorSelector, value.hasError() ? value.error().c_str() : "-");
-    printf("GetClipboardString: [%ld] | %s | %s\n",
-           fFrameCount - fClipboardRequestFrame,
-           value.value().c_str(),
-           value.hasError() ? value.error().c_str() : "-");
-  }
 }
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
-
-
-//------------------------------------------------------------------------
-// GetClipboardHandler
-//------------------------------------------------------------------------
-void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
-{
-  reinterpret_cast<Triangle *>(iUserData)->onClipboard(iClipboardString, iError);
-}
-
-//------------------------------------------------------------------------
-// onClipboard
-//------------------------------------------------------------------------
-void Triangle::onClipboard(char const *iClipboardString, char const *iError)
-{
-  constexpr auto kValueSelector = ".emscripten_glfw_get_clipboard_string .value";
-  constexpr auto kErrorSelector = ".emscripten_glfw_get_clipboard_string .error";
-
-  if(iClipboardString)
-  {
-    setHtmlValue(kValueSelector,
-                 "Frames: " + std::to_string(fFrameCount - fClipboardRequestFrame) + " | " + iClipboardString);
-    setHtmlValue(kErrorSelector, "-");
-  }
-  else
-  {
-    setHtmlValue(kValueSelector, "-");
-    setHtmlValue(kErrorSelector,
-                 "Frames: " + std::to_string(fFrameCount - fClipboardRequestFrame) + " | " + iError);
-
-  }
-
-  fClipboardRequestFrame = 0;
-}
 
 
 //------------------------------------------------------------------------
@@ -730,20 +663,6 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
       case GLFW_KEY_S: // Save to clipboard
       {
         setClipboardString();
-        break;
-      }
-
-      case GLFW_KEY_A: // Asynchronous fetch from clipboard (C API)
-      {
-        fClipboardRequestFrame = fFrameCount;
-        emscripten_glfw_get_clipboard_string(GetClipboardHandler, reinterpret_cast<void *>(this));
-        break;
-      }
-
-      case GLFW_KEY_G: // Asynchronous fetch from clipboard (CPP)
-      {
-        fClipboardRequestFrame = fFrameCount;
-        fClipboardString = emscripten::glfw3::GetClipboardString();
         break;
       }
 
@@ -813,6 +732,17 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
           break;
       }
     }
+  }
+}
+
+//------------------------------------------------------------------------
+// Triangle::onMouseChange
+//------------------------------------------------------------------------
+void Triangle::onMouseChange(int button, int action, int mods)
+{
+  if(button == GLFW_MOUSE_BUTTON_LEFT)
+  {
+    fLMBEventThisFrame = {action == GLFW_PRESS};
   }
 }
 
@@ -949,4 +879,30 @@ void Triangle::setClipboardString()
   static std::array<char, 256> kContent;
   fmt(kContent, "[%d] %s | %d", static_cast<int>(glfwGetTime()), getName(), kId++);
   glfwSetClipboardString(fWindow, kContent.data());
+}
+
+//------------------------------------------------------------------------
+// Triangle::handleMouseEvents
+//------------------------------------------------------------------------
+void Triangle::handleMouseEvents()
+{
+  if(fLMBEventThisFrame)
+  {
+    auto action = fLMBEventThisFrame->fClicked ? "lmbc-action" : "lmbr-action";
+    switch(getLMBAction(action))
+    {
+      case 1:
+        emscripten::glfw3::OpenURL(fClickURL);
+        break;
+
+      case 2:
+        setClipboardString();
+        break;
+
+      default:
+        // do nothing
+        break;
+    }
+    fLMBEventThisFrame = std::nullopt;
+  }
 }

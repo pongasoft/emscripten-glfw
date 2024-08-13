@@ -277,6 +277,22 @@
       <td><input id="canvas2-enable-action" type="button" value="-" onclick="toggleCanvasVisibility(2);"></td>
     </tr>
     <tr>
+      <td class="action">Left Mouse Click</td>
+      <td colspan="2">
+        <label for="lmbc-noAction">N/A</label><input type="radio" id="lmbc-noAction" name="lmbc-action" value="0" checked>
+        <label for="lmbc-OpenURL">Open URL</label><input type="radio" id="lmbc-OpenURL" name="lmbc-action" value="1">
+        <label for="lmbc-glfwSetClipboardString">Clipboard</label><input type="radio" id="lmbc-glfwSetClipboardString" name="lmbc-action" value="2">
+      </td>
+    </tr>
+    <tr>
+      <td class="action">Left Mouse Release</td>
+      <td colspan="2">
+        <label for="lmbr-noAction">N/A</label><input type="radio" id="lmbr-noAction" name="lmbr-action" value="0" checked>
+        <label for="lmbr-OpenURL">Open URL</label><input type="radio" id="lmbr-OpenURL" name="lmbr-action" value="1">
+        <label for="lmbr-glfwSetClipboardString">Clipboard</label><input type="radio" id="lmbr-glfwSetClipboardString" name="lmbr-action" value="2">
+      </td>
+    </tr>
+    <tr>
       <td class="action">Fullscreen</td>
       <td>
         <input type="button" value="Fullscreen"
@@ -299,20 +315,6 @@
         <label for="pointerLock-any">L</label><input type="checkbox" id="pointerLock-any">
       </td>
     </tr>
-    <tr class="GetClipboardString">
-      <td class="action">GetClipboardString (async)</td>
-      <td colspan="2">
-        <label>V <input class="value" type="text" value="-" disabled></label>
-        <label>E <input class="error" type="text" value="-" disabled></label>
-      </td>
-    </tr>
-    <tr class="emscripten_glfw_get_clipboard_string">
-      <td class="action">emscripten_glfw_get_clipboard_string</td>
-      <td colspan="2">
-        <label>V <input class="value" type="text" value="-" disabled></label>
-        <label>E <input class="error" type="text" value="-" disabled></label>
-      </td>
-    </tr>
     <tr>
       <td class="action">Change focus</td>
       <td colspan="2"><label>Text: <input type="text" id="change-focus"></label></td>
@@ -329,20 +331,10 @@
     </thead>
     <tbody>
     <tr><td class="action">Save to clipboard</td><td>"S"</td></tr>
-    <tr><td class="action">emscripten_glfw_get_clipboard_string</td><td>"A"</td></tr>
-    <tr><td class="action">emscripten::glfw3::GetClipboardString</td><td>"G"</td></tr>
     <tr><td class="action">Hide/Show Cursor</td><td>"H"</td></tr>
     <tr><td class="action">Lock/Unlock Cursor</td><td>"L" (ESC will unlock as well)</td></tr>
     <tr><td class="action">Cycle Cursor</td><td>"[" &amp; "]"</td></tr>
     <tr><td class="action">Toggle Hi DPI Aware</td><td>"4"</td></tr>
-    </tbody>
-  </table>
-  <table class="table-bordered">
-    <thead>
-    <tr><th>Action</th><th>Use ALT + &lt;key&gt;</th></tr>
-    </thead>
-    <tbody>
-    <tr><td class="action">emscripten::glfw3::OpenURL</td><td>"LMB" (mouse click)</td></tr>
     </tbody>
   </table>
 </div>
@@ -422,6 +414,17 @@
       Module.pushEvent('toggle_aspect_ratio', canvas);
       Module.toggleHTMLElement(canvas + '-caption .aspect-ratio');
     },
+    getLMBAction: (action) => {
+      const actions = document.getElementsByName(action);
+
+      for (var i = 0, length = actions.length; i < length; i++) {
+        if (actions[i].checked) {
+          return parseInt(actions[i].value);
+        }
+      }
+
+      return 0;
+    }
   };
 
   var toggleCanvasVisibility = (id) => {
@@ -439,10 +442,10 @@
   }
 
   const c1EnableAction = document.getElementById('canvas1-enable-action');
-  c1EnableAction.value = Module.canvas1Enabled ? "Disable" : "Enable"
+  c1EnableAction.value = Module.canvas1Enabled ? "Disable" : "Enable";
 
   const c2EnableAction = document.getElementById('canvas2-enable-action');
-  c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable"
+  c2EnableAction.value = Module.canvas2Enabled ? "Disable" : "Enable";
 
   // var debug = (key, message) => {
   //   var elt = document.querySelector("#debug ." + key.toString());

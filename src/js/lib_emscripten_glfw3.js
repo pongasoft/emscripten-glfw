@@ -661,27 +661,6 @@ let emscripten_glfw3_impl = {
     return GLFW3.unmakeCanvasResizable(glfwWindow);
   },
 
-  // emscripten_glfw3_context_async_get_clipboard_string
-  emscripten_glfw3_context_async_get_clipboard_string: () => {
-    navigator.clipboard.readText()
-      .then(text => {
-        if(GLFW3.fClipboardCallback) {
-          const string = stringToNewUTF8(text);
-          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 1, string, null);
-          _free(string);
-        }
-      })
-      .catch(err => {
-        if(GLFW3.fClipboardCallback) {
-          const errorString = stringToNewUTF8(`${err}`);
-          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 1, null, errorString);
-          _free(errorString);
-        } else {
-          GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot get clipboard string [${err}]`);
-        }
-      })
-  },
-
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
