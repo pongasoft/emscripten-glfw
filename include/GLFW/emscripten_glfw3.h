@@ -148,7 +148,8 @@ int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
  * This implementation tries to detect this scenario and implements a workaround.
  * This set of APIs lets you adjust the timeout used (default to 525ms). */
 int GetSuperPlusKeyTimeout();
-void SetSuperPlusKeyTimeout(int timeoutMilliseconds);
+int GetSuperPlusKeyRepeatTimeout();
+void SetSuperPlusKeyTimeouts(int timeoutMilliseconds, int repeatTimeoutMilliseconds);
 
 /**
  * Convenient call to open a url.

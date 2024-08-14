@@ -44,6 +44,12 @@ public:
     constexpr bool isSuperPressed() const { return modifierBits & GLFW_MOD_SUPER; }
   };
 
+  struct SuperPlusKeyTimeout
+  {
+    int fTimeout;
+    int fRepeatTimeout;
+  };
+
 public:
   glfw_key_state_t getKeyState(glfw_key_t iKey);
 //  bool isKeyPressed(glfw_key_t iKey) const { return getKeyState(iKey) != GLFW_RELEASE; }
@@ -64,7 +70,7 @@ public:
   void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
   void resetKeysOnSuperRelease(GLFWwindow *iWindow);
   inline bool hasSuperPlusKeys() const { return !fSuperPlusKeys.empty(); }
-  void handleSuperPlusKeys(GLFWwindow *iWindow, int iTimeout);
+  void handleSuperPlusKeys(GLFWwindow *iWindow, SuperPlusKeyTimeout const &iTimeout);
 
   void setStickyKeys(bool iStickyKeys);
   bool getStickyKeys() const { return fStickyKeys; };
@@ -89,8 +95,14 @@ private:
   }
 
 private:
+  struct SuperPlusKeyTiming
+  {
+    int fLastTimePressed{};
+    bool fRepeat{};
+  };
+private:
   std::array<glfw_key_state_t, GLFW_KEY_LAST + 1> fKeyStates{GLFW_RELEASE};
-  std::map<glfw_key_t, int> fSuperPlusKeys{};
+  std::map<glfw_key_t, SuperPlusKeyTiming> fSuperPlusKeys{};
   bool fInputModeLockKeyMods{};
   bool fStickyKeys{};
   GLFWkeyfun fKeyCallback{};

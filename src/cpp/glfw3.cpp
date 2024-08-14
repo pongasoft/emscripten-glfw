@@ -1446,19 +1446,31 @@ int GetSuperPlusKeyTimeout()
 {
   auto context = getContext();
   if(context)
-    return context->getSuperPlusKeyTimeout();
+    return context->getSuperPlusKeyTimeout().fTimeout;
   else
     return 0;
 }
 
 //------------------------------------------------------------------------
-// SetSuperPlusKeyTimeout
+// GetSuperPlusKeyRepeatTimeout
 //------------------------------------------------------------------------
-void SetSuperPlusKeyTimeout(int timeoutMilliseconds)
+int GetSuperPlusKeyRepeatTimeout()
 {
   auto context = getContext();
   if(context)
-    context->setSuperPlusKeyTimeout(timeoutMilliseconds);
+    return context->getSuperPlusKeyTimeout().fRepeatTimeout;
+  else
+    return 0;
+}
+
+//------------------------------------------------------------------------
+// SetSuperPlusKeyTimeouts
+//------------------------------------------------------------------------
+void SetSuperPlusKeyTimeouts(int timeoutMilliseconds, int repeatTimeoutMilliseconds)
+{
+  auto context = getContext();
+  if(context)
+    context->setSuperPlusKeyTimeout({timeoutMilliseconds, repeatTimeoutMilliseconds});
 }
 
 //------------------------------------------------------------------------

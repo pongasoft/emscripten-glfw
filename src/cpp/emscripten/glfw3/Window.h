@@ -176,7 +176,7 @@ protected:
   inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iKeyHandledCallback); }
   inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iKeyHandledCallback); }
   void resetAllKeys() { fKeyboard.resetAllKeys(asOpaquePtr()); }
-  void handleSuperPlusKeys(int iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
+  void handleSuperPlusKeys(Keyboard::SuperPlusKeyTimeout const &iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
   bool maybeRescale(std::function<void()> const &iAction);

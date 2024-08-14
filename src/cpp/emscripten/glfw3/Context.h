@@ -99,8 +99,8 @@ public:
   char const *getClipboardString();
 
   // keyboard
-  int getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
-  void setSuperPlusKeyTimeout(int iTimeoutMilliseconds) { fSuperPlusKeyTimeout = iTimeoutMilliseconds; }
+  Keyboard::SuperPlusKeyTimeout getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
+  void setSuperPlusKeyTimeout(Keyboard::SuperPlusKeyTimeout const &iTimeout) { fSuperPlusKeyTimeout = iTimeout; }
   key_handled_fun_t setKeyHandledCallback(key_handled_fun_t iCallback) { return std::exchange(fKeyHandledCallback, std::move(iCallback)); }
 
   // misc
@@ -171,7 +171,7 @@ private:
 
   // keyboard
   key_handled_fun_t fKeyHandledCallback{};
-  int fSuperPlusKeyTimeout{525}; // milliseconds
+  Keyboard::SuperPlusKeyTimeout fSuperPlusKeyTimeout{525, 125}; // milliseconds
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   int fPresentJoystickCount{};

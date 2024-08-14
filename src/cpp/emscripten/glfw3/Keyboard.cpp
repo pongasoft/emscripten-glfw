@@ -99,7 +99,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::g
       return true;
     }
     // we store the current time (processed in handleSuperPlusKeys)
-    fSuperPlusKeys[key] = static_cast<int>(emscripten_glfw3_context_get_now());
+    fSuperPlusKeys[key] = {static_cast<int>(emscripten_glfw3_context_get_now()), iEvent.repeat};
   }
 
   auto handled = false;
@@ -222,7 +222,7 @@ void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
 //------------------------------------------------------------------------
 // Keyboard::handleSuperPlusKeys
 //------------------------------------------------------------------------
-void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, int iTimeout)
+void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, SuperPlusKeyTimeout const &iTimeout)
 {
   auto modifierBits = computeModifierBits();
 
@@ -230,7 +230,8 @@ void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, int iTimeout)
 
   for(auto it = fSuperPlusKeys.begin(); it != fSuperPlusKeys.end();)
   {
-    if(it->second + iTimeout <= now)
+    auto timeout = it->second.fRepeat ? iTimeout.fRepeatTimeout : iTimeout.fTimeout;
+    if(it->second.fLastTimePressed + timeout <= now)
     {
       resetKey(iWindow, it->first, modifierBits);
       it = fSuperPlusKeys.erase(it);
