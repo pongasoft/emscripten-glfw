@@ -156,9 +156,15 @@ void SetSuperPlusKeyTimeout(int timeoutMilliseconds);
  * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options */
 void OpenURL(std::string_view url, std::optional<std::string_view> target = std::nullopt);
 
+/**
+ * @return `true` if running on an Apple platform only */
+bool IsApplePlatform();
+
 using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
 
 key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
+
+key_handled_fun_t GetPlatformKeyHandledCallback();
 
 /**
  * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation.
@@ -338,6 +344,10 @@ void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun c
  * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options
  *               (`nullptr` is valid) */
 void emscripten_glfw_open_url(char const *url, char const *target);
+
+/**
+ * @return `true` if running on an Apple platform only */
+EM_BOOL emscripten_glfw_is_apple_platform();
 
 #ifdef __cplusplus
 }

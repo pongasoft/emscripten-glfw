@@ -125,6 +125,7 @@ GLFWAPI int glfwInit()
   if(kContext)
     return GLFW_TRUE;
   kContext = Context::init();
+  SetKeyHandledCallback(GetPlatformKeyHandledCallback());
   return toGlfwBool((bool) kContext);
 }
 
@@ -1283,6 +1284,14 @@ void emscripten_glfw_open_url(char const *url, char const *target)
 }
 
 //------------------------------------------------------------------------
+// emscripten_glfw_is_apple_platform
+//------------------------------------------------------------------------
+EM_BOOL emscripten_glfw_is_apple_platform()
+{
+  return emscripten::glfw3::IsApplePlatform();
+}
+
+//------------------------------------------------------------------------
 // no implementation for the emscripten platform
 //------------------------------------------------------------------------
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count)
@@ -1473,4 +1482,34 @@ void OpenURL(std::string_view url, std::optional<std::string_view> target)
   if(context)
     context->openURL(url, target);
 }
+
+//------------------------------------------------------------------------
+// IsApplePlatform
+//------------------------------------------------------------------------
+bool IsApplePlatform()
+{
+  auto context = getContext();
+  if(context)
+    return context->isApplePlatform();
+  else
+    return false;
+}
+
+//------------------------------------------------------------------------
+// GetPlatformKeyHandledCallback
+//------------------------------------------------------------------------
+key_handled_fun_t GetPlatformKeyHandledCallback()
+{
+  return [modifiers = IsApplePlatform() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if((mods & modifiers) != 0 && action == GLFW_PRESS)
+    {
+      if(key == GLFW_KEY_V || key == GLFW_KEY_C || key == GLFW_KEY_X)
+        // let the browser handle it
+        return false;
+    }
+    // let the application handle it
+    return true;
+  };
+}
+
 }

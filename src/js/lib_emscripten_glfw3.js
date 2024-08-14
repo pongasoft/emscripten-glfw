@@ -690,6 +690,11 @@ let emscripten_glfw3_impl = {
     }
   },
 
+  // emscripten_glfw3_context_is_apple_platform
+  emscripten_glfw3_context_is_apple_platform: () => {
+    return navigator.platform.indexOf("Mac") === 0 || navigator.platform === "iPhone";
+  },
+
 }
 
 autoAddDeps(emscripten_glfw3_impl, '$GLFW3')
