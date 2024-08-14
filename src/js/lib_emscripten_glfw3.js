@@ -658,25 +658,30 @@ let emscripten_glfw3_impl = {
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
-    GLFW3.deferAction(() => {
-      navigator.clipboard.writeText(content)
-        .then(() => {
-          if(GLFW3.fClipboardCallback) {
-            const string = stringToNewUTF8(content);
-            {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, string, null);
-            _free(string);
-          }
-        })
-        .catch(err => {
-          if(GLFW3.fClipboardCallback) {
-            const errorString = stringToNewUTF8(`${err}`);
-            {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, null, errorString);
-            _free(errorString);
-          } else {
-            GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
-          }
-        })
-    });
+    const errorHandler = (err) => {
+      if(GLFW3.fClipboardCallback) {
+        const errorString = stringToNewUTF8(`${err}`);
+        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, null, errorString);
+        _free(errorString);
+      } else {
+        GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
+      }
+    };
+    if(navigator.clipboard) {
+      GLFW3.deferAction(() => {
+        navigator.clipboard.writeText(content)
+          .then(() => {
+            if(GLFW3.fClipboardCallback) {
+              const string = stringToNewUTF8(content);
+              {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, string, null);
+              _free(string);
+            }
+          })
+          .catch(errorHandler);
+      });
+    } else {
+      errorHandler('Missing navigator.clipboard');
+    }
   },
 
   // emscripten_glfw3_context_open_url

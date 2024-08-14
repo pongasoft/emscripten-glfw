@@ -239,7 +239,7 @@ int main()
   if(window1 && window2)
     glfwFocusWindow(window1);
 
-  Triangle::registerNoWindowCallbacks(); 
+  Triangle::registerNoWindowCallbacks();
 
   emscripten_set_main_loop(loop, 0, GLFW_FALSE);
 }
