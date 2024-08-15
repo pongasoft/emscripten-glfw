@@ -49,7 +49,7 @@ int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelecto
 void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 void emscripten_glfw3_context_open_url(char const *, char const *);
-bool emscripten_glfw3_context_is_apple_platform();
+bool emscripten_glfw3_context_is_runtime_platform_apple();
 }
 
 namespace emscripten::glfw3 {
@@ -1064,11 +1064,11 @@ void Context::openURL(std::string_view url, std::optional<std::string_view> targ
 }
 
 //------------------------------------------------------------------------
-// Context::isApplePlatform
+// Context::isRuntimePlatformApple
 //------------------------------------------------------------------------
-bool Context::isApplePlatform() const
+bool Context::isRuntimePlatformApple() const
 {
-  return emscripten_glfw3_context_is_apple_platform();
+  return emscripten_glfw3_context_is_runtime_platform_apple();
 }
 
 }

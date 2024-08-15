@@ -175,6 +175,7 @@ int main()
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
   printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
   setHtmlValue("#version", glfwGetVersionString());
+  setHtmlValue("#action-key", emscripten::glfw3::IsRuntimePlatformApple() ? "&#x2318" : "CTRL");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));

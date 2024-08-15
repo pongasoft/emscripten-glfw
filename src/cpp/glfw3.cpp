@@ -1284,11 +1284,11 @@ void emscripten_glfw_open_url(char const *url, char const *target)
 }
 
 //------------------------------------------------------------------------
-// emscripten_glfw_is_apple_platform
+// emscripten_glfw_is_runtime_platform_apple
 //------------------------------------------------------------------------
-EM_BOOL emscripten_glfw_is_apple_platform()
+EM_BOOL emscripten_glfw_is_runtime_platform_apple()
 {
-  return emscripten::glfw3::IsApplePlatform();
+  return emscripten::glfw3::IsRuntimePlatformApple();
 }
 
 //------------------------------------------------------------------------
@@ -1496,13 +1496,13 @@ void OpenURL(std::string_view url, std::optional<std::string_view> target)
 }
 
 //------------------------------------------------------------------------
-// IsApplePlatform
+// IsRuntimePlatformApple
 //------------------------------------------------------------------------
-bool IsApplePlatform()
+bool IsRuntimePlatformApple()
 {
   auto context = getContext();
   if(context)
-    return context->isApplePlatform();
+    return context->isRuntimePlatformApple();
   else
     return false;
 }
@@ -1512,7 +1512,7 @@ bool IsApplePlatform()
 //------------------------------------------------------------------------
 key_handled_fun_t GetPlatformKeyHandledCallback()
 {
-  return [modifiers = IsApplePlatform() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL](GLFWwindow* window, int key, int scancode, int action, int mods) {
+  return [modifiers = IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL](GLFWwindow* window, int key, int scancode, int action, int mods) {
     if((mods & modifiers) != 0 && action == GLFW_PRESS)
     {
       if(key == GLFW_KEY_V || key == GLFW_KEY_C || key == GLFW_KEY_X)

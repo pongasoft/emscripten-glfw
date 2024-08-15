@@ -11,6 +11,7 @@ let emscripten_glfw3_impl = {
     Module["glfwMakeCanvasResizable"] = (any, resizableSelector, handleSelector) => { GLFW3.makeCanvasResizable(any, resizableSelector, handleSelector); };
     Module["glfwUnmakeCanvasResizable"] = (any) => { GLFW3.unmakeCanvasResizable(any); };
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
+    Module["glfwIsRuntimePlatformApple"] = () => { return _emscripten_glfw3_context_is_runtime_platform_apple() };
     `,
   $GLFW3: {
     fDestructors: [],
@@ -695,8 +696,8 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  // emscripten_glfw3_context_is_apple_platform
-  emscripten_glfw3_context_is_apple_platform: () => {
+  // emscripten_glfw3_context_is_runtime_platform_apple
+  emscripten_glfw3_context_is_runtime_platform_apple: () => {
     return navigator.platform.indexOf("Mac") === 0 || navigator.platform === "iPhone";
   },
 

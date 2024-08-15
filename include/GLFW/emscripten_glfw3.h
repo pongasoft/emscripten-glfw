@@ -159,7 +159,7 @@ void OpenURL(std::string_view url, std::optional<std::string_view> target = std:
 
 /**
  * @return `true` if running on an Apple platform only */
-bool IsApplePlatform();
+bool IsRuntimePlatformApple();
 
 using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
 
@@ -348,7 +348,7 @@ void emscripten_glfw_open_url(char const *url, char const *target);
 
 /**
  * @return `true` if running on an Apple platform only */
-EM_BOOL emscripten_glfw_is_apple_platform();
+EM_BOOL emscripten_glfw_is_runtime_platform_apple();
 
 #ifdef __cplusplus
 }

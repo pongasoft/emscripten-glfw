@@ -650,22 +650,18 @@ static constexpr auto adjust = [](int v, float f) { return static_cast<int>(stat
 //------------------------------------------------------------------------
 void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
 {
+  static auto kActionModifier = emscripten::glfw3::IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL;
+
   static std::array<int, 10> kCursors =
     {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR,
      GLFW_VRESIZE_CURSOR, GLFW_RESIZE_NWSE_CURSOR, GLFW_RESIZE_NESW_CURSOR, GLFW_RESIZE_ALL_CURSOR,
      GLFW_NOT_ALLOWED_CURSOR};
 
-  // Handle CTRL + <iKey>
-  if(iAction == GLFW_PRESS && (iMods & GLFW_MOD_CONTROL))
+  // Handle CMD/CTRL + <iKey>
+  if(iAction == GLFW_PRESS && (iMods & kActionModifier))
   {
     switch(iKey)
     {
-      case GLFW_KEY_S: // Save to clipboard
-      {
-        setClipboardString();
-        break;
-      }
-
       case GLFW_KEY_H: // toggle between input mode GLFW_CURSOR_HIDDEN / GLFW_CURSOR_NORMAL
       {
         auto mode = glfwGetInputMode(fWindow, GLFW_CURSOR);
@@ -714,10 +710,10 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
     }
   }
 
-  // Handle CMD + <iKey>
+  // Handle CMD/Ctrl + <iKey> (platform dependent)
   if(glfwGetWindowAttrib(fWindow, GLFW_FOCUSED) == GLFW_TRUE)
   {
-    if(iAction == GLFW_PRESS && (iMods & GLFW_MOD_SUPER))
+    if(iAction == GLFW_PRESS && (iMods & kActionModifier))
     {
       switch(iKey)
       {

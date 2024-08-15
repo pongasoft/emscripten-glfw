@@ -105,7 +105,7 @@ public:
 
   // misc
   void openURL(std::string_view url, std::optional<std::string_view> target);
-  bool isApplePlatform() const;
+  bool isRuntimePlatformApple() const;
 
 public:
   void onScaleChange();
