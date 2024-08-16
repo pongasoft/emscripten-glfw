@@ -110,9 +110,7 @@ public:
 public:
   void onScaleChange();
   void onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight);
-  void onCutCopyOrPaste(char const *iText) { fClipboard.onCutCopyOrPaste(iText); }
-  void onTextRead(char const *iText, char const *iError);
-  void onTextWritten(char const *iText, char const *iError) { fClipboard.onTextWritten(iText, iError); };
+  void onClipboard(char const *iText, char const *iError) { fClipboard.onClipboard(iText, iError); };
   int requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iResizeCanvas);
   int requestPointerLock(GLFWwindow *iWindow);
   void requestPointerUnlock(GLFWwindow *iWindow, glfw_cursor_mode_t iCursorMode);

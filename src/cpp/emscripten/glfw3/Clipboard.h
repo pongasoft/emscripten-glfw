@@ -50,13 +50,6 @@ public:
 
   // navigator.clipboard.writeText
   void writeText(char const *iText);
-  void onTextWritten(char const *iText, char const *iError);
-
-  // navigator.clipboard.readText
-  double onTextRead(char const *iText, char const *iError);
-
-  // "paste"/"cut"/"copy" listener
-  void setText(char const *iText);
 
   friend class Clipboard;
 
@@ -67,15 +60,12 @@ private:
   std::optional<std::string> fText{};
   std::optional<std::string> fError{};
   clipboard::Timing fLastModified{};
-  clipboard::Timing fReadRequest{};
 };
 
 class Clipboard
 {
 public:
-  void onCutCopyOrPaste(char const *iText) { fOSClipboard.setText(iText); }
-  double onTextRead(char const *iText, char const *iError) { return fOSClipboard.onTextRead(iText, iError); };
-  void onTextWritten(char const *iText, char const *iError) { fOSClipboard.onTextWritten(iText, iError); };
+  void onClipboard(char const *iText, char const *iError) { fOSClipboard.update(iText, iError); };
 
   void setText(char const *iText);
   clipboard::text_t const &getText() const;

@@ -50,14 +50,26 @@ let emscripten_glfw3_impl = {
       }
     },
 
+    //! isAnyElementFocused
+    isAnyElementFocused: () => {
+      return document.activeElement !== document.body;
+    },
+
+    //! isAnyOtherElementFocused
+    isAnyOtherElementFocused() {
+      return GLFW3.isAnyElementFocused() && GLFW3.findContext(document.activeElement) == null;
+    },
+
     //! onPaste
     onPaste(e) {
-      e.preventDefault();
+      if(!GLFW3.isAnyOtherElementFocused()) {
+        e.preventDefault();
+      }
       let clipboardData = e.clipboardData || window.clipboardData;
       let pastedData = clipboardData.getData('text/plain');
       if(pastedData !== '' && GLFW3.fClipboardCallback) {
         const pastedString = stringToNewUTF8(pastedData);
-        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 0, pastedString, null);
+        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, pastedString, null);
         _free(pastedString);
       }
     },
@@ -68,12 +80,14 @@ let emscripten_glfw3_impl = {
         const windowSelection = window.getSelection();
         if(windowSelection && windowSelection.toString() !== '') {
           const selection = stringToNewUTF8(windowSelection.toString());
-          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 0, selection, null);
+          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, selection, null);
           _free(selection);
         } else {
-          // this is to prevent the browser to beep on empty clipboard
-          e.clipboardData.setData('text/plain', ' ');
-          e.preventDefault();
+          if(!GLFW3.isAnyOtherElementFocused()) {
+            // this is to prevent the browser to beep on empty clipboard
+            e.clipboardData.setData('text/plain', ' ');
+            e.preventDefault();
+          }
         }
       }
     },
@@ -139,7 +153,7 @@ let emscripten_glfw3_impl = {
     //! findContextBySelector
     findContextBySelector__deps: ['$findEventTarget'],
     findContextBySelector(canvasSelector) {
-      return GLFW3.findContextByCanvas(findEventTarget(canvasSelector));
+      return typeof canvasSelector === 'string' ? GLFW3.findContextByCanvas(findEventTarget(canvasSelector)) : null;
     },
 
     //! findContext
@@ -153,7 +167,7 @@ let emscripten_glfw3_impl = {
 
       // is any a canvas?
       if(any instanceof HTMLCanvasElement)
-        return GLFW3.findContextByCanvas(canvas);
+        return GLFW3.findContextByCanvas(any);
 
       // is any a selector?
       return GLFW3.findContextBySelector(any);
@@ -418,7 +432,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_is_any_element_focused
   emscripten_glfw3_context_is_any_element_focused: () => {
-    return document.activeElement !== document.body;
+    return GLFW3.isAnyElementFocused();
   },
 
   //! emscripten_glfw3_context_get_fullscreen_window
@@ -662,7 +676,7 @@ let emscripten_glfw3_impl = {
     const errorHandler = (err) => {
       if(GLFW3.fClipboardCallback) {
         const errorString = stringToNewUTF8(`${err}`);
-        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, null, errorString);
+        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, null, errorString);
         _free(errorString);
       } else {
         GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
@@ -674,7 +688,7 @@ let emscripten_glfw3_impl = {
           .then(() => {
             if(GLFW3.fClipboardCallback) {
               const string = stringToNewUTF8(content);
-              {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, 2, string, null);
+              {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, string, null);
               _free(string);
             }
           })

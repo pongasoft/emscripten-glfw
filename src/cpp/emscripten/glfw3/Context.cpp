@@ -30,7 +30,7 @@ extern "C" {
 using ScaleChangeCallback = void (*)(emscripten::glfw3::Context *);
 using WindowResizeCallback = void (*)(emscripten::glfw3::Context *, GLFWwindow *, int, int);
 using KeyboardCallback = bool (*)(emscripten::glfw3::Context *, bool, char const *, char const *, bool, int, int);
-using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, int, char const *, char const *);
+using ClipboardStringCallback = void (*)(emscripten::glfw3::Context *, char const *, char const *);
 using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
 
@@ -101,29 +101,9 @@ bool ContextKeyboardCallback(emscripten::glfw3::Context *iContext,
 //------------------------------------------------------------------------
 // ContextClipboardStringCallback
 //------------------------------------------------------------------------
-void ContextClipboardStringCallback(Context *iContext, int iAction, char const *iText, char const *iError)
+void ContextClipboardStringCallback(Context *iContext, char const *iText, char const *iError)
 {
-  switch(iAction)
-  {
-    case 0:
-      // cut/copy/paste listener
-      iContext->onCutCopyOrPaste(iText);
-      break;
-
-    case 1:
-      // navigator.clipboard.readText
-      iContext->onTextRead(iText, iError);
-      break;
-
-    case 2:
-      // navigator.clipboard.writeText
-      iContext->onTextWritten(iText, iError);
-      break;
-
-    default:
-      // not reached
-      break;
-  }
+  iContext->onClipboard(iText, iError);
 }
 
 //------------------------------------------------------------------------
@@ -1036,23 +1016,6 @@ char const *Context::getClipboardString()
 {
   auto const &text = fClipboard.getText();
   return text ? text->c_str() : nullptr;
-}
-
-//------------------------------------------------------------------------
-// Context::onTextRead
-//------------------------------------------------------------------------
-void Context::onTextRead(char const *iText, char const *iError)
-{
-  if(fClipboard.onTextRead(iText, iError) > 250)
-  {
-#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
-    for(auto &w: fWindows)
-      w->resetAllKeys();
-#else
-    if(fSingleWindow)
-        fSingleWindow->resetAllKeys();
-#endif
-  }
 }
 
 //------------------------------------------------------------------------

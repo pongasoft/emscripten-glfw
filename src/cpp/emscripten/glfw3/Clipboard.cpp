@@ -68,31 +68,6 @@ void OSClipboard::writeText(char const *iText)
 }
 
 //------------------------------------------------------------------------
-// OSClipboard::writeText
-//------------------------------------------------------------------------
-void OSClipboard::onTextWritten(char const *iText, char const *iError)
-{
-  update(iText, iError);
-}
-
-//------------------------------------------------------------------------
-// OSClipboard::onTextRead
-//------------------------------------------------------------------------
-double OSClipboard::onTextRead(char const *iText, char const *iError)
-{
-  update(iText, iError);
-  return fLastModified.fTime - fReadRequest.fTime;
-}
-
-//------------------------------------------------------------------------
-// OSClipboard::setText
-//------------------------------------------------------------------------
-void OSClipboard::setText(char const *iText)
-{
-  update(iText, nullptr);
-}
-
-//------------------------------------------------------------------------
 // Clipboard::setText
 //------------------------------------------------------------------------
 void Clipboard::setText(char const *iText)
