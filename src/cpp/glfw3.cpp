@@ -1440,27 +1440,18 @@ int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas)
 }
 
 //------------------------------------------------------------------------
-// GetSuperPlusKeyTimeout
+// GetSuperPlusKeyTimeouts
 //------------------------------------------------------------------------
-int GetSuperPlusKeyTimeout()
+std::pair<int, int> GetSuperPlusKeyTimeouts()
 {
   auto context = getContext();
   if(context)
-    return context->getSuperPlusKeyTimeout().fTimeout;
+  {
+    auto timeout = context->getSuperPlusKeyTimeout();
+    return {timeout.fTimeout, timeout.fRepeatTimeout};
+  }
   else
-    return 0;
-}
-
-//------------------------------------------------------------------------
-// GetSuperPlusKeyRepeatTimeout
-//------------------------------------------------------------------------
-int GetSuperPlusKeyRepeatTimeout()
-{
-  auto context = getContext();
-  if(context)
-    return context->getSuperPlusKeyTimeout().fRepeatTimeout;
-  else
-    return 0;
+    return {};
 }
 
 //------------------------------------------------------------------------

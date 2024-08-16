@@ -31,6 +31,7 @@
 #include <string>
 #include <optional>
 #include <functional>
+#include <utility>
 
 namespace emscripten::glfw3 {
 
@@ -146,9 +147,8 @@ int RequestFullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
  * When the Super (`GLFW_KEY_LEFT_SUPER` or `GLFW_KEY_RIGHT_SUPER`) key is being held in a browser environment,
  * and any other key is being pressed, the up event for this key is never triggered.
  * This implementation tries to detect this scenario and implements a workaround.
- * This set of APIs lets you adjust the timeout used (default to 525ms). */
-int GetSuperPlusKeyTimeout();
-int GetSuperPlusKeyRepeatTimeout();
+ * This set of APIs lets you adjust the timeout used (default to 525ms/125ms). */
+std::pair<int, int> GetSuperPlusKeyTimeouts();
 void SetSuperPlusKeyTimeouts(int timeoutMilliseconds, int repeatTimeoutMilliseconds);
 
 /**
@@ -161,10 +161,15 @@ void OpenURL(std::string_view url, std::optional<std::string_view> target = std:
  * @return `true` if running on an Apple platform only */
 bool IsRuntimePlatformApple();
 
+/**
+ * By default, this library "swallows" (meaning calls `e.preventDefault()`) all keyboard events except for the
+ * 3 keyboard shortcuts associated with cut, copy and paste (as returned by `GetPlatformKeyHandledCallback()`).
+ *
+ * If you want to change this behavior, you can set your own callback: the callback is called on key down, repeat and
+ * up and should return `false` for the event to bubble up (`e.preventDefault()` will **not** be called).
+ */
 using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
-
 key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
-
 key_handled_fun_t GetPlatformKeyHandledCallback();
 
 /**
