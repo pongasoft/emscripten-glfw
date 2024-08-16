@@ -102,6 +102,7 @@ public:
   Keyboard::SuperPlusKeyTimeout getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
   void setSuperPlusKeyTimeout(Keyboard::SuperPlusKeyTimeout const &iTimeout) { fSuperPlusKeyTimeout = iTimeout; }
   key_handled_fun_t setKeyHandledCallback(key_handled_fun_t iCallback) { return std::exchange(fKeyHandledCallback, std::move(iCallback)); }
+  key_handled_fun_t getKeyHandledCallback() const { return fKeyHandledCallback; }
 
   // misc
   void openURL(std::string_view url, std::optional<std::string_view> target);

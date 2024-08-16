@@ -1477,6 +1477,28 @@ key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback)
 }
 
 //------------------------------------------------------------------------
+// AddKeyHandledCallback
+//------------------------------------------------------------------------
+key_handled_fun_t AddKeyHandledCallback(key_handled_fun_t callback)
+{
+  auto context = getContext();
+  if(context)
+  {
+    auto currentCallback =  context->getKeyHandledCallback();
+    if(!currentCallback)
+      return SetKeyHandledCallback(std::move(callback));
+    if(!callback)
+      return currentCallback;
+    auto combined = [currentCallback, callback = std::move(callback)](GLFWwindow* window, int key, int scancode, int action, int mods) {
+      return currentCallback(window, key, scancode, action, mods) || callback(window, key, scancode, action, mods);
+    };
+    return SetKeyHandledCallback(std::move(combined));
+  }
+  else
+    return {};
+}
+
+//------------------------------------------------------------------------
 // OpenURL
 //------------------------------------------------------------------------
 void OpenURL(std::string_view url, std::optional<std::string_view> target)
@@ -1508,10 +1530,9 @@ key_handled_fun_t GetPlatformKeyHandledCallback()
     {
       if(key == GLFW_KEY_V || key == GLFW_KEY_C || key == GLFW_KEY_X)
         // let the browser handle it
-        return false;
+        return true;
     }
-    // let the application handle it
-    return true;
+    return false;
   };
 }
 

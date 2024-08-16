@@ -166,10 +166,11 @@ bool IsRuntimePlatformApple();
  * 3 keyboard shortcuts associated with cut, copy and paste (as returned by `GetPlatformKeyHandledCallback()`).
  *
  * If you want to change this behavior, you can set your own callback: the callback is called on key down, repeat and
- * up and should return `false` for the event to bubble up (`e.preventDefault()` will **not** be called).
+ * up and should return `true` for the event to bubble up (`e.preventDefault()` will **not** be called).
  */
 using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
 key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
+key_handled_fun_t AddKeyHandledCallback(key_handled_fun_t callback);
 key_handled_fun_t GetPlatformKeyHandledCallback();
 
 /**

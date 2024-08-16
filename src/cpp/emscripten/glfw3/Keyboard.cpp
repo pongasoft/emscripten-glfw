@@ -112,7 +112,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::g
       fKeyCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
 
     handled = !iKeyHandledCallback ||
-              iKeyHandledCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
+              !iKeyHandledCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
   }
 
   if(fCharCallback)
@@ -151,7 +151,7 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glf
       fKeyCallback(iWindow, key, scancode, state, iEvent.modifierBits);
 
     handled = !iKeyHandledCallback ||
-              iKeyHandledCallback(iWindow, key, scancode, state, iEvent.modifierBits);
+              !iKeyHandledCallback(iWindow, key, scancode, state, iEvent.modifierBits);
 
   }
 

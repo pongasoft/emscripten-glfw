@@ -242,5 +242,10 @@ int main()
 
   Triangle::registerNoWindowCallbacks();
 
+  // allow F12 to be handled by the browser
+  emscripten::glfw3::AddKeyHandledCallback([](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    return mods == 0 && action == GLFW_PRESS && key == GLFW_KEY_F12;
+  });
+
   emscripten_set_main_loop(loop, 0, GLFW_FALSE);
 }
