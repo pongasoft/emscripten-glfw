@@ -173,8 +173,8 @@ protected:
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
-  inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iKeyHandledCallback); }
-  inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iKeyHandledCallback); }
+  inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
+  inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   void resetAllKeys() { fKeyboard.resetAllKeys(asOpaquePtr()); }
   void handleSuperPlusKeys(Keyboard::SuperPlusKeyTimeout const &iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
   bool onFocusChange(bool iFocus);

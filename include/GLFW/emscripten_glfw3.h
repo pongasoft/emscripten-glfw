@@ -163,59 +163,17 @@ bool IsRuntimePlatformApple();
 
 /**
  * By default, this library "swallows" (meaning calls `e.preventDefault()`) all keyboard events except for the
- * 3 keyboard shortcuts associated with cut, copy and paste (as returned by `GetPlatformKeyHandledCallback()`).
+ * 3 keyboard shortcuts associated with cut, copy and paste (as returned by `GetPlatformBrowserKeyCallback()`).
  *
  * If you want to change this behavior, you can set your own callback: the callback is called on key down, repeat and
- * up and should return `true` for the event to bubble up (`e.preventDefault()` will **not** be called).
+ * up and should return `true` for the event to bubble up (`e.preventDefault()` will **not** be called) so that
+ * the browser can handle it as well.
  */
-using key_handled_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
-key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback);
-key_handled_fun_t AddKeyHandledCallback(key_handled_fun_t callback);
-key_handled_fun_t GetPlatformKeyHandledCallback();
+using browser_key_fun_t = std::function<bool(GLFWwindow* window, int key, int scancode, int action, int mods)>;
+browser_key_fun_t AddBrowserKeyCallback(browser_key_fun_t callback);
+browser_key_fun_t SetBrowserKeyCallback(browser_key_fun_t callback);
+browser_key_fun_t GetPlatformBrowserKeyCallback();
 
-/**
- * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation.
- * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
- */
-struct [[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]]  ClipboardString
-{
-  bool hasValue() const { return fValue.has_value(); }
-  bool hasError() const { return fError.has_value(); }
-  std::string value() const { return hasValue() ? *fValue : safeString(glfwGetClipboardString(nullptr)); }
-  std::string value_or(std::string const &iValueOnError) const { return fValue.value_or(iValueOnError); }
-  std::string const &error() const { return *fError; }
-
-  static ClipboardString fromValue(std::string iValue);
-  static ClipboardString fromError(std::string iError);
-
-private:
-  ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError);
-  static inline std::string safeString(char const *s) { return s ? s : ""; }
-
-  std::optional<std::string> fValue{};
-  std::optional<std::string> fError{};
-};
-
-/**
- * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
- * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
- */
-struct [[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]] FutureClipboardString
-{
-  FutureClipboardString &operator=(std::future<ClipboardString> iFuture) { fFuture = std::move(iFuture); return *this; };
-  explicit operator bool() const { return fFuture.valid() && fFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
-  ClipboardString fetch() { auto res = fFuture.get(); fFuture = {}; return res; }
-  std::string fetchValue() { return fetch().value(); }
-private:
-  std::future<ClipboardString> fFuture{};
-};
-
-/**
- * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
- * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
- */
-[[deprecated("Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation")]]
-std::future<ClipboardString> GetClipboardString();
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus
@@ -337,13 +295,6 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
  * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not
  * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
 int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas);
-
-/**
- * Asynchronous API has too many issues... Use 'native' browser integration instead. See documentation
- * @see https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
- */
-typedef void (* emscripten_glfw_clipboard_string_fun)(void *userData, char const *clipboardString, char const *error);
-void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData);
 
 /**
  * Convenient call to open a url

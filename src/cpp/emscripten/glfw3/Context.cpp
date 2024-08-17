@@ -259,7 +259,7 @@ bool Context::onKeyDown(Keyboard::Event const &iEvent)
   bool handled = false;
   auto w = findFocusedOrSingleWindow();
   if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
-    handled |= w->onKeyDown(iEvent, fKeyHandledCallback);
+    handled |= w->onKeyDown(iEvent, fBrowserKeyCallback);
   return handled;
 }
 
@@ -271,7 +271,7 @@ bool Context::onKeyUp(Keyboard::Event const &iEvent)
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   bool handled = false;
   for(auto &w: fWindows)
-    handled |= w->onKeyUp(iEvent, fKeyHandledCallback);
+    handled |= w->onKeyUp(iEvent, fBrowserKeyCallback);
   return handled;
 #else
   return fSingleWindow && fSingleWindow->onKeyUp(iEvent);

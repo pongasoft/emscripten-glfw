@@ -12,7 +12,7 @@ a `GLFWwindow`) to an html "canvas". The framebuffer size of the window is the s
 The size of the window is the css style size of the canvas (which in the case of Hi DPI is different). The opacity
 is the css style `opacity`, etc...
 
-> #### Important
+> [!IMPORTANT]
 > Once the canvas is associated to the window, the library takes control over it and sets various listeners and
 > css styles on the canvas. In particular, the width and height is controlled by the library and as a result this
 > implementation offers another mechanism for the user to be able to resize the canvas.
@@ -22,9 +22,9 @@ is the css style `opacity`, etc...
 Natively, GLFW doesn't know anything about the concept of a canvas. So there needs to be a way to make this association.
 This library offers 2 ways depending on your needs:
 
-#### 1. Using javascript/Module
+#### 1. Using JavaScript/Module
 
-Every emscripten application needs to define a `Module` variable in javascript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
+Every emscripten application needs to define a `Module` variable in JavaScript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
 By convention in emscripten, the `Module["canvas"]` field represents the canvas associated to the window.
 To be backward compatible with this option, this library supports it, and it is the default. Obviously, this can only
 work if there is only one window, which is why there is another method.
@@ -45,7 +45,7 @@ auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
 ```
 
 This function is required if you use more than one window since the `Module` solution only supports 1 canvas.
-It also offers the advantage of defining the association in C/C++ as opposed to html/javascript.
+It also offers the advantage of defining the association in C/C++ as opposed to html/JavaScript.
 
 ### How to make the canvas resizable by the user?
 
@@ -159,7 +159,7 @@ auto window = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
 emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container", "canvas1-handle");
 ```
 
-> #### Note
+> [!TIP]
 > If you do not want the canvas to be resizable by the user, you can simply set its size during window creation
 > (`glfwCreateWindow`) or with `glfwSetWindowSize` and don't do anything else.
 
@@ -167,10 +167,10 @@ emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container", "canvas1-ha
 
 GLFW has a concept of a fullscreen window.
 This is quite tricky for this implementation due to the restrictions imposed by browsers to go fullscreen.
-Historically, emscripten has offered a way to do it from javascript by the means of a
+Historically, emscripten has offered a way to do it from JavaScript by the means of a
 function that gets added automatically to the `Module` called `requestFullscreen`.
 
-This implementation adds another javascript function `Module.glfwRequestFullscreen(target, lockPointer, resizeCanvas)`
+This implementation adds another JavaScript function `Module.glfwRequestFullscreen(target, lockPointer, resizeCanvas)`
 with
 
 * `target` being which canvas need to be fullscreen
@@ -189,7 +189,7 @@ void emscripten::glfw3::RequestFullscreen(GLFWwindow *window, bool lockPointer, 
 void emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 ```
 
-> #### Best practice
+> [!TIP]
 > To avoid any error while switching to fullscreen, you should always trigger this api from within a user event
 > like a mouse click (callback set via `glfwSetMouseButtonCallback`)
 > or a keyboard key press (callback set via `glfwSetKeyCallback`)
@@ -217,13 +217,13 @@ glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE); // for enabling 
 glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disabling Hi DPI awareness
 ```
 
-> #### Note
+> [!NOTE]
 > The constant `GLFW_SCALE_FRAMEBUFFER` was introduced in GLFW 3.4. The constant `GLFW_SCALE_TO_MONITOR` which was 
 > used prior to GLFW 3.4, can still be used to trigger Hi DPI Awareness, but is less descriptive and as a result it 
 > is deprecated, and it is preferable to use `GLFW_SCALE_FRAMEBUFFER`.
 
 
-> #### Best practice
+> [!TIP]
 > Almost all GLFW apis deal with screen coordinates which are independent of scaling.
 > The only one that doesn't is `glfwGetFramebufferSize`
 > which returns the actual size of the surface which takes into account the scaling factor.
@@ -243,12 +243,48 @@ This implementation supports the keyboard and uses the same mapping defined in e
 codepoint (provided to the `GLFWcharfun` callback) and not the deprecated  `KeyboardEvent.charcode` like other
 implementations.
 
+Internally, the library uses the keyboard events provided by JavaScript and calls `e.preventDefault()` on all 
+keyboard events except for the 3 keyboard shortcuts associated with cut, copy and paste (based on the runtime platform:
+&#x2318; + C, &#x2318; + X + &#x2318; + V, for macOS and ^ + C, ^ + X, ^ + V for the other platforms).
+
+In particular, this allows an application written using this library to automatically ignore ^ + F (resp. &#x2318; + F) 
+which displays a "Find in page" interface, which is usually not desirable nor useful (a canvas is not searchable).
+
+In the event you want to change this behavior, you can add your own callback by calling 
+`emscripten::glfw3::AddBrowserKeyCallback()` or entirely replace it with `emscripten::glfw3::SetBrowserKeyCallback()`.
+The callback is called on key down, key repeat and key up and should return `true` for the event to bubble up to 
+the browser (`e.preventDefault()` will **not** be called).
+
+Here is an example:
+
+```cpp
+// Allow the F12 key to bubble up to the browser (open developer tools in Chrome):
+emscripten::glfw3::AddBrowserKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mods) {
+  return mods == 0 && action == GLFW_PRESS && key == GLFW_KEY_F12;
+});
+```
+
+### The problem of the "Super" key
+
+The key called "Super" by the GLFW library (also known as Meta or Command) exhibits an issue in the context of the
+browser: pressing any other regular key (like the key `A`) while "Super" is being held, properly triggers down and
+repeat events, but never triggers the up event.
+
+This library implements a workaround to detect this scenario by setting internal timeouts.
+These values can be read and modified via the `emscripten::glfw3::GetSuperPlusKeyTimeouts()` and 
+`emscripten::glfw3::SetSuperPlusKeyTimeouts()` APIs.
+
+> [!TIP]
+> It is strongly recommended for your application to set a key callback (`glfwSetKeyCallback`) since you get
+> notifications on key down and key repeat, based on the values set at the OS level instead of trying to implement
+> key repeat manually.
+
 ## Joystick/Gamepad support
 
-This implementation uses the javascript `Gamepad` API as defined in the [specification](https://w3c.github.io/gamepad/)
+This implementation uses the JavaScript `Gamepad` API as defined in the [specification](https://w3c.github.io/gamepad/)
 which is widely supported by most current browsers.
 
-> #### Important
+> [!IMPORTANT]
 > Due to the nature of the `Gamepad` API, polling is required, so you must ensure to call `glfwPollEvents` on each
 > loop iteration.
 >
@@ -264,7 +300,7 @@ This [image](https://w3c.github.io/gamepad/#remapping), represents the mapping r
   mapping is `"standard"`
 * The function `glfwGetJoystickHats` maps the standard gamepad mapping to the `GLFW_HAT_XXX` bitfield
 
-> #### Caution
+> [!CAUTION]
 > The function `glfwGetGamepadState` returns the same information that `glfwGetJoystickAxes` and
 > `glfwGetJoystickButtons` but with the mapping specified by GLFW. Although very close to the `Gamepad` mapping,
 > there are differences, so make sure you use the API that suits your needs. For example
@@ -281,51 +317,103 @@ This [image](https://w3c.github.io/gamepad/#remapping), represents the mapping r
 
 ## Clipboard support
 
-In the context of the browser, getting access to the clipboard is a bit tricky:
-- there are restrictions imposed by the browser for obvious security reasons
-- the APIs to manage the clipboard are asynchronous
+In the context of the browser, getting access to the clipboard is a bit tricky as there are restrictions imposed by 
+the browser for obvious security reasons.
 
 This implementation maintains an "internal" clipboard, one that is always available whether the browser
-is authorized or not to access the external clipboard:
-- `glfwSetClipboardString` always copy the string to the internal clipboard and tries to copy to the
-  external one (which may fail)
-- `glfwGetClipboardString` always return the contents of the internal clipboard
-- `emscripten::glfw3::GetClipboardString` (resp. `emscripten_glfw_get_clipboard_string`) tries to fetch the 
-   content of the external clipboard and if successful, also copies it to the internal one
+is authorized or not to access the external clipboard.
 
-Here is how you would access the external clipboard:
+In addition, the library registers clipboard event listeners to properly handle cut, copy and paste from outside.
+What this means in practice is that if your application calls `glfwGetClipboardString`
+(resp. `glfwSetClipboardString`) after detecting the same browser keyboard shortcuts for cut/copy and paste,
+it simply works.
+
+> [!TIP]
+> With ImGui, you can write something like this:
+> ```cpp
+> ImGui::GetIO().ConfigMacOSXBehaviors = emscripten::glfw3::IsRuntimePlatformApple();
+> ```
+
+### Clipboard limitations
+
+It is crucial to understand that `glfwGetClipboardString` does **not** access the clipboard live but simply
+returns the value pasted by using the keyboard shortcut.
+This limitation is due to the way the clipboard JavaScript API (`navigator.clipboard.readText`) works,
+for several reasons:
+- the JavaScript API is asynchronous and `glfwGetClipboardString` is not
+- calling the JavaScript API results in various (purposely) intrusive popups from the browser
+- these popups lead to issues (for example, Firefox shows a little "Paste" popup **every time** this API is called 
+  and suppresses all keyboard events, leading to missing key up events)
+
+As a consequence, this library does not use `navigator.clipboard.readText` and instead rely on the `paste` event.
+
+The proper approach for your code to handle paste, is to call `glfwGetClipboardString` when the paste 
+keyboard event has been detected, for example:
 
 ```cpp
-// using global variable for the sake of this example
-static emscripten::glfw3::FutureClipboardString kClipboard{};
-
-// main loop
-
-// on paste event (happens at frame N)
-if(/* paste */) {
-  kClipboard = emscripten::glfw3::GetClipboardString();
+void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  static auto kActionModifier = emscripten::glfw3::IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL;
+  if(action == GLFW_PRESS && (mods & kActionModifier)) {
+    switch(key) {
+      case GLFW_KEY_V: // paste
+        auto clipboard = glfwGetClipboardString(window);
+        // handle paste ....
+        break;
+      default:
+        // ignored
+        break;
+    }
+  }
 }
 
-// on each frame: this happens on frame N + n (with n > 0)
-if(kClipboard) {
-  auto value = kClipboard.fetchValue(); // use value
-}
+// from main...
+glfwSetKeyCallback(window, onKeyChange);
 ```
 
-Using the C API:
-```c
-void GetClipboardHandler(void *iUserData, char const *iClipboardString, char const *iError)
-{
-  if(iError)
-    // handle error-case
-  else
-    // handle clipboard string
+Secondly, calling `glfwSetClipboardString` first sets the internal clipboard to the value provided, then attempts
+to write to the external clipboard (`navigator.clipboard.writeText`). In order for this latter call to succeed,
+you should always call this API from a user-generated event. For example:
+
+```cpp
+void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  static auto kActionModifier = emscripten::glfw3::IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL;
+  if(action == GLFW_PRESS && (mods & kActionModifier)) {
+    switch(key) {
+      case GLFW_KEY_X: // cut
+      case GLFW_KEY_C: // copy
+        auto selection = "..."; // compute what is currently selected
+        glfwSetClipboardString(window, selection);
+        break;
+      default:
+        // ignored
+        break;
+    }
+  }
 }
 
-// main loop
-// userData = ...;
-emscripten_glfw_get_clipboard_string(GetClipboardHandler, userData);
+// from main...
+glfwSetKeyCallback(window, onKeyChange);
 ```
+
+> [!TIP]
+> Using ImGui, if you set the keyboard behavior properly, then cut/copy and paste will work as expected on 
+> all platforms
+> 
+> ```cpp
+> // during initialization
+> ImGui::GetIO().ConfigMacOSXBehaviors = emscripten::glfw3::IsRuntimePlatformApple();
+> 
+> // loop
+> ImGui::InputText("input", buffer); // cut/copy/paste work in the widget
+> 
+> if(ImGui::Button("Copy to clipboard"))
+>   ImGui::SetClipboardText("..."); // this works as well
+> 
+> // Note that this will NOT work well because it bypasses the paste event and as a result
+> // only the content of the internal clipboard is accessible!
+> if(ImGui::MenuItem("Paste"))
+>   ImGui::GetClipboardText();
+> ```
 
 ## Extensions
 
@@ -335,34 +423,41 @@ This implementation offers a few extensions to the normal GLFW api necessary for
 
 As explained previously, some CPP functions are defined in `<GLFW/emscripten_glfw3.h>`
 
-> #### Note
+> [!NOTE]
 > All functions are defined in the `emscripten::glfw3` namespace
 
-| Function                      | Notes                                                                |
-|-------------------------------|----------------------------------------------------------------------|
-| `SetNextWindowCanvasSelector` | to specify the association window <-> canvas                         |
-| `MakeCanvasResizable`         | to make the canvas resizable                                         |
-| `UnmakeCanvasResizable`       | to revert `emscripten_glfw_make_canvas_resizable`                    |
-| `IsWindowFullscreen`          | to check if the window is fullscreen                                 |
-| `RequestFullscreen`           | to request fullscreen                                                |
-| `GetClipboardString`          | to retrieve the content of the external clipboard (asynchronous API) |
+| Function                        | Notes                                                          |
+|---------------------------------|----------------------------------------------------------------|
+| `SetNextWindowCanvasSelector`   | to specify the association window <-> canvas                   |
+| `MakeCanvasResizable`           | to make the canvas resizable                                   |
+| `UnmakeCanvasResizable`         | to revert `emscripten_glfw_make_canvas_resizable`              |
+| `IsWindowFullscreen`            | to check if the window is fullscreen                           |
+| `RequestFullscreen`             | to request fullscreen                                          |
+| `OpenURL`                       | to open a URL                                                  |
+| `IsRuntimePlatformApple`        | to check if the platform is Apple (ex: for keyboard shortcuts) |
+| `AddBrowserKeyCallback`         | to add a callback to bubble keys up                            |
+| `SetBrowserKeyCallback`         | to set a callback to bubble keys up                            |
+| `GetPlatformBrowserKeyCallback` | to get the default callback for the platform                   |
+| `GetSuperPlusKeyTimeouts`       | to retrieve the timeouts used for the Super + key workaround   |
+| `SetSuperPlusKeyTimeouts`       | to set the timeouts used for the Super + key workaround        |
 
 ### C extensions
 
 Similar to the CPP functions, C functions are defined in `<GLFW/emscripten_glfw3.h>`, with a C-like syntax
 
-| Function                                          | Notes                                                                |
-|---------------------------------------------------|----------------------------------------------------------------------|
-| `emscripten_glfw_set_next_window_canvas_selector` | to specify the association window <-> canvas                         |
-| `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                                         |
-| `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable`                    |
-| `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen                                 |
-| `emscripten_glfw_request_fullscreen`              | to request fullscreen                                                |
-| `emscripten_glfw_get_clipboard_string`            | to retrieve the content of the external clipboard (asynchronous API) |
+| Function                                          | Notes                                                          |
+|---------------------------------------------------|----------------------------------------------------------------|
+| `emscripten_glfw_set_next_window_canvas_selector` | to specify the association window <-> canvas                   |
+| `emscripten_glfw_make_canvas_resizable`           | to make the canvas resizable                                   |
+| `emscripten_glfw_unmake_canvas_resizable`         | to revert `emscripten_glfw_make_canvas_resizable`              |
+| `emscripten_glfw_is_window_fullscreen`            | to check if the window is fullscreen                           |
+| `emscripten_glfw_request_fullscreen`              | to request fullscreen                                          |
+| `emscripten_glfw_open_url`                        | to open a URL                                                  |
+| `emscripten_glfw_is_runtime_platform_apple`       | to check if the platform is Apple (ex: for keyboard shortcuts) |
 
 You can either include this file, or use an `extern "C" {}` section in your own code to define them
 
-### Javascript extensions
+### JavaScript extensions
 
 This implementation adds the following functions to the `Module`:
 
@@ -375,6 +470,7 @@ This implementation adds the following functions to the `Module`:
 | `glfwGetCanvasSelector(any)`                                      | Returns the canvas selector associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                               |
 | `glfwMakeCanvasResizable(any, resizableSelector, handleSelector)` | Same functionality as `emscripten_glfw_make_canvas_resizable` (`any` can be a canvas selector or a `GLFWwindow` or a `HTMLCanvasElement`              |
 | `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwGetCanvasSelector`                                                                                                              |
+| `glfwIsRuntimePlatformApple()`                                    | To check if the platform is Apple (ex: for keyboard shortcuts)                                                                                        |
 
 In addition, this implementation will check if the function `Module.glfwOnWindowCreated(glfwWindow, selector)` is
 defined in which case it will be called once the window is created. This allows writing code like this:
@@ -403,7 +499,7 @@ As of initial release, I ran the following experiment on both implementations us
 | Release           | js: 135433, wasm: 8448, total: 143881  | js: 81285, wasm: 80506, total: 161791    | 1.12x |
 | Release (minimal) | -                                      | js: 79402, wasm: 71195, total: 150197    | 1.04x |
 
-* From these numbers, and for obvious reasons, there is more wasm code than javascript code in this implementation
+* From these numbers, and for obvious reasons, there is more wasm code than JavaScript code in this implementation
   (which is a good thing).
 * Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release`
   mode it is actually only a 12% increase which shows that wasm optimizes quite well :)
@@ -433,14 +529,14 @@ As of initial release, I ran the following experiment on both implementations us
 | Release           | js: 104400, wasm: 13869, total: 118269 | js: 57024, wasm: 71214, total: 128238    | 1.08x |
 | Release (minimal) | -                                      | js: 54736, wasm: 63098, total: 117834    | 0.99x |
 
-> #### Note
+> [!NOTE]
 > The good news is that emscripten is improving and this implementation is benefitting from it.
 
 ## Supported functions
 
 This table contains the list of all the functions supported by this implementation with a few relevant notes
 
-> ### Note
+> [!NOTE]
 > GLFW 3.4 introduced the concept of a platform. This implementation adds the `GLFW_PLATFORM_EMSCRIPTEN` define
 > in `empscriptem-glfw3.h`: the value is reserved (in a comment), but it is not defined in `glfw3.h`.
 
@@ -452,28 +548,28 @@ This table contains the list of all the functions supported by this implementati
 | `glfwDefaultWindowHints`            |                                                                                                                                                                                                                         |
 | `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                                               |
 | `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                                                |
-| `glfwFocusWindow`                   | Calls javascript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
+| `glfwFocusWindow`                   | Calls JavaScript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
 | `glfwGetClipboardString`            | See Clipboard Support section                                                                                                                                                                                           |
 | `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                                                        |
 | `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                                            |
 | `glfwGetError`                      |                                                                                                                                                                                                                         |
 | `glfwGetFramebufferSize`            | Hi DPI aware                                                                                                                                                                                                            |
-| `glfwGetGamepadName`                | If gamepad, corresponds to `Gamepad.id` in javascript                                                                                                                                                                   |
+| `glfwGetGamepadName`                | If gamepad, corresponds to `Gamepad.id` in JavaScript                                                                                                                                                                   |
 | `glfwGetGamepadState`               | If gamepad, then `Gamepad.axes` and `Gamepad.buttons` (js) remapped for GLFW                                                                                                                                            |
 | `glfwGetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                                                         |
-| `glfwGetJoystickAxes`               | Corresponds to `Gamepad.axes` in javascript                                                                                                                                                                             |
-| `glfwGetJoystickButtons`            | Corresponds to `Gamepad.buttons[x].value` in javascript                                                                                                                                                                 |
-| `glfwGetJoystickGUID`               | Corresponds to `Gamepad.mapping` in javascript                                                                                                                                                                          |
-| `glfwGetJoystickHats`               | If gamepad, corresponds to `Gamepad.buttons[x].pressed` in javascript remapped for GLFW                                                                                                                                 |
-| `glfwGetJoystickName`               | Corresponds to `Gamepad.id` in javascript (limited to 64 characters due to emscripten limitation)                                                                                                                       |
+| `glfwGetJoystickAxes`               | Corresponds to `Gamepad.axes` in JavaScript                                                                                                                                                                             |
+| `glfwGetJoystickButtons`            | Corresponds to `Gamepad.buttons[x].value` in JavaScript                                                                                                                                                                 |
+| `glfwGetJoystickGUID`               | Corresponds to `Gamepad.mapping` in JavaScript                                                                                                                                                                          |
+| `glfwGetJoystickHats`               | If gamepad, corresponds to `Gamepad.buttons[x].pressed` in JavaScript remapped for GLFW                                                                                                                                 |
+| `glfwGetJoystickName`               | Corresponds to `Gamepad.id` in JavaScript (limited to 64 characters due to emscripten limitation)                                                                                                                       |
 | `glfwGetJoystickUserPointer`        |                                                                                                                                                                                                                         |
 | `glfwGetKey`                        | Support `GLFW_STICKY_KEYS` as well                                                                                                                                                                                      |
 | `glfwGetKeyName`                    | All names starts with `DOM_PK_`: example `DOM_PK_F1`.                                                                                                                                                                   |
 | `glfwGetKeyScancode`                | See `KeyboardMapping.h` for actual mapping                                                                                                                                                                              |
-| `glfwGetMonitorContentScale`        | Corresponds to `window.devicePixelRatio` in javascript                                                                                                                                                                  |
+| `glfwGetMonitorContentScale`        | Corresponds to `window.devicePixelRatio` in JavaScript                                                                                                                                                                  |
 | `glfwGetMonitorName`                | The constant "Browser"                                                                                                                                                                                                  |
 | `glfwGetMonitorPos`                 | Always 0/0                                                                                                                                                                                                              |
-| `glfwGetMonitors`                   | Due to javascript restrictions, always only 1 monitor                                                                                                                                                                   |
+| `glfwGetMonitors`                   | Due to JavaScript restrictions, always only 1 monitor                                                                                                                                                                   |
 | `glfwGetMonitorUserPointer`         |                                                                                                                                                                                                                         |
 | `glfwGetMonitorWorkarea`            | 0x0 for position, `screen.width`x`screen.height` for size                                                                                                                                                               |
 | `glfwGetMouseButton`                | Support `GLFW_STICKY_MOUSE_BUTTONS` as well                                                                                                                                                                             |
@@ -481,7 +577,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwGetPrimaryMonitor`             | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
 | `glfwGetTime`                       |                                                                                                                                                                                                                         |
 | `glfwGetTimerFrequency`             | Always 1000                                                                                                                                                                                                             |
-| `glfwGetTimerValue`                 | Corresponds to `performance.now()` in javascript                                                                                                                                                                        |
+| `glfwGetTimerValue`                 | Corresponds to `performance.now()` in JavaScript                                                                                                                                                                        |
 | `glfwGetVersion`                    |                                                                                                                                                                                                                         |
 | `glfwGetVersionString`              | "Emscripten/WebAssembly GLFW " + GLFW version                                                                                                                                                                           |
 | `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_HOVERED`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                  |
@@ -529,7 +625,7 @@ This table contains the list of all the functions supported by this implementati
 | `glfwSetWindowSize`                 | Hi DPI Aware: set the size of the canvas (`canvas.width = size * scale`) + css style (`style.width = size`)                                                                                                             |
 | `glfwSetWindowSizeCallback`         |                                                                                                                                                                                                                         |
 | `glfwSetWindowSizeLimits`           | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                                                         |
-| `glfwSetWindowTitle`                | Corresponds to `document.title` in javascript                                                                                                                                                                           |
+| `glfwSetWindowTitle`                | Corresponds to `document.title` in JavaScript                                                                                                                                                                           |
 | `glfwSetWindowUserPointer`          |                                                                                                                                                                                                                         |
 | `glfwShowWindow`                    | Removes css style `display: none` for the canvas                                                                                                                                                                        |
 | `glfwSwapInterval`                  | Uses `emscripten_set_main_loop_timing`                                                                                                                                                                                  |
@@ -548,21 +644,21 @@ Note that these functions log a warning the first time they are called (which ca
 | Function                            | Notes                                                        |
 |-------------------------------------|--------------------------------------------------------------|
 | `glfwDestroyCursor`                 |                                                              |
-| `glfwGetGammaRamp`                  | No access from javascript                                    |
-| `glfwGetMonitorPhysicalSize`        | No access from javascript                                    |
+| `glfwGetGammaRamp`                  | No access from JavaScript                                    |
+| `glfwGetMonitorPhysicalSize`        | No access from JavaScript                                    |
 | `glfwGetProcAddress`                | Implemented by emscripten                                    |
 | `glfwGetRequiredInstanceExtensions` |                                                              |
 | `glfwGetVideoMode`                  |                                                              |
 | `glfwGetVideoModes`                 |                                                              |
 | `glfwIconifyWindow`                 |                                                              |
-| `glfwInitAllocator`                 | Due to javascript, memory cannot be managed                  |
+| `glfwInitAllocator`                 | Due to JavaScript, memory cannot be managed                  |
 | `glfwMaximizeWindow`                |                                                              |
 | `glfwPostEmptyEvent`                |                                                              |
 | `glfwRequestWindowAttention`        |                                                              |
 | `glfwRestoreWindow`                 |                                                              |
 | `glfwSetCharModsCallback`           | It is deprecated in GLFW                                     |
-| `glfwSetCursorPos`                  | Javascript does not allow the cursor to be positioned        |
-| `glfwSetDropCallback`               | Javascript only gives access to filename, so it is pointless |
+| `glfwSetCursorPos`                  | JavaScript does not allow the cursor to be positioned        |
+| `glfwSetDropCallback`               | JavaScript only gives access to filename, so it is pointless |
 | `glfwSetGamma`                      |                                                              |
 | `glfwSetGammaRamp`                  |                                                              |
 | `glfwSetWindowCloseCallback`        | There is no concept of "closing" a canvas                    |

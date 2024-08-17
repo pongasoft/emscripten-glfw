@@ -125,7 +125,7 @@ GLFWAPI int glfwInit()
   if(kContext)
     return GLFW_TRUE;
   kContext = Context::init();
-  SetKeyHandledCallback(GetPlatformKeyHandledCallback());
+  SetBrowserKeyCallback(GetPlatformBrowserKeyCallback());
   return toGlfwBool((bool) kContext);
 }
 
@@ -1262,14 +1262,6 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window)
 //------------------------------------------------------------------------
 // emscripten_glfw_get_clipboard_string
 //------------------------------------------------------------------------
-void emscripten_glfw_get_clipboard_string(emscripten_glfw_clipboard_string_fun callback, void *userData)
-{
-  logNotImplemented("[[deprecated]] emscripten_glfw_get_clipboard_string");
-}
-
-//------------------------------------------------------------------------
-// emscripten_glfw_get_clipboard_string
-//------------------------------------------------------------------------
 void emscripten_glfw_open_url(char const *url, char const *target)
 {
   if(!url)
@@ -1343,41 +1335,6 @@ GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count) { logNot
 //------------------------------------------------------------------------
 
 namespace emscripten::glfw3 {
-
-//------------------------------------------------------------------------
-// ClipboardString::fromValue
-//------------------------------------------------------------------------
-ClipboardString ClipboardString::fromValue(std::string iValue)
-{
-  return ClipboardString{std::move(iValue), std::nullopt};
-}
-
-//------------------------------------------------------------------------
-// ClipboardString::fromError
-//------------------------------------------------------------------------
-ClipboardString ClipboardString::fromError(std::string iError)
-{
-  return ClipboardString{std::nullopt, std::move(iError)};
-}
-
-//------------------------------------------------------------------------
-// ClipboardString::ClipboardString
-//------------------------------------------------------------------------
-ClipboardString::ClipboardString(std::optional<std::string> iValue, std::optional<std::string> iError)
-  : fValue(std::move(iValue)), fError(std::move(iError))
-{
-
-}
-
-//------------------------------------------------------------------------
-// GetClipboardString
-//------------------------------------------------------------------------
-std::future<ClipboardString> GetClipboardString()
-{
-  std::promise<ClipboardString> p;
-  p.set_value(ClipboardString::fromError("emscripten::glfw3::GetClipboardString is deprecated"));
-  return p.get_future();
-}
 
 //------------------------------------------------------------------------
 // SetNextWindowCanvasSelector
@@ -1465,34 +1422,34 @@ void SetSuperPlusKeyTimeouts(int timeoutMilliseconds, int repeatTimeoutMilliseco
 }
 
 //------------------------------------------------------------------------
-// SetKeyHandledCallback
+// SetBrowserKeyCallback
 //------------------------------------------------------------------------
-key_handled_fun_t SetKeyHandledCallback(key_handled_fun_t callback)
+browser_key_fun_t SetBrowserKeyCallback(browser_key_fun_t callback)
 {
   auto context = getContext();
   if(context)
-    return context->setKeyHandledCallback(std::move(callback));
+    return context->setBrowserKeyCallback(std::move(callback));
   else
     return {};
 }
 
 //------------------------------------------------------------------------
-// AddKeyHandledCallback
+// AddBrowserKeyCallback
 //------------------------------------------------------------------------
-key_handled_fun_t AddKeyHandledCallback(key_handled_fun_t callback)
+browser_key_fun_t AddBrowserKeyCallback(browser_key_fun_t callback)
 {
   auto context = getContext();
   if(context)
   {
     auto currentCallback =  context->getKeyHandledCallback();
     if(!currentCallback)
-      return SetKeyHandledCallback(std::move(callback));
+      return SetBrowserKeyCallback(std::move(callback));
     if(!callback)
       return currentCallback;
     auto combined = [currentCallback, callback = std::move(callback)](GLFWwindow* window, int key, int scancode, int action, int mods) {
       return currentCallback(window, key, scancode, action, mods) || callback(window, key, scancode, action, mods);
     };
-    return SetKeyHandledCallback(std::move(combined));
+    return SetBrowserKeyCallback(std::move(combined));
   }
   else
     return {};
@@ -1521,9 +1478,9 @@ bool IsRuntimePlatformApple()
 }
 
 //------------------------------------------------------------------------
-// GetPlatformKeyHandledCallback
+// GetPlatformBrowserKeyCallback
 //------------------------------------------------------------------------
-key_handled_fun_t GetPlatformKeyHandledCallback()
+browser_key_fun_t GetPlatformBrowserKeyCallback()
 {
   return [modifiers = IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL](GLFWwindow* window, int key, int scancode, int action, int mods) {
     if((mods & modifiers) != 0 && action == GLFW_PRESS)

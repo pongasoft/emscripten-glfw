@@ -5,7 +5,7 @@ This project is an emscripten port of GLFW written in C++ for the web/wasm platf
 GLFW API is 3.4.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
-[![Latest - 3.4.0.20240804](https://img.shields.io/badge/Latest-3.4.0.20240804-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![Latest - 3.4.0.20240817](https://img.shields.io/badge/Latest-3.4.0.20240817-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
@@ -24,7 +24,7 @@ Since this project is targeting the web/webassembly platform, which runs in more
 to focus on using the most recent features and not use deprecated features (for example, uses `keyboardEvent.key` 
 vs `keyboardEvent.charcode`). As a result, this implementation will most likely not work in older browsers.
 
-Since the code is written in C++, it is trying to minimize the amount of javascript code to remain clean and lean.
+Since the code is written in C++, it is trying to minimize the amount of JavaScript code to remain clean and lean.
 
 Features
 --------
@@ -44,7 +44,7 @@ Main supported features:
 * size constraints (size limits and aspect ratio)
 * visibility
 * focus
-* clipboard
+* clipboard (cut/copy/paste with external clipboard)
 * timer
 
 Demo
@@ -75,8 +75,23 @@ You can enable/disable each window/canvas independently:
 
 The demo uses webgl to render a triangle (the hellow world of gpu rendering...).
 
-Examples
---------
+Live Applications
+-----------------
+
+<table>
+<thead>
+<tr><th>Application</th><th>Description</th></tr>
+</thead>
+  <tbody>
+  <tr>
+    <td><a href="https://pongasoft.github.io/webgpu-shader-toy/">WebGPU Shader Toy</a> (<a href="https://github.com/pongasoft/webgpu-shader-toy">src</a>)</td>
+    <td>WebGPU Shader Toy is a free and open source tool for experimenting with WebGPU fragment shaders and the WebGPU Shader Language (WGSL)</td>
+  </tr>
+  </tbody>
+</table>
+
+Examples (part of this project)
+-------------------------------
 
 <table>
 <thead>
@@ -95,7 +110,7 @@ Examples
   </tr>
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_minimal/main.html">example_minimal</a> (<a href="examples/example_minimal">src</a>)</td>
-    <td>The purpose of this example is to be as minimal as possible: initializes glfw, create window, then destroy it and terminate glfw.
+    <td>The purpose of this example is to be as minimal as possible: initializes glfw, creates a window, then destroys it and terminates glfw.
       Uses the default shell that comes with emscripten</td>
   </tr>
   <tr>
@@ -107,7 +122,7 @@ Examples
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container_with_handle/main.html">example_resizable_container_with_handle</a> (<a href="examples/example_resizable_container_with_handle">src</a>)</td>
     <td>The purpose of this example is to demonstrate how to make the canvas resizable with a container that has a handle.
-      The handle can be dragged around (left mouse drag) and the div is resized accordingly which in turn resizes the
+      The handle can be dragged around (left mouse drag), and the div is resized accordingly which in turn resizes the
       canvas, making the canvas truly resizable like a window</td>
   </tr>
   <tr>
@@ -117,12 +132,17 @@ Examples
   </tbody>
 </table>
 
+Integration
+-----------
+
+Since ImGui [v1.91.0](https://github.com/ocornut/imgui/releases/tag/v1.91.0),
+ImGui can be configured to use this port, allowing full gamepad and clipboard support amongst many other advantages. 
 
 Usage
 -----
 
 Check the [Usage](docs/Usage.md) documentation for details on how to use this implementation. Note that care has been
-taken to backward compatible with the pure javascript implementation built-in in emscripten.
+taken to be backward compatible with the pure JavaScript implementation built-in in emscripten.
 
 Building
 --------
@@ -155,6 +175,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20240817 |
 > | TBD        | 3.4.0.20240804 |
 > | TBD        | 3.4.0.20240731 |
 > | TBD        | 3.4.0.20240727 |
@@ -200,17 +221,26 @@ implementation with the following section in the `Makefile`:
 # local glf3 port
 EMS_GLFW3_DIR = /Volumes/Development/github/org.pongasoft/emscripten-glfw
 SOURCES += $(EMS_GLFW3_DIR)/src/cpp/glfw3.cpp
-SOURCES += $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Context.cpp \
+SOURCES += $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Clipboard.cpp \
+           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Context.cpp \
            $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/ErrorHandler.cpp \
            $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Keyboard.cpp \
            $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Joystick.cpp \
            $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Window.cpp
+
+CPPFLAGS += -I$(EMS_GLFW3_DIR)/include -I$(EMS_GLFW3_DIR)/external -DEMSCRIPTEN_USE_PORT_CONTRIB_GLFW3
 
 # ("EMS" options gets added to both CPPFLAGS and LDFLAGS, whereas some options are for linker only)
 #EMS += -s DISABLE_EXCEPTION_CATCHING=1
 #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
 LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_glfw3.js
 #LDFLAGS += -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
+
+%.o:$(EMS_GLFW3_DIR)/src/cpp/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+%.o:$(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 ```
 
 > ### Note
@@ -224,6 +254,23 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
+#### 3.4.0.20240817 - 2024-08-17 | emscripten TBD
+
+- Major clipboard changes: the clipboard now uses the browser events to handle cut, copy and paste
+- Added a way to [tweak the timeouts](docs/Usage.md#keyboard-support) for the Super + Key workaround (Super is also known as Meta or Cmd)
+- Added a way to set which keys are allowed to be [handled by the browser](docs/Usage.md#keyboard-support)
+- Added a convenient API to open a URL (`emscripten::glfw3::OpenURL`)
+- Added a convenient API to detect if the runtime platform is Apple (`emscripten::glfw3::IsRuntimePlatformApple`),
+  mostly used for keyboard shortcuts (Ctrl vs. Cmd). 
+- Added `GLFW/emscripten_glfw3_version.h` with `EMSCRIPTEN_GLFW_VERSION` define for compilation time version detection
+- `EMSCRIPTEN_USE_PORT_CONTRIB_GLFW3` port define now also contains the version
+ 
+> [!WARNING]
+> Breaking changes!
+> The clipboard async API has been removed.
+> Check the [Clipboard support](docs/Usage.md#clipboard-support) section for details on how to deal with the 
+> clipboard in your application.
+
 #### 3.4.0.20240804 - 2024-08-04 | emscripten TBD
 
 - Fixed `nullptr` issue when clipboard is empty
@@ -264,7 +311,7 @@ Release Notes
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
   Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
-  javascript handling the `Super/Meta` key, there is no good solution. The workaround implemented, releases all keys when `Super` is released. Although not a perfect
+  JavaScript handling the `Super/Meta` key, there is no good solution. The workaround implemented, releases all keys when `Super` is released. Although not a perfect
   solution, it guarantees that the state is _eventually_ consistent:
     - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released (later than when actually released, final state is consistent: "Key" in `Release` state)
     - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
@@ -300,7 +347,7 @@ Release Notes
   `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER`, `GLFW_GAMEPAD_BUTTON_LEFT_THUMB` and `GLFW_GAMEPAD_BUTTON_RIGHT_THUMB`
 - `GLFW_GAMEPAD_AXIS_LEFT_TRIGGER` and `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER` are now properly represented as an analog
   value in the range [-1.0, +1.0]
-- Please note the change in version numbering which from now on will be tied to the GLFW version implemented + date
+- Please note the change in version numbering, which from now on will be tied to the GLFW version implemented + date
   of release of this port to avoid confusion
 
 #### 1.1.0 - 2024-02-29 | emscripten 3.1.56

@@ -101,8 +101,8 @@ public:
   // keyboard
   Keyboard::SuperPlusKeyTimeout getSuperPlusKeyTimeout() const { return fSuperPlusKeyTimeout; }
   void setSuperPlusKeyTimeout(Keyboard::SuperPlusKeyTimeout const &iTimeout) { fSuperPlusKeyTimeout = iTimeout; }
-  key_handled_fun_t setKeyHandledCallback(key_handled_fun_t iCallback) { return std::exchange(fKeyHandledCallback, std::move(iCallback)); }
-  key_handled_fun_t getKeyHandledCallback() const { return fKeyHandledCallback; }
+  browser_key_fun_t setBrowserKeyCallback(browser_key_fun_t iCallback) { return std::exchange(fBrowserKeyCallback, std::move(iCallback)); }
+  browser_key_fun_t getBrowserKeyCallback() const { return fBrowserKeyCallback; }
 
   // misc
   void openURL(std::string_view url, std::optional<std::string_view> target);
@@ -169,7 +169,7 @@ private:
   EventListener<void> fOnPointerLockError{};
 
   // keyboard
-  key_handled_fun_t fKeyHandledCallback{};
+  browser_key_fun_t fBrowserKeyCallback{};
   Keyboard::SuperPlusKeyTimeout fSuperPlusKeyTimeout{525, 125}; // milliseconds
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK

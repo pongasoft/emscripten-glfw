@@ -84,7 +84,7 @@ int Keyboard::computeModifierBits() const
 //------------------------------------------------------------------------
 // Keyboard::onKeyDown
 //------------------------------------------------------------------------
-bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback)
+bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback)
 {
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
@@ -111,8 +111,8 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::g
     if(fKeyCallback)
       fKeyCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
 
-    handled = !iKeyHandledCallback ||
-              !iKeyHandledCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
+    handled = !iBrowserKeyCallback ||
+              !iBrowserKeyCallback(iWindow, key, scancode, iEvent.repeat ? GLFW_REPEAT : GLFW_PRESS, iEvent.modifierBits);
   }
 
   if(fCharCallback)
@@ -127,7 +127,7 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::g
 //------------------------------------------------------------------------
 // Keyboard::onKeyUp
 //------------------------------------------------------------------------
-bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback)
+bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback)
 {
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
@@ -150,8 +150,8 @@ bool Keyboard::onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glf
     if(fKeyCallback)
       fKeyCallback(iWindow, key, scancode, state, iEvent.modifierBits);
 
-    handled = !iKeyHandledCallback ||
-              !iKeyHandledCallback(iWindow, key, scancode, state, iEvent.modifierBits);
+    handled = !iBrowserKeyCallback ||
+              !iBrowserKeyCallback(iWindow, key, scancode, state, iEvent.modifierBits);
 
   }
 

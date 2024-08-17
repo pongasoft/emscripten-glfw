@@ -64,8 +64,8 @@ public:
   void setInputModeLockKeyMods(bool iValue) { fInputModeLockKeyMods = iValue; }
   int computeModifierBits() const;
 
-  bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback);
-  bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::key_handled_fun_t const &iKeyHandledCallback);
+  bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback);
+  bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback);
   void resetAllKeys(GLFWwindow *iWindow);
   void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
   void resetKeysOnSuperRelease(GLFWwindow *iWindow);
