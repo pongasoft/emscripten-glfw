@@ -69,7 +69,7 @@ let emscripten_glfw3_impl = {
       let pastedData = clipboardData.getData('text/plain');
       if(pastedData !== '' && GLFW3.fClipboardCallback) {
         const pastedString = stringToNewUTF8(pastedData);
-        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, pastedString, null);
+        {{{ makeDynCall('vppp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, pastedString, null);
         _free(pastedString);
       }
     },
@@ -80,7 +80,7 @@ let emscripten_glfw3_impl = {
         const windowSelection = window.getSelection();
         if(windowSelection && windowSelection.toString() !== '') {
           const selection = stringToNewUTF8(windowSelection.toString());
-          {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, selection, null);
+          {{{ makeDynCall('vppp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, selection, null);
           _free(selection);
         } else {
           if(!GLFW3.isAnyOtherElementFocused()) {
@@ -676,7 +676,7 @@ let emscripten_glfw3_impl = {
     const errorHandler = (err) => {
       if(GLFW3.fClipboardCallback) {
         const errorString = stringToNewUTF8(`${err}`);
-        {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, null, errorString);
+        {{{ makeDynCall('vppp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, null, errorString);
         _free(errorString);
       } else {
         GLFW3.onError('GLFW_PLATFORM_ERROR', `Cannot set clipboard string [${err}]`);
@@ -688,7 +688,7 @@ let emscripten_glfw3_impl = {
           .then(() => {
             if(GLFW3.fClipboardCallback) {
               const string = stringToNewUTF8(content);
-              {{{ makeDynCall('vpipp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, string, null);
+              {{{ makeDynCall('vppp', 'GLFW3.fClipboardCallback') }}}(GLFW3.fContext, string, null);
               _free(string);
             }
           })
