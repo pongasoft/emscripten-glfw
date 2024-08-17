@@ -40,9 +40,6 @@ using text_t = std::optional<std::string>;
 
 class OSClipboard
 {
-private:
-
-
 public:
   constexpr bool isUnknown() const { return !fText.has_value(); }
   constexpr clipboard::Timing const &getLastModified() const { return fLastModified; }

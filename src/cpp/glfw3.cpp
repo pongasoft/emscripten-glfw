@@ -1441,7 +1441,7 @@ browser_key_fun_t AddBrowserKeyCallback(browser_key_fun_t callback)
   auto context = getContext();
   if(context)
   {
-    auto currentCallback =  context->getKeyHandledCallback();
+    auto currentCallback = context->getBrowserKeyCallback();
     if(!currentCallback)
       return SetBrowserKeyCallback(std::move(callback));
     if(!callback)

@@ -178,7 +178,11 @@ int main()
   setHtmlValue("#action-key", emscripten::glfw3::IsRuntimePlatformApple() ? "&#x2318" : "CTRL");
 
   auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
+#else
+  auto canvas2Enabled = false;
+#endif
 
   GLFWwindow *window1{};
   if(canvas1Enabled)

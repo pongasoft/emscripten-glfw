@@ -19,7 +19,6 @@
 #include "Window.h"
 #include "Context.h"
 #include <emscripten/em_types.h>
-#include "../../../../include/GLFW/emscripten_glfw3.h"
 #include <utility>
 #include "ErrorHandler.h"
 #include "Cursor.h"
@@ -707,13 +706,9 @@ bool Window::onFocusChange(bool iFocus)
 {
   fFocused = iFocus;
   if(!isFocused())
-  {
-    fLastFocusedTime = 0;
     fKeyboard.resetAllKeys(asOpaquePtr());
-  }
   else
   {
-    fLastFocusedTime = emscripten_glfw3_context_get_now();
     fContext->onFocus(asOpaquePtr());
     emscripten_glfw3_context_set_title(getTitle());
   }

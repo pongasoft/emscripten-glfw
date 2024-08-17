@@ -175,7 +175,6 @@ protected:
   bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
   inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
-  void resetAllKeys() { fKeyboard.resetAllKeys(asOpaquePtr()); }
   void handleSuperPlusKeys(Keyboard::SuperPlusKeyTimeout const &iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
   bool onFocusChange(bool iFocus);
   void setCursorMode(glfw_cursor_mode_t iCursorMode);
@@ -208,7 +207,6 @@ private:
   bool fDestroyed{};
   bool fHovered{};
   bool fFocused{};
-  double fLastFocusedTime{};
   bool fVisible{true};
   bool fFullscreen{};
   bool fFocusOnMouse{true};

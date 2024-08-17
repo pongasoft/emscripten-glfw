@@ -644,7 +644,6 @@ void Triangle::updateValues()
 
 static constexpr auto adjust = [](int v, float f) { return static_cast<int>(static_cast<float>(v) * f); };
 
-
 //------------------------------------------------------------------------
 // Triangle::onKeyChange
 //------------------------------------------------------------------------

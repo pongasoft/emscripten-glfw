@@ -274,7 +274,7 @@ bool Context::onKeyUp(Keyboard::Event const &iEvent)
     handled |= w->onKeyUp(iEvent, fBrowserKeyCallback);
   return handled;
 #else
-  return fSingleWindow && fSingleWindow->onKeyUp(iEvent);
+  return fSingleWindow && fSingleWindow->onKeyUp(iEvent, fBrowserKeyCallback);
 #endif
 }
 
