@@ -50,7 +50,7 @@ Main supported features:
 Demo
 ----
 
-<a href="https://pongasoft.github.io/emscripten-glfw/test/demo/main.html">![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240727/emscripten-glfw.png)</a>
+<a href="https://pongasoft.github.io/emscripten-glfw/test/demo/main.html">![emscripten_glfw](https://github.com/pongasoft/emscripten-glfw/releases/download/v3.4.0.20240817/emscripten-glfw.png)</a>
 
 Check out the [live demo](https://pongasoft.github.io/emscripten-glfw/test/demo/main.html) of the example code. Note that you
 need to use a "modern" browser to see it in action. Currently tested on Google Chrome 120+ and Firefox 121+. 
@@ -189,7 +189,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > use the port that is checked-in under `port`: `--use-port=port/emscripten-glfw3.py`
 
 
-> #### Note
+> [!NOTE]
 > Emscripten automatically downloads and builds the library for you and stores it in its cache. If you want to
 > delete the library from the cache, you can use the `embuilder` tool:
 > ```sh
@@ -243,7 +243,7 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 ```
 
-> ### Note
+> [!NOTE]
 > The previous `Makefile` is shown as an illustration of what a `Makefile` to compile this project 
 > would look like. The actual changes required for ImGui are actually much simpler:
 > ```Makefile
