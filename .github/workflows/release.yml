@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: emscripten-glfw
+
+      - name: Checkout emscripten
+        uses: actions/checkout@v4
+        with:
+          repository: emscripten-core/emsdk
+          path: emscripten
+
+      - name: Install Emscripten
+        working-directory: ${{github.workspace}}/emscripten
+        run: |
+          ./emsdk install latest
+          ./emsdk activate latest
+          source ./emsdk_env.sh
+          emcc -v
+
+      - name: Compile with released port
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          source ${{github.workspace}}/emscripten/emsdk_env.sh
+          mkdir build-with-port
+          emcc --version
+          emcc --use-port=port/emscripten-glfw3.py examples/example_minimal/main.cpp -O2 -o build-with-port/index.html
+          ls -l build-with-port
+
+      - name: Compile with released port (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          source ${{github.workspace}}/emscripten/emsdk_env.sh
+          mkdir build-with-port-small
+          emcc --version
+          emcc --use-port=port/emscripten-glfw3.py:disableWarning=true:disableMultiWindow=true:disableJoystick=true examples/example_minimal/main.cpp -O2 -o build-with-port-small/index.html
+          ls -l build-with-port-small
