@@ -1,3 +1,8 @@
+# The purpose of this action is to test that the port defined in this project
+# (port/emscripten-glfw3.py) works properly and that the Release includes the
+# archive.
+# The output of the 2 "Compile" phases can be used as a sanity check on the sizes of the
+# minimal use case for each release.
 name: Release
 
 on:

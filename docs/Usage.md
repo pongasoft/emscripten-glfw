@@ -274,6 +274,8 @@ This library implements a workaround to detect this scenario by setting internal
 These values can be read and modified via the `emscripten::glfw3::GetSuperPlusKeyTimeouts()` and 
 `emscripten::glfw3::SetSuperPlusKeyTimeouts()` APIs.
 
+In addition to timeouts, when the "Super" key is released, all keys are also released.
+
 > [!TIP]
 > It is strongly recommended for your application to set a key callback (`glfwSetKeyCallback`) since you get
 > notifications on key down and key repeat, based on the values set at the OS level instead of trying to implement

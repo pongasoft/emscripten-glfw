@@ -4,14 +4,10 @@ Introduction
 This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![emscripten - 3.1.65](https://img.shields.io/badge/emscripten-3.1.65-blue)](https://emscripten.org)
 [![Latest - 3.4.0.20240817](https://img.shields.io/badge/Latest-3.4.0.20240817-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
-
-[![emscripten - 3.1.63](https://img.shields.io/badge/emscripten-3.1.63-blue)](https://emscripten.org)
-[![Version - 3.4.0.20240627](https://img.shields.io/badge/Version-3.4.0.20240627-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
-[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -175,10 +171,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in emscripten
 > | emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.4.0.20240817 |
-> | TBD        | 3.4.0.20240804 |
-> | TBD        | 3.4.0.20240731 |
-> | TBD        | 3.4.0.20240727 |
+> | 3.1.65     | 3.4.0.20240817 |
 > | 3.1.63     | 3.4.0.20240627 |
 > | 3.1.60     | 3.4.0.20240514 |
 > | 3.1.57     | 3.4.0.20240318 |
@@ -254,9 +247,8 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 
 Release Notes
 -------------
-#### 3.4.0.20240817 - 2024-08-17 | emscripten TBD
+#### 3.4.0.20240817 - 2024-08-17 | emscripten 3.1.65
 
-- Major clipboard changes: the clipboard now uses the browser events to handle cut, copy and paste
 - Added a way to [tweak the timeouts](docs/Usage.md#keyboard-support) for the Super + Key workaround (Super is also known as Meta or Cmd)
 - Added a way to set which keys are allowed to be [handled by the browser](docs/Usage.md#keyboard-support)
 - Added a convenient API to open a URL (`emscripten::glfw3::OpenURL`)
@@ -268,15 +260,17 @@ Release Notes
 > [!WARNING]
 > Breaking changes!
 > The clipboard async API has been removed.
+> Note that due to emscripten release cadence, these changes were never part of the emscripten port,
+> so it is unlikely going to affect your project.
 > Check the [Clipboard support](docs/Usage.md#clipboard-support) section for details on how to deal with the 
 > clipboard in your application.
 
-#### 3.4.0.20240804 - 2024-08-04 | emscripten TBD
+#### 3.4.0.20240804 - 2024-08-04 | emscripten 3.1.65
 
 - Fixed `nullptr` issue when clipboard is empty
 - Fixed the internal clipboard being wiped on asynchronous callback error
 
-#### 3.4.0.20240731 - 2024-07-31 | emscripten TBD
+#### 3.4.0.20240731 - 2024-07-31 | emscripten 3.1.65
 
 - Added `emscripten_glfw_get_clipboard_string` the C version of  `emscripten::glfw3::GetClipboardString` to
   retrieve the clipboard asynchronously
@@ -284,7 +278,7 @@ Release Notes
 - `GetClipboardString::value()` now returns the internal clipboard in case of error, instead of throwing exception
 - Added `optimizationLevel` option to the emscripten port
 
-#### 3.4.0.20240727 - 2024-07-27 | emscripten TBD
+#### 3.4.0.20240727 - 2024-07-27 | emscripten 3.1.65
 
 - Introduced C++ API (namespace `emscripten::glfw3`) included with `GLFW3/emscripten_glfw3.h`:
   - provides a more correct API with sensible defaults (ex: `std::string_view` / `std::optional<std::string_view>` 
@@ -311,10 +305,13 @@ Release Notes
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
   Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
-  JavaScript handling the `Super/Meta` key, there is no good solution. The workaround implemented, releases all keys when `Super` is released. Although not a perfect
-  solution, it guarantees that the state is _eventually_ consistent:
-    - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released (later than when actually released, final state is consistent: "Key" in `Release` state)
-    - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
+  JavaScript handling the `Super/Meta` key, there is no good solution.
+  The workaround implemented, releases all keys when `Super` is released.
+  Although not a perfect solution, it guarantees that the state is _eventually_ consistent:
+    - if "Key" was released while "Super" was held, then when "Super" gets released, "Key" is released 
+      (later than when actually released, final state is consistent: "Key" in `Release` state)
+    - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, 
+      but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
 
 #### 3.4.0.20240617 - 2024-06-17 | emscripten 3.1.63
 
