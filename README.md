@@ -1,7 +1,7 @@
 Introduction
 ------------
 
-This project is an emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
+This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
 [![emscripten - 3.1.65](https://img.shields.io/badge/emscripten-3.1.65-blue)](https://emscripten.org)
@@ -14,7 +14,8 @@ GLFW API is 3.4.
 Goal
 ----
 
-The main goal of this project is to implement as much as the GLFW API possible (in a browser context).
+The main goal of this project is to implement as much of the GLFW API that is possible to implement
+in the context of a web browser.
 
 Since this project is targeting the web/webassembly platform, which runs in more recent web browsers, it is also trying
 to focus on using the most recent features and not use deprecated features (for example, uses `keyboardEvent.key` 
@@ -138,25 +139,42 @@ Integration
 Since ImGui [v1.91.0](https://github.com/ocornut/imgui/releases/tag/v1.91.0),
 ImGui can be configured to use this port, allowing full gamepad and clipboard support amongst many other advantages. 
 
-Usage
------
+Quick start (Emscripten port)
+-----------------------------
 
-Check the [Usage](docs/Usage.md) documentation for details on how to use this implementation. Note that care has been
-taken to be backward compatible with the pure JavaScript implementation built-in in emscripten.
+Since Emscripten 3.1.55, using this library is really easy via the Emscripten `use-port` option:
+`--use-port=contrib.glfw3` (no need to clone this repo at all!).
+This is the recommended method to use this project.
 
-Building
---------
-
-### Using emscripten port
-
-Since emscripten 3.1.55, using this port is really easy via the `--use-port=contrib.glfw3` option 
-(no need to clone this repo at all!). This is the recommended method to use this project.
+### Command line
 
 Example:
 
 ```sh
 emcc --use-port=contrib.glfw3 main.cpp -o build/index.html
 ```
+
+### CMake
+
+With CMake, you need to provide the option both for compile and link phases:
+
+```cmake
+target_compile_options(${target} PUBLIC "--use-port=contrib.glfw3")
+target_link_options(${target} PUBLIC "--use-port=contrib.glfw3")
+```
+
+### Makefile
+
+This is an example from ImGui (`examples/example_emscripten_wgpu`)
+
+```Makefile
+EMS += -s DISABLE_EXCEPTION_CATCHING=1 --use-port=contrib.glfw3
+#LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
+LDFLAGS += -s USE_WEBGPU=1
+```
+
+Port Options
+------------
 
 The port can be configured with the following options:
 
@@ -172,8 +190,8 @@ Example using `disableWarning` and `disableMultiWindow`:
 emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.cpp -o build
 ```
 
-> #### Note about availability in emscripten
-> | emscripten | this port      |
+> #### Note about availability in Emscripten
+> | Emscripten | this port      |
 > |------------|----------------|
 > | 3.1.65     | 3.4.0.20240817 |
 > | 3.1.63     | 3.4.0.20240627 |
@@ -182,7 +200,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > | 3.1.56     | 1.1.0          |
 > | 3.1.55     | 1.0.5          |
 > 
-> Due to the release cadence of emscripten, if you want to be in charge of which version you use, you can simply
+> Due to the release cadence of Emscripten, if you want to be in charge of which version you use, you can simply
 > use the port that is checked-in under `port`: `--use-port=port/emscripten-glfw3.py`
 
 
@@ -196,73 +214,16 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > embuilder clear contrib.glfw3:disableWarning=true:disableMultiWindow=true
 > ```
 
-### CMake
+Documentation
+-------------
 
-> [!IMPORTANT]
-> This section is only intended if you want to include this library source code inside your project.
-> It is highly recommended to use the port version instead as it is far easier to use:
-> ```cmake
-> target_compile_options(${target} PUBLIC "--use-port=contrib.glfw3")
-> target_link_options(${target} PUBLIC "--use-port=contrib.glfw3")
-> ```
-
-If you use CMake, you should be able to simply add this project as a subdirectory. Check
-[CMakeLists.txt](test/demo/CMakeLists.txt) for an example of the build options used.
-
-With CMake, you can set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` if your application does not care about
-supporting joystick as it can be an extra burden on size and runtime polling.
-
-You can also set the (CMake) option `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` if your application does not need
-multi window support, and you want a smaller code and faster execution.
-
-When compiling in `Release` mode, the compilation flag `EMSCRIPTEN_GLFW3_DISABLE_WARNING` is automatically set.
-
-### Makefile
-
-> [!IMPORTANT]
-> This section is only intended if you want to include this library source code inside your project.
-> It is highly recommended to use the port version instead as it is far easier to use.
-> For example, the following `Makefile` is shown as an illustration of what a `Makefile` to compile 
-> this project would look like.
-> The actual changes required for ImGui using the port are actually much simpler:
-> ```Makefile
-> EMS += -s DISABLE_EXCEPTION_CATCHING=1 --use-port=contrib.glfw3
-> #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
-> LDFLAGS += -s USE_WEBGPU=1
-> ```
-
-For testing purposes, I am successfully building ImGui (`examples/example_emscripten_wgpu`) against this 
-implementation with the following section in the `Makefile`:
-
-```Makefile
-# local glf3 port
-EMS_GLFW3_DIR = /Volumes/Development/github/org.pongasoft/emscripten-glfw
-SOURCES += $(EMS_GLFW3_DIR)/src/cpp/glfw3.cpp
-SOURCES += $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Clipboard.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Context.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/ErrorHandler.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Keyboard.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Joystick.cpp \
-           $(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/Window.cpp
-
-CPPFLAGS += -I$(EMS_GLFW3_DIR)/include -I$(EMS_GLFW3_DIR)/external -DEMSCRIPTEN_USE_PORT_CONTRIB_GLFW3
-
-# ("EMS" options gets added to both CPPFLAGS and LDFLAGS, whereas some options are for linker only)
-#EMS += -s DISABLE_EXCEPTION_CATCHING=1
-#LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
-LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_glfw3.js
-#LDFLAGS += -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
-
-%.o:$(EMS_GLFW3_DIR)/src/cpp/%.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
-
-%.o:$(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/%.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
-```
+Check the [documentation](docs/Usage.md) for details on how to use this implementation, including clipboard, joystick,
+resizable canvas, Hi DPI, etc...
+Note that care has been taken to be backward compatible with the pure JavaScript Emscripten built-in implementation.
 
 Release Notes
 -------------
-#### 3.4.0.20240817 - 2024-08-17 | emscripten 3.1.65
+#### 3.4.0.20240817 - 2024-08-17 | Emscripten 3.1.65
 
 - Added a way to [tweak the timeouts](docs/Usage.md#keyboard-support) for the Super + Key workaround (Super is also known as Meta or Cmd)
 - Added a way to set which keys are allowed to be [handled by the browser](docs/Usage.md#keyboard-support)
@@ -280,12 +241,12 @@ Release Notes
 > Check the [Clipboard support](docs/Usage.md#clipboard-support) section for details on how to deal with the 
 > clipboard in your application.
 
-#### 3.4.0.20240804 - 2024-08-04 | emscripten 3.1.65
+#### 3.4.0.20240804 - 2024-08-04 | Emscripten 3.1.65
 
 - Fixed `nullptr` issue when clipboard is empty
 - Fixed the internal clipboard being wiped on asynchronous callback error
 
-#### 3.4.0.20240731 - 2024-07-31 | emscripten 3.1.65
+#### 3.4.0.20240731 - 2024-07-31 | Emscripten 3.1.65
 
 - Added `emscripten_glfw_get_clipboard_string` the C version of  `emscripten::glfw3::GetClipboardString` to
   retrieve the clipboard asynchronously
@@ -293,7 +254,7 @@ Release Notes
 - `GetClipboardString::value()` now returns the internal clipboard in case of error, instead of throwing exception
 - Added `optimizationLevel` option to the emscripten port
 
-#### 3.4.0.20240727 - 2024-07-27 | emscripten 3.1.65
+#### 3.4.0.20240727 - 2024-07-27 | Emscripten 3.1.65
 
 - Introduced C++ API (namespace `emscripten::glfw3`) included with `GLFW3/emscripten_glfw3.h`:
   - provides a more correct API with sensible defaults (ex: `std::string_view` / `std::optional<std::string_view>` 
@@ -312,11 +273,11 @@ Release Notes
 - Fixed an issue with opacity: when using opacity, the handle is not working unless its z-index is higher than the 
   canvas z-index
 
-#### 3.4.0.20240627 - 2024-06-27 | emscripten 3.1.63
+#### 3.4.0.20240627 - 2024-06-27 | Emscripten 3.1.63
 
 - Fixed internal implementation to use `EM_BOOL` (PR [#5](https://github.com/pongasoft/emscripten-glfw/pull/5))
 
-#### 3.4.0.20240625 - 2024-06-25 | emscripten 3.1.63
+#### 3.4.0.20240625 - 2024-06-25 | Emscripten 3.1.63
 
 - Implemented workaround for [#4](https://github.com/pongasoft/emscripten-glfw/issues/4): _Using Super + "Key" on macOS results in "Key" not being released_.
   Due to the [broken state](https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser) of 
@@ -328,32 +289,32 @@ Release Notes
     - if "Key" is still held when "Super" is released, "Key" is released when "Super" gets released, 
       but immediately gets a down event (Up/Down event, final state is consistent": "Key" in `Pressed` state)
 
-#### 3.4.0.20240617 - 2024-06-17 | emscripten 3.1.63
+#### 3.4.0.20240617 - 2024-06-17 | Emscripten 3.1.63
 
 - Fixed [#3](https://github.com/pongasoft/emscripten-glfw/issues/3): _glfwGetKey must return one of `GLFW_PRESS` or `GLFW_RELEASE`_
 
-#### 3.4.0.20240616 - 2024-06-16 | emscripten 3.1.63
+#### 3.4.0.20240616 - 2024-06-16 | Emscripten 3.1.63
 
 - Implemented `glfwGetClipboardString`. Note that due to the async (and restrictive) nature of the 
   `navigator.clipboard.readText` call, this synchronous API returns whatever was set via a previous call
   to `glfwSetClipboardString` and ignores the external clipboard entirely.
 
-#### 3.4.0.20240601 - 2024-06-01 | emscripten 3.1.63
+#### 3.4.0.20240601 - 2024-06-01 | Emscripten 3.1.63
 
 - Fixed [#2](https://github.com/pongasoft/emscripten-glfw/issues/2): Dynamically changing HiDPI awareness does not trigger content callback
 
-#### 3.4.0.20240514 - 2024-05-14 | emscripten 3.1.60
+#### 3.4.0.20240514 - 2024-05-14 | Emscripten 3.1.60
 
 - Implemented `glfwSetClipboardString`
 
-#### 3.4.0.20240501 - 2024-05-01 | emscripten 3.1.60
+#### 3.4.0.20240501 - 2024-05-01 | Emscripten 3.1.60
 
 - Fixed issue when calling `glfwGetWindowContentScale` with `nullptr`
 - Renamed javascript api/impl since these names are not unique to avoid potential conflicts
 - Added `glfw3native.h` to `GLFW`. Although not used (at this moment) by this implementation, this allows
   calling code to include it if necessary since it is part of a normal GLFW installation.
 
-#### 3.4.0.20240318 - 2024-03-18 | emscripten 3.1.57
+#### 3.4.0.20240318 - 2024-03-18 | Emscripten 3.1.57
 
 - Fixed joystick/gamepad code that was improperly mapping `GLFW_GAMEPAD_AXIS_LEFT_TRIGGER`
   `GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER`, `GLFW_GAMEPAD_BUTTON_LEFT_THUMB` and `GLFW_GAMEPAD_BUTTON_RIGHT_THUMB`
@@ -362,7 +323,7 @@ Release Notes
 - Please note the change in version numbering, which from now on will be tied to the GLFW version implemented + date
   of release of this port to avoid confusion
 
-#### 1.1.0 - 2024-02-29 | emscripten 3.1.56
+#### 1.1.0 - 2024-02-29 | Emscripten 3.1.56
 
 - Upgraded to GLFW 3.4
 - GLFW 3.4 features implemented
@@ -385,7 +346,7 @@ Release Notes
   needs to be explicitly turned off (`glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE)`) if this is the desired
   behavior.
 
-#### 1.0.5 - 2024/02/18 | emscripten 3.1.55
+#### 1.0.5 - 2024/02/18 | Emscripten 3.1.55
 
 - Fixed memory corruption with joystick
 

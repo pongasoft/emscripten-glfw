@@ -1,6 +1,6 @@
 ## Introduction
 
-This emscripten/webassembly port of GLFW tries to implement as much of the GLFW API that is possible to implement 
+This Emscripten/webassembly port of GLFW tries to implement as much of the GLFW API that is possible to implement 
 in the context of a web browser.
 See the list of [all functions](#glfw-functions) with some notes for details.
 This page documents the most important aspects of the library.
@@ -26,8 +26,8 @@ This library offers 2 ways depending on your needs:
 
 #### 1. Using JavaScript/Module
 
-Every emscripten application needs to define a `Module` variable in JavaScript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
-By convention in emscripten, the `Module["canvas"]` field represents the canvas associated to the window.
+Every Emscripten application needs to define a `Module` variable in JavaScript (see [example](https://github.com/emscripten-core/emscripten/blob/900aee0a2df98b28579d72b17f6fa73e48087e69/src/shell.html#L37)).
+By convention in Emscripten, the `Module["canvas"]` field represents the canvas associated to the window.
 To be backward compatible with this option, this library supports it, and it is the default. Obviously, this can only
 work if there is only one window, which is why there is another method.
 
@@ -169,7 +169,7 @@ emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container", "canvas1-ha
 
 GLFW has a concept of a fullscreen window.
 This is quite tricky for this implementation due to the restrictions imposed by browsers to go fullscreen.
-Historically, emscripten has offered a way to do it from JavaScript by the means of a
+Historically, Emscripten has offered a way to do it from JavaScript by the means of a
 function that gets added automatically to the `Module` called `requestFullscreen`.
 
 This implementation adds another JavaScript function `Module.glfwRequestFullscreen(target, lockPointer, resizeCanvas)`
@@ -180,7 +180,7 @@ with
   calling `glfwSetInputMode(GLFW_CURSOR, xxx)`)
 * `resizeCanvas`: boolean to resize (or not) the canvas to the fullscreen size
 
-To be backward compatible with the current emscripten/glfw/javascript implementation, you can also call
+To be backward compatible with the current Emscripten/GLFW/JavaScript implementation, you can also call
 `Module.requestFullscreen(lockPointer, resizeCanvas)` and the library does its best to determine which
 canvas to target.
 
@@ -240,7 +240,7 @@ glfwSetWindowAttrib(window, GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE); // for disablin
 
 ## Keyboard support
 
-This implementation supports the keyboard and uses the same mapping defined in emscripten for scancodes. You can check
+This implementation supports the keyboard and uses the same mapping defined in Emscripten for scancodes. You can check
 [KeyboardMapping.h](../src/cpp/emscripten/glfw3/KeyboardMapping.h) for the full mapping. This implementation uses `KeyboardEvent.key` to compute an accurate
 codepoint (provided to the `GLFWcharfun` callback) and not the deprecated  `KeyboardEvent.charcode` like other
 implementations.
@@ -467,7 +467,7 @@ This implementation adds the following functions to the `Module`:
 
 | Function                                                          | Notes                                                                                                                                                 |
 |-------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `requestFullscreen(lockPointer, resizeCanvas)`                    | Same function added by the other emscripten implementations (for backward compatibility purposes)                                                     |
+| `requestFullscreen(lockPointer, resizeCanvas)`                    | Same function added by the other Emscripten implementations (for backward compatibility purposes)                                                     |
 | `glfwRequestFullscreen(target, lockPointer, resizeCanvas)`        | The version specific to this implementation with the additional `target` argument (can be a canvas selector, a `HTMLCanvasElement` or a `GLFWwindow`) |
 | `glfwGetWindow(any)`                                              | Returns the `GLFWwindow` pointer associated to the canvas (`any` can be a canvas selector or a `HTMLCanvasElement`)                                   |
 | `glfwGetCanvas(any)`                                              | Returns the canvas associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                                        |
@@ -493,7 +493,7 @@ Module = {
 
 ## Implementation size
 
-This implementation being in C++ and implementing far more features than the `library_glfw.js` emscripten
+This implementation being in C++ and implementing far more features than the `library_glfw.js` Emscripten
 implementation, it has an impact on size.
 As of initial release, I ran the following experiment on both implementations using [`example_minimal`](../examples/example_minimal)
 
@@ -534,7 +534,7 @@ As of initial release, I ran the following experiment on both implementations us
 | Release (minimal) | -                                      | js: 56813, wasm: 63965, total: 120778    | 1.02x |
 
 > [!NOTE]
-> The good news is that emscripten is improving and this implementation is benefitting from it.
+> The good news is that Emscripten is improving and this implementation is benefitting from it.
 
 ## GLFW functions
 
@@ -658,7 +658,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwGetJoystickName</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.id</code> in JavaScript (limited to 64 characters due to emscripten limitation)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.id</code> in JavaScript (limited to 64 characters due to Emscripten limitation)</td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
   </tr>
   <tr>
