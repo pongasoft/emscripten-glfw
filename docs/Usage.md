@@ -1,8 +1,9 @@
 ## Introduction
 
-This emscripten/webassembly port of GLFW tries to implement as much as possible of the API. See the list of [supported
-functions](#supported-functions) with some notes for details. This page documents the most important aspects
-of the library.
+This emscripten/webassembly port of GLFW tries to implement as much of the GLFW API that is possible to implement 
+in the context of a web browser.
+See the list of [all functions](#glfw-functions) with some notes for details.
+This page documents the most important aspects of the library.
 
 ## Main concept
 
@@ -537,7 +538,7 @@ As of initial release, I ran the following experiment on both implementations us
 
 ## GLFW functions
 
-This table contains the list of all the GLFW functions and whether they are supported by this implementation 
+This table contains the list of all the GLFW functions API and whether they are supported by this implementation 
 (and the built-in implementation) with a few relevant notes
 
 > [!NOTE]
