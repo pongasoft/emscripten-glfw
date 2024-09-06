@@ -25,13 +25,13 @@ Since the code is written in C++, it is trying to minimize the amount of JavaScr
 Features
 --------
 
-Main supported features:
+Main features:
 * can create as many windows as you want, each one associated to a different canvas (use 
   `emscripten::glfw3::SetNextWindowCanvasSelector("#canvas2")` to specify which canvas to use)
 * resizable window/canvas (use `emscripten::glfw3::MakeCanvasResizable(...)` to make the canvas resizable by user.
   Use `"window"` as the resize selector for full frame canvas (ex: ImGui))
 * mouse (includes sticky button behavior)
-* keyboard (includes sticky key behavior)
+* keyboard (includes sticky key behavior and Meta key workaround)
 * joystick/gamepad
 * fullscreen
 * Hi DPI 
@@ -42,6 +42,10 @@ Main supported features:
 * focus
 * clipboard (cut/copy/paste with external clipboard)
 * timer
+
+> [!NOTE]
+> The [Comparison](docs/Comparison.md) page details the differences between this implementation and the 
+> Emscripten built-in one.
 
 Demo
 ----
@@ -194,6 +198,14 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 
 ### CMake
 
+> [!IMPORTANT]
+> This section is only intended if you want to include this library source code inside your project.
+> It is highly recommended to use the port version instead as it is far easier to use:
+> ```cmake
+> target_compile_options(${target} PUBLIC "--use-port=contrib.glfw3")
+> target_link_options(${target} PUBLIC "--use-port=contrib.glfw3")
+> ```
+
 If you use CMake, you should be able to simply add this project as a subdirectory. Check
 [CMakeLists.txt](test/demo/CMakeLists.txt) for an example of the build options used.
 
@@ -206,6 +218,18 @@ multi window support, and you want a smaller code and faster execution.
 When compiling in `Release` mode, the compilation flag `EMSCRIPTEN_GLFW3_DISABLE_WARNING` is automatically set.
 
 ### Makefile
+
+> [!IMPORTANT]
+> This section is only intended if you want to include this library source code inside your project.
+> It is highly recommended to use the port version instead as it is far easier to use.
+> For example, the following `Makefile` is shown as an illustration of what a `Makefile` to compile 
+> this project would look like.
+> The actual changes required for ImGui using the port are actually much simpler:
+> ```Makefile
+> EMS += -s DISABLE_EXCEPTION_CATCHING=1 --use-port=contrib.glfw3
+> #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
+> LDFLAGS += -s USE_WEBGPU=1
+> ```
 
 For testing purposes, I am successfully building ImGui (`examples/example_emscripten_wgpu`) against this 
 implementation with the following section in the `Makefile`:
@@ -235,15 +259,6 @@ LDFLAGS += -s USE_WEBGPU=1 --js-library $(EMS_GLFW3_DIR)/src/js/lib_emscripten_g
 %.o:$(EMS_GLFW3_DIR)/src/cpp/emscripten/glfw3/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 ```
-
-> [!NOTE]
-> The previous `Makefile` is shown as an illustration of what a `Makefile` to compile this project 
-> would look like. The actual changes required for ImGui are actually much simpler:
-> ```Makefile
-> EMS += -s DISABLE_EXCEPTION_CATCHING=1 --use-port=contrib.glfw3
-> #LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
-> LDFLAGS += -s USE_WEBGPU=1
-> ```
 
 Release Notes
 -------------

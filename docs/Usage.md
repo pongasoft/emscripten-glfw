@@ -9,15 +9,16 @@ of the library.
 This port, as well as other library ports (like [SDL](https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md)), associates the concept of a "window" (in this instance 
 a `GLFWwindow`) to an html "canvas". The framebuffer size of the window is the size of the canvas 
 (`canvas.width` x `canvas.height`) and this is what you use for your viewport.
-The size of the window is the css style size of the canvas (which in the case of Hi DPI is different). The opacity
-is the css style `opacity`, etc...
+The size of the window is the CSS style size of the canvas (which in the case of Hi DPI is different). The opacity
+is the CSS style `opacity`, etc...
 
 > [!IMPORTANT]
-> Once the canvas is associated to the window, the library takes control over it and sets various listeners and
-> css styles on the canvas. In particular, the width and height is controlled by the library and as a result this
-> implementation offers another mechanism for the user to be able to resize the canvas.
+> Once the canvas is associated with the window, the library takes control over it and sets various listeners and
+> CSS styles on the canvas.
+> In particular, the width and height are controlled by the library and as a result this implementation offers another 
+> mechanism for the user to be able to resize the canvas.
 
-### How to associate the window to the canvas?
+### How to associate the window with the canvas?
 
 Natively, GLFW doesn't know anything about the concept of a canvas. So there needs to be a way to make this association.
 This library offers 2 ways depending on your needs:
@@ -33,7 +34,7 @@ work if there is only one window, which is why there is another method.
 
 This implementation offers an alternative way of specifying which canvas to associate to which window: the function
 `emscripten::glfw3::SetNextWindowCanvasSelector` which must be called **prior** to calling `glfwCreateWindow`. The
-single argument to the function is a css path selector to the canvas.
+single argument to the function is a CSS path selector to the canvas.
 
 Example:
 
@@ -64,7 +65,7 @@ int MakeCanvasResizable(GLFWwindow *window,
 
 Since this library takes control of the canvas size, the idea behind this function is to specify which
 other (html) element dictates the size of the canvas. The parameter `canvasResizeSelector` defines the
-(css path) selector to this element.
+(CSS path) selector to this element.
 
 The 3 typical use cases are:
 
@@ -93,7 +94,7 @@ emscripten::glfw3::MakeCanvasResizable(window, "window");
 The canvas is inside a `div`, in which case the `div` acts as a "container" and the `div` size is defined by
 CSS rules, like for example: `width: 75vw` so that when the page/browser gets resized, the `div` is resized
 automatically, which then triggers the canvas to be resized. In this case, the parameter `canvasResizeSelector`
-is the (css path) selector to this `div` and `handleSelector` is `std::nullopt`.
+is the (CSS path) selector to this `div` and `handleSelector` is `std::nullopt`.
 
 Example code:
 
@@ -534,142 +535,649 @@ As of initial release, I ran the following experiment on both implementations us
 > [!NOTE]
 > The good news is that emscripten is improving and this implementation is benefitting from it.
 
-## Supported functions
+## GLFW functions
 
-This table contains the list of all the functions supported by this implementation with a few relevant notes
+This table contains the list of all the GLFW functions and whether they are supported by this implementation 
+(and the built-in implementation) with a few relevant notes
 
 > [!NOTE]
 > GLFW 3.4 introduced the concept of a platform. This implementation adds the `GLFW_PLATFORM_EMSCRIPTEN` define
 > in `empscriptem-glfw3.h`: the value is reserved (in a comment), but it is not defined in `glfw3.h`.
 
-| Function                            | Notes                                                                                                                                                                                                                   |
-|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `glfwCreateCursor`                  | All GLFW cursors are supported: uses the css style `cursor` on the canvas                                                                                                                                               |
-| `glfwCreateStandardCursor`          | All GLFW cursors are supported                                                                                                                                                                                          |
-| `glfwCreateWindow`                  | Support as many windows as you want: see section describing the association of a window and a canvas                                                                                                                    |
-| `glfwDefaultWindowHints`            |                                                                                                                                                                                                                         |
-| `glfwDestroyWindow`                 | Reverts all changes (event listeners, css style, ...) set by this library                                                                                                                                               |
-| `glfwExtensionSupported`            | Same implementation as `library_glfw.js`                                                                                                                                                                                |
-| `glfwFocusWindow`                   | Calls JavaScript `HTMLElement.focus()` on the canvas                                                                                                                                                                    | 
-| `glfwGetClipboardString`            | See Clipboard Support section                                                                                                                                                                                           |
-| `glfwGetCurrentContext`             | Only available if `glfwMakeContextCurrent` was called previously                                                                                                                                                        |
-| `glfwGetCursorPos`                  | Hi DPI aware                                                                                                                                                                                                            |
-| `glfwGetError`                      |                                                                                                                                                                                                                         |
-| `glfwGetFramebufferSize`            | Hi DPI aware                                                                                                                                                                                                            |
-| `glfwGetGamepadName`                | If gamepad, corresponds to `Gamepad.id` in JavaScript                                                                                                                                                                   |
-| `glfwGetGamepadState`               | If gamepad, then `Gamepad.axes` and `Gamepad.buttons` (js) remapped for GLFW                                                                                                                                            |
-| `glfwGetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                                                         |
-| `glfwGetJoystickAxes`               | Corresponds to `Gamepad.axes` in JavaScript                                                                                                                                                                             |
-| `glfwGetJoystickButtons`            | Corresponds to `Gamepad.buttons[x].value` in JavaScript                                                                                                                                                                 |
-| `glfwGetJoystickGUID`               | Corresponds to `Gamepad.mapping` in JavaScript                                                                                                                                                                          |
-| `glfwGetJoystickHats`               | If gamepad, corresponds to `Gamepad.buttons[x].pressed` in JavaScript remapped for GLFW                                                                                                                                 |
-| `glfwGetJoystickName`               | Corresponds to `Gamepad.id` in JavaScript (limited to 64 characters due to emscripten limitation)                                                                                                                       |
-| `glfwGetJoystickUserPointer`        |                                                                                                                                                                                                                         |
-| `glfwGetKey`                        | Support `GLFW_STICKY_KEYS` as well                                                                                                                                                                                      |
-| `glfwGetKeyName`                    | All names starts with `DOM_PK_`: example `DOM_PK_F1`.                                                                                                                                                                   |
-| `glfwGetKeyScancode`                | See `KeyboardMapping.h` for actual mapping                                                                                                                                                                              |
-| `glfwGetMonitorContentScale`        | Corresponds to `window.devicePixelRatio` in JavaScript                                                                                                                                                                  |
-| `glfwGetMonitorName`                | The constant "Browser"                                                                                                                                                                                                  |
-| `glfwGetMonitorPos`                 | Always 0/0                                                                                                                                                                                                              |
-| `glfwGetMonitors`                   | Due to JavaScript restrictions, always only 1 monitor                                                                                                                                                                   |
-| `glfwGetMonitorUserPointer`         |                                                                                                                                                                                                                         |
-| `glfwGetMonitorWorkarea`            | 0x0 for position, `screen.width`x`screen.height` for size                                                                                                                                                               |
-| `glfwGetMouseButton`                | Support `GLFW_STICKY_MOUSE_BUTTONS` as well                                                                                                                                                                             |
-| `glfwGetPlatform`                   | `GLFW_PLATFORM_EMSCRIPTEN` (see note above)                                                                                                                                                                             |
-| `glfwGetPrimaryMonitor`             | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
-| `glfwGetTime`                       |                                                                                                                                                                                                                         |
-| `glfwGetTimerFrequency`             | Always 1000                                                                                                                                                                                                             |
-| `glfwGetTimerValue`                 | Corresponds to `performance.now()` in JavaScript                                                                                                                                                                        |
-| `glfwGetVersion`                    |                                                                                                                                                                                                                         |
-| `glfwGetVersionString`              | "Emscripten/WebAssembly GLFW " + GLFW version                                                                                                                                                                           |
-| `glfwGetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_HOVERED`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                  |
-| `glfwGetWindowContentScale`         | If HiDPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`), then current monitor scale, otherwise `1.0`                                                                                                                   |
-| `glfwGetWindowFrameSize`            | Because a window is a canvas in this implementation, there is no edge => all 0                                                                                                                                          |
-| `glfwGetWindowMonitor`              | The single monitor returned in `glfwGetMonitors`                                                                                                                                                                        |
-| `glfwGetWindowOpacity`              |                                                                                                                                                                                                                         |
-| `glfwGetWindowPos`                  | The position of the canvas in the page `getBoundingClientRect(canvas).x&y`                                                                                                                                              |
-| `glfwGetWindowSize`                 | The size of the window/canvas                                                                                                                                                                                           |
-| `glfwGetWindowTitle`                | The title of the window/canvas                                                                                                                                                                                          |
-| `glfwGetWindowUserPointer`          |                                                                                                                                                                                                                         |
-| `glfwHideWindow`                    | Set css property to `display: none` for the canvas                                                                                                                                                                      |
-| `glfwInit`                          | Set a listener to monitor content scale change (ex: moving browser to different resolution screen)                                                                                                                      |
-| `glfwInitHint`                      | `GLFW_PLATFORM` with value `GLFW_ANY_PLATFORM` or `GLFW_PLATFORM_EMSCRIPTEN`                                                                                                                                            |
-| `glfwJoystickIsGamepad`             | Returns `GLFW_TRUE` when the joystick mapping (`Gamepad.mapping`) is "standard"                                                                                                                                         |
-| `glfwJoystickPresent`               | Listens to `gamepadconnected` and `gamepaddisconnected` events to determine the presence.                                                                                                                               |
-| `glfwMakeContextCurrent`            | Since this implementation supports multiple windows, it is important to call this if using OpenGL                                                                                                                       |
-| `glfwPlatformSupported`             | `GLFW_TRUE` for `GLFW_PLATFORM_EMSCRIPTEN` only (see note above)                                                                                                                                                        |
-| `glfwPollEvents`                    | Polls for joysticks only (can be disabled with `EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK` define)                                                                                                                              |
-| `glfwRawMouseMotionSupported`       | Always `GLFW_FALSE` (not supported)                                                                                                                                                                                     |
-| `glfwSetCharCallback`               | Uses `KeyboardEvent.key` to compute the proper codepoint                                                                                                                                                                |
-| `glfwSetClipboardString`            | Uses `navigator.clipboard.writeText`. See Clipboard Support section.                                                                                                                                                    |
-| `glfwSetCursor`                     | Uses css style `cursor: xxx` for the canvas                                                                                                                                                                             |
-| `glfwSetCursorEnterCallback`        | Listeners to `mouseenter` and `mouseleave` events                                                                                                                                                                       |
-| `glfwSetCursorPosCallback`          | Hi DPI aware                                                                                                                                                                                                            |
-| `glfwSetErrorCallback`              |                                                                                                                                                                                                                         |
-| `glfwSetFramebufferSizeCallback`    | Hi DPI aware                                                                                                                                                                                                            |
-| `glfwSetInputMode`                  | Supports only `GLFW_CURSOR`, `GLFW_STICKY_KEYS` and `GLFW_STICKY_MOUSE_BUTTONS`                                                                                                                                         |
-| `glfwSetJoystickCallback`           |                                                                                                                                                                                                                         |
-| `glfwSetJoystickUserPointer`        |                                                                                                                                                                                                                         |
-| `glfwSetKeyCallback`                |                                                                                                                                                                                                                         |
-| `glfwSetMonitorCallback`            | Callback is never called                                                                                                                                                                                                |
-| `glfwSetMonitorUserPointer`         |                                                                                                                                                                                                                         |
-| `glfwSetMouseButtonCallback`        |                                                                                                                                                                                                                         |
-| `glfwSetScrollCallback`             | Listens to `mousewheel` events                                                                                                                                                                                          |
-| `glfwSetTime`                       |                                                                                                                                                                                                                         |
-| `glfwSetWindowAspectRatio`          | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                                                         |
-| `glfwSetWindowAttrib`               | Supports for `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_FOCUS_ON_SHOW`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_RESIZABLE`                                                                                  |
-| `glfwSetWindowContentScaleCallback` | Callback only called if Hi DPI aware (`GLFW_SCALE_FRAMEBUFFER` is `GLFW_TRUE`)                                                                                                                                          |
-| `glfwSetWindowFocusCallback`        |                                                                                                                                                                                                                         |
-| `glfwSetWindowOpacity`              | Uses css style `opacity: xxx` for the canvas                                                                                                                                                                            |
-| `glfwSetWindowPosCallback`          | Uses top/left of the value returned by `getBoundingClientRect(canvas)`)                                                                                                                                                 |
-| `glfwSetWindowRefreshCallback`      | Returns callback provided: callback is never called                                                                                                                                                                     |
-| `glfwSetWindowShouldClose`          |                                                                                                                                                                                                                         |
-| `glfwSetWindowSize`                 | Hi DPI Aware: set the size of the canvas (`canvas.width = size * scale`) + css style (`style.width = size`)                                                                                                             |
-| `glfwSetWindowSizeCallback`         |                                                                                                                                                                                                                         |
-| `glfwSetWindowSizeLimits`           | Only works if the user is controlling the canvas size (spec does not define one way or another)                                                                                                                         |
-| `glfwSetWindowTitle`                | Corresponds to `document.title` in JavaScript                                                                                                                                                                           |
-| `glfwSetWindowUserPointer`          |                                                                                                                                                                                                                         |
-| `glfwShowWindow`                    | Removes css style `display: none` for the canvas                                                                                                                                                                        |
-| `glfwSwapInterval`                  | Uses `emscripten_set_main_loop_timing`                                                                                                                                                                                  |
-| `glfwTerminate`                     | Tries to properly cleanup everything that was set during the course of the app (listeners, css styles, ...)                                                                                                             |
-| `glfwVulkanSupported`               | Always return `GLFW_FALSE`                                                                                                                                                                                              |
-| `glfwWindowHint`                    | `GLFW_CLIENT_API`, `GLFW_SCALE_FRAMEBUFFER`, `GLFW_SCALE_TO_MONITOR`, `GLFW_FOCUS_ON_SHOW`, `GLFW_VISIBLE`, `GLFW_FOCUSED`, `GLFW_RESIZABLE`, `GLFW_ALPHA_BITS`, `GLFW_DEPTH_BITS`, `GLFW_STENCIL_BITS`, `GLFW_SAMPLES` |
-| `glfwWindowHintString`              | None                                                                                                                                                                                                                    |
-| `glfwWindowShouldClose`             |                                                                                                                                                                                                                         |
+<table>
+  <tr>
+    <th>Function</th>
+    <th style="width:50%;"><code>emscripten-glfw</code><br>(this implementation)</th>
+    <th style="width:50%;"><code>library_glfw.js</code><br>(built-in implementation)</th>
+  </tr>
+  <tr>
+    <td>glfwCreateCursor</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwCreateStandardCursor</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> All GLFW cursors are supported: uses the CSS style <code>cursor</code> on the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwCreateWindow</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Support as many windows as you want: see the <a href="#how-to-associate-the-window-with-the-canvas">section</a> describing the association of a window and a canvas</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Support only a single window</td>
+  </tr>
+  <tr>
+    <td>glfwDefaultWindowHints</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwDestroyCursor</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwDestroyWindow</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Reverts all changes (event listeners, CSS style, ...) set by this library</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwExtensionSupported</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same implementation as <code>library_glfw.js</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwFocusWindow</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Calls JavaScript <code>HTMLElement.focus()</code> on the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwGetClipboardString</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> See the <a href="#clipboard-support">Clipboard Support section</a></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwGetCurrentContext</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Only available if <code>glfwMakeContextCurrent</code> was called previously</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetCursorPos</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI aware</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetError</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x+</td>
+  </tr>
+  <tr>
+    <td>glfwGetFramebufferSize</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI aware</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI aware</td>
+  </tr>
+  <tr>
+    <td>glfwGetGammaRamp</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (no access from JavaScript)</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetGamepadName</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> If gamepad, corresponds to <code>Gamepad.id</code> in JavaScript</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x+</td>
+  </tr>
+  <tr>
+    <td>glfwGetGamepadState</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> If gamepad, then <code>Gamepad.axes</code> and <code>Gamepad.buttons</code> (js) remapped for GLFW</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x+</td>
+  </tr>
+  <tr>
+    <td>glfwGetInputMode</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code> and <code>GLFW_STICKY_MOUSE_BUTTONS</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickAxes</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.axes</code> in JavaScript</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickButtons</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.buttons[x].value</code> in JavaScript</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickGUID</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.mapping</code> in JavaScript</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickHats</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> If gamepad, corresponds to <code>Gamepad.buttons[x].pressed</code> in JavaScript remapped for GLFW</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickName</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>Gamepad.id</code> in JavaScript (limited to 64 characters due to emscripten limitation)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetJoystickUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetKey</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Support <code>GLFW_STICKY_KEYS</code> as well</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> No sticky support / Broken Meta Key</td>
+  </tr>
+  <tr>
+    <td>glfwGetKeyName</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> All names start with <code>DOM_PK_</code>: example, <code>DOM_PK_F1</code>.</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetKeyScancode</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> See <code>KeyboardMapping.h</code> for actual mapping</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorContentScale</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>window.devicePixelRatio</code> in JavaScript</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorName</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The constant "Browser"</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The constant "HTML5 WebGL Canvas"</td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorPos</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Always 0/0</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Always 0/0</td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorPhysicalSize</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (no access from JavaScript)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitors</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Due to JavaScript restrictions, always only 1 monitor</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> 1 monitor</td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x+</td>
+  </tr>
+  <tr>
+    <td>glfwGetMonitorWorkarea</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> 0x0 for position, <code>screen.width</code>x<code>screen.height</code> for size</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> 0x0 for position, <code>screen.availWidth</code>x<code>screen.availHeight</code> for size</td>
+  </tr>
+  <tr>
+    <td>glfwGetMouseButton</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Support <code>GLFW_STICKY_MOUSE_BUTTONS</code> as well</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> No sticky mouse button support</td>
+  </tr>
+  <tr>
+    <td>glfwGetPlatform</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> <code>GLFW_PLATFORM_EMSCRIPTEN</code> (see note above)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.4.x+</td>
+  </tr>
+  <tr>
+    <td>glfwGetPrimaryMonitor</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The single monitor returned in <code>glfwGetMonitors</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwGetProcAddress</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Implemented by Emscripten GL</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Implemented by Emscripten GL</td>
+  </tr>
+  <tr>
+    <td>glfwGetRequiredInstanceExtensions</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetTime</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwGetTimerFrequency</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Always 1000</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetTimerValue</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>performance.now()</code> in JavaScript</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetVersion</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> 3.2.1</td>
+  </tr>
+  <tr>
+    <td>glfwGetVersionString</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> "Emscripten/WebAssembly GLFW " + GLFW version</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> "3.2.1 JS WebGL Emscripten"</td>
+  </tr>
+  <tr>
+    <td>glfwGetVideoMode</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwGetVideoModes</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowAttrib</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports for
+        <ul>
+            <li><code>GLFW_VISIBLE</code></li>
+            <li><code>GLFW_HOVERED</code></li>
+            <li><code>GLFW_FOCUSED</code></li>
+            <li><code>GLFW_FOCUS_ON_SHOW</code></li>
+            <li><code>GLFW_SCALE_FRAMEBUFFER</code></li>
+            <li><code>GLFW_SCALE_TO_MONITOR</code></li>
+            <li><code>GLFW_RESIZABLE</code></li>
+        </ul>
+    </td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> <code>GLFW_SCALE_TO_MONITOR</code> only</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowContentScale</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> If HiDPI aware (<code>GLFW_SCALE_FRAMEBUFFER</code> is <code>GLFW_TRUE</code>), then current monitor scale, otherwise <code>1.0</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Similar</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowFrameSize</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Because a window is a canvas in this implementation, there is no edge => all 0</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowMonitor</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The single monitor returned in <code>glfwGetMonitors</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowOpacity</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> Always 1.0</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowPos</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The position of the canvas in the page <code>getBoundingClientRect(canvas).x&y</code></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> Whatever was set in <code>glfwSetWindowPos</code>, so not the actual position</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowSize</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The size of the window/canvas</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowTitle</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> The title of the window/canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.4.x</td>
+  </tr>
+  <tr>
+    <td>glfwGetWindowUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwHideWindow</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Set CSS property to <code>display: none</code> for the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwIconifyWindow</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwInit</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Set a listener to monitor content scale change (ex: moving browser to different resolution screen)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwInitAllocator</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (due to JavaScript, memory cannot be managed)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.4.x</td>
+  </tr>
+  <tr>
+    <td>glfwInitHint</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> <code>GLFW_PLATFORM</code> with value <code>GLFW_ANY_PLATFORM</code> or <code>GLFW_PLATFORM_EMSCRIPTEN</code></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x</td>
+  </tr>
+  <tr>
+    <td>glfwJoystickIsGamepad</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Returns <code>GLFW_TRUE</code> when the joystick mapping (<code>Gamepad.mapping</code>) is "standard"</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwJoystickPresent</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Listens to <code>gamepadconnected</code> and <code>gamepaddisconnected</code> events to determine the presence.</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwMakeContextCurrent</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Since this implementation supports multiple windows, it is important to call this if using OpenGL</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Since there is only 1 window, it does nothing</td>
+  </tr>
+  <tr>
+    <td>glfwMaximizeWindow</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwPlatformSupported</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> <code>GLFW_TRUE</code> for <code>GLFW_PLATFORM_EMSCRIPTEN</code> only (see note above)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.4.x</td>
+  </tr>
+  <tr>
+    <td>glfwPollEvents</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Polls for joysticks only (can be disabled with <code>disableJoystick=true</code> port option or <code>EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK</code> define)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwPostEmptyEvent</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwRawMouseMotionSupported</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Always <code>GLFW_FALSE</code> (not supported)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwRequestWindowAttention</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwRestoreWindow</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCharCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses <code>KeyboardEvent.key</code> to compute the proper codepoint</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCharModsCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (deprecated in GLFW)</td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwSetClipboardString</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses <code>navigator.clipboard.writeText</code>. See the <a href="#clipboard-support">Clipboard Support section</a>.</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCursor</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses CSS style <code>cursor: xxx</code> for the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCursorEnterCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Listeners to <code>mouseenter</code> and <code>mouseleave</code> events</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCursorPos</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (JavaScript does not allow the cursor to be positioned)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetCursorPosCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI aware</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetDropCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (JavaScript only gives access to filename, so it is pointless)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> (Copies the entire file(s) in memory)</td>
+  </tr>
+  <tr>
+    <td>glfwSetErrorCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Broken-aa0000"> This call stores the pointer but never uses it as this implementation is not handling errors compliantly</td>
+  </tr>
+  <tr>
+    <td>glfwSetFramebufferSizeCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI aware</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwSetGamma</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetGammaRamp</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwSetInputMode</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code> and <code>GLFW_STICKY_MOUSE_BUTTONS</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code></td>
+  </tr>
+  <tr>
+    <td>glfwSetJoystickCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetJoystickUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwSetKeyCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetMonitorCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Callback is never called</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwSetMonitorUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x</td>
+  </tr>
+  <tr>
+    <td>glfwSetMouseButtonCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetScrollCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Listens to <code>mousewheel</code> events</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetTime</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetWindowAspectRatio</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Only works if the user is controlling the canvas size (spec does not define one way or another)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowAttrib</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> See <code>glfwGetWindowAttrib</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> See <code>glfwGetWindowAttrib</code></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowCloseCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> There is no concept of "closing" a canvas</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Called on window destroyed.</td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowContentScaleCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Callback only called if Hi DPI aware (<code>GLFW_SCALE_FRAMEBUFFER</code> is <code>GLFW_TRUE</code>)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowFocusCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> Callback pointer is stored but never used</td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowIcon</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (icon could be mapped to favicon but beyond 1.0 scope)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowIconifyCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowMaximizeCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowMonitor</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="Exception" src="https://img.shields.io/badge/Exception-aa0000"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowOpacity</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses CSS style <code>opacity: xxx</code> for the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowPos</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> (there is no generic way to set a canvas position)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowPosCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses top/left of the value returned by <code>getBoundingClientRect(canvas)</code>)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowRefreshCallback</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> Returns callback provided: callback is never called</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> Callback stored but never called</td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowShouldClose</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetWindowSize</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Hi DPI Aware: set the size of the canvas (<code>canvas.width = size * scale</code>) + CSS style (<code>style.width = size</code>)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowSizeCallback</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwSetWindowSizeLimits</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Only works if the user is controlling the canvas size (spec does not define one way or another)</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowTitle</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Corresponds to <code>document.title</code> in JavaScript</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwSetWindowUserPointer</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+  <tr>
+    <td>glfwShowWindow</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Removes CSS style <code>display: none</code> for the canvas</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSwapBuffers</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwSwapInterval</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses <code>emscripten_set_main_loop_timing</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwTerminate</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Tries to properly clean up everything that was set during the course of the app (listeners, CSS styles, ...)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
+    <td>glfwUpdateGamepadMappings</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"> 3.3.x</td>
+  </tr>
+  <tr>
+    <td>glfwWaitEvents</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwWaitEventsTimeout</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwVulkanSupported</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Always return <code>GLFW_FALSE</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same</td>
+  </tr>
+  <tr>
+    <td>glfwWindowHint</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+        <ul>
+          <li><code>GLFW_CLIENT_API</code></li>
+          <li><code>GLFW_SCALE_FRAMEBUFFER</code></li>
+          <li><code>GLFW_SCALE_TO_MONITOR</code></li>
+          <li><code>GLFW_FOCUS_ON_SHOW</code></li>
+          <li><code>GLFW_VISIBLE</code></li>
+          <li><code>GLFW_FOCUSED</code></li>
+          <li><code>GLFW_RESIZABLE</code></li>
+          <li><code>GLFW_ALPHA_BITS</code></li>
+          <li><code>GLFW_DEPTH_BITS</code></li>
+          <li><code>GLFW_STENCIL_BITS</code></li>
+          <li><code>GLFW_SAMPLES</code></li>
+        </ul>
+    </td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Anything (no check on argument)</td>
+  </tr>
+  <tr>
+    <td>glfwWindowHintString</td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
+  <tr>
+    <td>glfwWindowShouldClose</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
+  </tr>
+</table>
 
-## Non-Supported functions
-
-Note that these functions log a warning the first time they are called (which can be disabled via
-`EMSCRIPTEN_GLFW3_DISABLE_WARNING` define) and are doing nothing, returning the most "sensible" value
-(like `nullptr`) if there is an expected return value. Calling any of these will not break the library.
-
-| Function                            | Notes                                                        |
-|-------------------------------------|--------------------------------------------------------------|
-| `glfwDestroyCursor`                 |                                                              |
-| `glfwGetGammaRamp`                  | No access from JavaScript                                    |
-| `glfwGetMonitorPhysicalSize`        | No access from JavaScript                                    |
-| `glfwGetProcAddress`                | Implemented by emscripten                                    |
-| `glfwGetRequiredInstanceExtensions` |                                                              |
-| `glfwGetVideoMode`                  |                                                              |
-| `glfwGetVideoModes`                 |                                                              |
-| `glfwIconifyWindow`                 |                                                              |
-| `glfwInitAllocator`                 | Due to JavaScript, memory cannot be managed                  |
-| `glfwMaximizeWindow`                |                                                              |
-| `glfwPostEmptyEvent`                |                                                              |
-| `glfwRequestWindowAttention`        |                                                              |
-| `glfwRestoreWindow`                 |                                                              |
-| `glfwSetCharModsCallback`           | It is deprecated in GLFW                                     |
-| `glfwSetCursorPos`                  | JavaScript does not allow the cursor to be positioned        |
-| `glfwSetDropCallback`               | JavaScript only gives access to filename, so it is pointless |
-| `glfwSetGamma`                      |                                                              |
-| `glfwSetGammaRamp`                  |                                                              |
-| `glfwSetWindowCloseCallback`        | There is no concept of "closing" a canvas                    |
-| `glfwSetWindowIcon`                 | Icon could be mapped to favicon, but beyond 1.0 scope        |
-| `glfwSetWindowIconifyCallback`      |                                                              |
-| `glfwSetWindowMaximizeCallback`     |                                                              |
-| `glfwSetWindowMonitor`              |                                                              |
-| `glfwSetWindowPos`                  | There is no generic way to set a canvas position             |
-| `glfwSwapBuffers`                   |                                                              |
-| `glfwUpdateGamepadMappings`         |                                                              |
-| `glfwWaitEvents`                    |                                                              |
-| `glfwWaitEventsTimeout`             |                                                              |
+> [!NOTE]
+> For non-supported functions, this library logs a warning the first time they are called (which can be disabled via 
+> `disableWarning=true` port option or `EMSCRIPTEN_GLFW3_DISABLE_WARNING` define) and are doing nothing,
+> returning the most "sensible" value (like `nullptr`) if there is an expected return value.
+> Calling any of these will **not** break the library.
