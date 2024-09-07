@@ -89,17 +89,11 @@ bool Keyboard::onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::g
   auto scancode = getKeyScancode(iEvent.code);
   glfw_key_t key = getGLFWKey(scancode);
 
-  // handling Super + Key
-  if(iEvent.isSuperPressed() && !isSpecialKey(key))
+  // handling Super
+  if(iEvent.isSuperPressed())
   {
-    // the issue is that the Up event is NEVER received... so we work around in multiple ways
-    if(fSuperPlusKeys.find(key) == fSuperPlusKeys.end() && iEvent.repeat)
-    {
-      // case when we have issued a key up event due to timeout... so we are ignoring
+    if(handleSuperKeyPressed(key, iEvent.repeat))
       return true;
-    }
-    // we store the current time (processed in handleSuperPlusKeys)
-    fSuperPlusKeys[key] = {static_cast<int>(emscripten_glfw3_context_get_now()), iEvent.repeat};
   }
 
   auto handled = false;
@@ -205,7 +199,42 @@ void Keyboard::setStickyKeys(bool iStickyKeys)
 }
 
 //------------------------------------------------------------------------
+// Keyboard::handleSuperKeyPressed
+// Called when the super key is involved in a key down event (`e.metaKey` is `true`)
+//------------------------------------------------------------------------
+bool Keyboard::handleSuperKeyPressed(glfw_key_t iKey, bool iRepeat)
+{
+  // case Super + Key (Special keys behave differently, so we ignore them)
+  if(!isSpecialKey(iKey))
+  {
+    // the issue is that the Up event is NEVER received... so we work around in multiple ways
+    if(fSuperPlusKeys.find(iKey) == fSuperPlusKeys.end() && iRepeat)
+    {
+      // case when we have issued a key up event due to timeout... so we are ignoring
+      return true;
+    }
+    // we store the current time (processed in handleSuperPlusKeys)
+    fSuperPlusKeys[iKey] = {static_cast<int>(emscripten_glfw3_context_get_now()), iRepeat};
+  }
+
+  // case when it is the super key itself: some keys might already be down
+  if(isSuperKey(iKey) && !iRepeat)
+  {
+    for(int k = 0; k < fKeyStates.size(); k++)
+    {
+      if(!isSpecialKey(k) && fKeyStates[k] != GLFW_RELEASE)
+      {
+        fSuperPlusKeys[k] = {static_cast<int>(emscripten_glfw3_context_get_now()), false};
+      }
+    }
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------
 // Keyboard::resetKeysOnSuperRelease
+// Called when the Super key has been released to reset all keys that were down
 //------------------------------------------------------------------------
 void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
 {
@@ -221,6 +250,7 @@ void Keyboard::resetKeysOnSuperRelease(GLFWwindow *iWindow)
 
 //------------------------------------------------------------------------
 // Keyboard::handleSuperPlusKeys
+// Called every frame when fSuperPlusKeys is not empty to purge keys that have timed out
 //------------------------------------------------------------------------
 void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, SuperPlusKeyTimeout const &iTimeout)
 {

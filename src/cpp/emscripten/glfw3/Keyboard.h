@@ -67,8 +67,6 @@ public:
   bool onKeyDown(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback);
   bool onKeyUp(GLFWwindow *iWindow, Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback);
   void resetAllKeys(GLFWwindow *iWindow);
-  void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
-  void resetKeysOnSuperRelease(GLFWwindow *iWindow);
   inline bool hasSuperPlusKeys() const { return !fSuperPlusKeys.empty(); }
   void handleSuperPlusKeys(GLFWwindow *iWindow, SuperPlusKeyTimeout const &iTimeout);
 
@@ -93,6 +91,13 @@ private:
            iKey == GLFW_KEY_LEFT_ALT     || iKey == GLFW_KEY_RIGHT_ALT     ||
            iKey == GLFW_KEY_LEFT_SUPER   || iKey == GLFW_KEY_RIGHT_SUPER;
   }
+  static constexpr bool isSuperKey(glfw_key_t iKey) {
+    return iKey == GLFW_KEY_LEFT_SUPER   || iKey == GLFW_KEY_RIGHT_SUPER;
+  }
+
+  void resetKey(GLFWwindow *iWindow, glfw_key_t iKey, int modifierBits);
+  void resetKeysOnSuperRelease(GLFWwindow *iWindow);
+  bool handleSuperKeyPressed(glfw_key_t iKey, bool iRepeat);
 
 private:
   struct SuperPlusKeyTiming
