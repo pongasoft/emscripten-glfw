@@ -573,7 +573,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwDestroyCursor</td>
-    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
     <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
   </tr>
   <tr>

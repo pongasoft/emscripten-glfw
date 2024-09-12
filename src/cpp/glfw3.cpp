@@ -536,6 +536,16 @@ GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape)
 }
 
 //------------------------------------------------------------------------
+// glfwDestroyCursor
+//------------------------------------------------------------------------
+GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor)
+{
+  auto context = getContext();
+  if(context)
+    return context->destroyCursor(cursor);
+}
+
+//------------------------------------------------------------------------
 // glfwSetCursor
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor)
@@ -1304,7 +1314,6 @@ GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
   return nullptr;
 }
 GLFWAPI void glfwInitAllocator(const GLFWallocator* allocator) { logNotImplemented("glfwInitAllocator"); }
-GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor) { logNotImplemented("glfwDestroyCursor"); }
 GLFWAPI void glfwSetGamma(GLFWmonitor* monitor, float gamma) { logNotAvailable("glfwSetGamma"); }
 GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor) { logNotAvailable("glfwGetGammaRamp"); return nullptr; }
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* monitor, const GLFWgammaramp* ramp) { logNotAvailable("glfwSetGammaRamp"); }

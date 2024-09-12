@@ -92,6 +92,7 @@ private:
   bool fHasAspectRatio{};
   std::optional<MouseEvent> fLMBEventThisFrame{};
   std::string fClickURL{};
+  std::vector<GLFWcursor *> fCursors{};
 };
 
 

@@ -45,6 +45,11 @@ void main() {
   triangleColor = vec4(0.294, 0.0, 0.51, 1.0);
 })FST";
 
+static std::array<int, 10> kStandardCursorShapes =
+  {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR,
+   GLFW_VRESIZE_CURSOR, GLFW_RESIZE_NWSE_CURSOR, GLFW_RESIZE_NESW_CURSOR, GLFW_RESIZE_ALL_CURSOR,
+   GLFW_NOT_ALLOWED_CURSOR};
+
 //------------------------------------------------------------------------
 // Triangle::Triangle
 //------------------------------------------------------------------------
@@ -65,6 +70,9 @@ Triangle::Triangle(GLFWwindow *iWindow,
 {
   if(fResizeContainerSelector)
     emscripten_glfw_make_canvas_resizable(fWindow, fResizeContainerSelector, fResizeHandleSelector);
+
+  for(auto shape: kStandardCursorShapes)
+    fCursors.emplace_back(glfwCreateStandardCursor(shape));
 }
 
 //------------------------------------------------------------------------
@@ -241,6 +249,9 @@ bool Triangle::shouldClose() const
 //------------------------------------------------------------------------
 Triangle::~Triangle()
 {
+  for(auto cursor: fCursors)
+    glfwDestroyCursor(cursor);
+  fCursors.clear();
   glfwSetWindowUserPointer(fWindow, nullptr);
   glfwDestroyWindow(fWindow);
 }
@@ -651,11 +662,6 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
 {
   static auto kActionModifier = emscripten::glfw3::IsRuntimePlatformApple() ? GLFW_MOD_SUPER : GLFW_MOD_CONTROL;
 
-  static std::array<int, 10> kCursors =
-    {GLFW_ARROW_CURSOR, GLFW_IBEAM_CURSOR, GLFW_CROSSHAIR_CURSOR, GLFW_HAND_CURSOR, GLFW_HRESIZE_CURSOR,
-     GLFW_VRESIZE_CURSOR, GLFW_RESIZE_NWSE_CURSOR, GLFW_RESIZE_NESW_CURSOR, GLFW_RESIZE_ALL_CURSOR,
-     GLFW_NOT_ALLOWED_CURSOR};
-
   // Handle CMD/CTRL + <iKey>
   if(iAction == GLFW_PRESS && (iMods & kActionModifier))
   {
@@ -684,9 +690,9 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
       case GLFW_KEY_RIGHT_BRACKET: // cycle through cursor
       {
         fCursor++;
-        if(fCursor >= kCursors.size())
+        if(fCursor >= fCursors.size())
           fCursor = 0;
-        glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
+        glfwSetCursor(fWindow, fCursors[fCursor]);
         break;
       }
 
@@ -694,8 +700,8 @@ void Triangle::onKeyChange(int iKey, int iScancode, int iAction, int iMods)
       {
         fCursor--;
         if(fCursor < 0)
-          fCursor = kCursors.size() - 1;
-        glfwSetCursor(fWindow, glfwCreateStandardCursor(kCursors[fCursor]));
+          fCursor = static_cast<int>(fCursors.size()) - 1;
+        glfwSetCursor(fWindow, fCursors[fCursor]);
         break;
       }
 

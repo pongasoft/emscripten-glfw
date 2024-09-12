@@ -78,6 +78,7 @@ public:
 
   // cursor
   GLFWcursor *createStandardCursor(int iShape);
+  void destroyCursor(GLFWcursor *iCursor);
 
   // joystick
   GLFWjoystickfun setJoystickCallback(GLFWjoystickfun iCallback) { return std::exchange(fJoystickCallback, iCallback); }

@@ -915,6 +915,17 @@ GLFWcursor *Context::createStandardCursor(int iShape)
 }
 
 //------------------------------------------------------------------------
+// Context::destroyCursor
+//------------------------------------------------------------------------
+void Context::destroyCursor(GLFWcursor *iCursor)
+{
+  // only standard cursors are supported for the moment, so do nothing
+  auto cursor = Cursor::findCursor(iCursor);
+  if(!cursor)
+    kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid cursor");
+}
+
+//------------------------------------------------------------------------
 // Context::getTimeInSeconds
 //------------------------------------------------------------------------
 double Context::getTimeInSeconds() const
