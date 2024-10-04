@@ -4,12 +4,16 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - 3.1.66](https://img.shields.io/badge/emscripten-3.1.66-blue)](https://emscripten.org)
-[![Latest - 3.4.0.20240907](https://img.shields.io/badge/Latest-3.4.0.20240907-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![Latest - 3.4.0.20241004](https://img.shields.io/badge/Latest-3.4.0.20241004-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
+[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![emscripten - 3.1.66](https://img.shields.io/badge/emscripten-3.1.66-blue)](https://emscripten.org)
+[![Previous - 3.4.0.20240907](https://img.shields.io/badge/Previous-3.4.0.20240907-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
+
 
 Goal
 ----
@@ -36,7 +40,7 @@ Main features:
 * joystick/gamepad
 * fullscreen
 * Hi DPI 
-* all glfw cursors
+* all GLFW cursors and custom cursors
 * window opacity
 * size constraints (size limits and aspect ratio)
 * visibility
@@ -193,6 +197,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20241004 |
 > | 3.1.66     | 3.4.0.20240907 |
 > | 3.1.65     | 3.4.0.20240817 |
 > | 3.1.63     | 3.4.0.20240627 |
@@ -224,6 +229,12 @@ Note that care has been taken to be backward compatible with the pure JavaScript
 
 Release Notes
 -------------
+#### 3.4.0.20241004 - 2024-10-04 | Emscripten TBD
+
+- Implemented custom cursors (`glfwCreateCursor`)
+  - uses a canvas to draw the cursor image into it and convert it into a URL (`canvas.toDataURL()`)
+  - uses the CSS property syntax: `cursor: url(xxx) xhot yhot, auto` when calling `glfwSetCursor` with a custom cursor
+
 #### 3.4.0.20240907 - 2024-09-07 | Emscripten 3.1.66
 
 - Fixed Meta/Super key workaround to also handle the rare (but possible) use-case of having other keys down before

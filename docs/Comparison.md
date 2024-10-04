@@ -104,7 +104,7 @@ This section describes the main features implemented by both libraries.
     <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
   </tr>
   <tr>
-    <td>Cursors</td>
+    <td>Cursors (Standard + Custom)</td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
     <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
   </tr>
