@@ -50,6 +50,8 @@ void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 void emscripten_glfw3_context_open_url(char const *, char const *);
 bool emscripten_glfw3_context_is_runtime_platform_apple();
+void emscripten_glfw3_create_custom_cursor(GLFWcursor *iCursor, int iWidth, int iHeight, unsigned char *iPixels);
+void emscripten_glfw3_destroy_custom_cursor(GLFWcursor *iCursor);
 }
 
 namespace emscripten::glfw3 {
@@ -894,7 +896,7 @@ void Context::getMonitorContentScale(GLFWmonitor *iMonitor, float *oXScale, floa
 GLFWmonitor *Context::getMonitor(GLFWwindow *iWindow) const
 {
   if(getWindow(iWindow))
-    // the best I can do right now due to javascript API/limitations
+    // the best I can do right now due to JavaScript API/limitations
     return fCurrentMonitor->asOpaquePtr();
   else
     return nullptr;
@@ -905,7 +907,7 @@ GLFWmonitor *Context::getMonitor(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 GLFWcursor *Context::createStandardCursor(int iShape)
 {
-  auto const *cursor = Cursor::findCursor(iShape);
+  auto cursor = StandardCursor::findCursor(iShape);
   if(!cursor)
   {
     kErrorHandler.logError(GLFW_INVALID_ENUM, "Invalid cursor shape [%d]", iShape);
@@ -915,14 +917,71 @@ GLFWcursor *Context::createStandardCursor(int iShape)
 }
 
 //------------------------------------------------------------------------
+// Context::createCursor
+//------------------------------------------------------------------------
+GLFWcursor *Context::createCursor(GLFWimage const *iImage, int iXHot, int iYHot)
+{
+  if(iImage)
+  {
+    auto cursor = std::make_shared<CustomCursor>(iXHot, iYHot);
+    emscripten_glfw3_create_custom_cursor(cursor->asOpaquePtr(), iImage->width, iImage->height, iImage->pixels);
+    fCustomCursors.emplace_back(cursor);
+    return cursor->asOpaquePtr();
+  }
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // Context::destroyCursor
 //------------------------------------------------------------------------
 void Context::destroyCursor(GLFWcursor *iCursor)
 {
-  // only standard cursors are supported for the moment, so do nothing
-  auto cursor = Cursor::findCursor(iCursor);
-  if(!cursor)
-    kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid cursor");
+  if(auto standardCursor = StandardCursor::findCursor(iCursor); standardCursor)
+  {
+    // do nothing... we don't delete standard cursors
+  }
+  else
+  {
+    if(auto customCursor = findCustomCursor(iCursor); customCursor)
+    {
+      emscripten_glfw3_destroy_custom_cursor(customCursor->asOpaquePtr());
+      fCustomCursors.erase(std::remove(fCustomCursors.begin(), fCustomCursors.end(), customCursor),
+                           fCustomCursors.end());
+    }
+    else
+      kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid cursor");
+  }
+}
+
+
+//------------------------------------------------------------------------
+// Context::findCustomCursor
+//------------------------------------------------------------------------
+std::shared_ptr<CustomCursor> Context::findCustomCursor(GLFWcursor *iCursor) const
+{
+  auto i = std::find_if(fCustomCursors.begin(), fCustomCursors.end(), [iCursor](auto &c) { return c->asOpaquePtr() == iCursor; });
+  return i == fCustomCursors.end() ? nullptr : *i;
+}
+
+
+//------------------------------------------------------------------------
+// Context::setCursor
+//------------------------------------------------------------------------
+void Context::setCursor(GLFWwindow *iWindow, GLFWcursor *iCursor)
+{
+  if(auto window = getWindow(iWindow); window)
+  {
+    if(auto standardCursor = StandardCursor::findCursor(iCursor); standardCursor)
+      window->setCursor(standardCursor);
+    else
+    {
+      if(auto customCursor = findCustomCursor(iCursor); customCursor)
+        window->setCursor(customCursor);
+      else
+        kErrorHandler.logError(GLFW_INVALID_VALUE, "Invalid cursor");
+    }
+  }
 }
 
 //------------------------------------------------------------------------

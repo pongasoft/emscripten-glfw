@@ -39,18 +39,18 @@ public:
 
   constexpr bool isPointerLock() const { return fCursorMode == GLFW_CURSOR_DISABLED; }
 
-  inline Cursor const *hideCursor() {
+  inline std::shared_ptr<Cursor> hideCursor() {
     fVisibleCursor = fCursor;
-    fCursor = Cursor::getHiddenCursor();
+    fCursor = StandardCursor::getHiddenCursor();
     return fCursor;
   }
 
-  inline Cursor const *showCursor() {
+  inline std::shared_ptr<Cursor> showCursor() {
     fCursor = fVisibleCursor;
     return fCursor;
   }
 
-  inline bool isCursorHidden() const { return fCursor == Cursor::getHiddenCursor(); }
+  inline bool isCursorHidden() const { return fCursor == StandardCursor::getHiddenCursor(); }
 
   friend class Window;
 
@@ -75,8 +75,8 @@ private:
   static constexpr glfw_mouse_button_state_t kStickyPress = 3;
 
 private:
-  Cursor const *fCursor{Cursor::getDefault()};
-  Cursor const *fVisibleCursor{fCursor};
+  std::shared_ptr<Cursor> fCursor{StandardCursor::getDefault()};
+  std::shared_ptr<Cursor> fVisibleCursor{fCursor};
 };
 
 }

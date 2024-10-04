@@ -31,35 +31,54 @@ using glfw_cursor_shape_t = int;
 class Cursor : public Object<GLFWcursor>
 {
 public:
-  constexpr Cursor(glfw_cursor_shape_t iShape, char const *iCSSValue) : fShape{iShape}, fCSSValue{iCSSValue} {}
+  virtual void set(GLFWwindow *iWindow) const = 0;
+};
 
-  static constexpr Cursor const *findCursor(glfw_cursor_shape_t iShape)
+class StandardCursor : public Cursor
+{
+public:
+  constexpr StandardCursor(glfw_cursor_shape_t iShape, char const *iCSSValue) : fShape{iShape}, fCSSValue{iCSSValue} {}
+
+  void set(GLFWwindow *iWindow) const override;
+
+  static std::shared_ptr<StandardCursor> findCursor(glfw_cursor_shape_t iShape)
   {
-    auto i = std::find_if(kCursors.begin(), kCursors.end(), [iShape](auto &c) { return c.fShape == iShape; });
-    return i == kCursors.end() ? nullptr : i;
+    auto i = std::find_if(kCursors.begin(), kCursors.end(), [iShape](auto &c) { return c->fShape == iShape; });
+    return i == kCursors.end() ? nullptr : *i;
   }
 
-  static constexpr Cursor const *findCursor(GLFWcursor *iCursor)
+  static std::shared_ptr<StandardCursor> findCursor(GLFWcursor *iCursor)
   {
     if(!iCursor)
       return getDefault();
 
-    auto i = std::find_if(kCursors.begin(), kCursors.end(), [iCursor](auto &c) { return c.asOpaquePtr() == iCursor; });
-    return i == kCursors.end() ? nullptr : i;
+    auto i = std::find_if(kCursors.begin(), kCursors.end(), [iCursor](auto &c) { return c->asOpaquePtr() == iCursor; });
+    return i == kCursors.end() ? nullptr : *i;
   }
 
-  static constexpr Cursor const *getDefault() { return findCursor(GLFW_ARROW_CURSOR); }
-  static constexpr Cursor const *getHiddenCursor() { return &kCursorHidden; }
+  static std::shared_ptr<StandardCursor> getDefault() { return findCursor(GLFW_ARROW_CURSOR); }
+  static std::shared_ptr<StandardCursor> getHiddenCursor() { return kCursorHidden; }
 
 private:
-  static const Cursor kCursorHidden;
+  static const std::shared_ptr<StandardCursor> kCursorHidden;
 
 public:
   glfw_cursor_shape_t fShape{};
   char const *fCSSValue{};
 
 public:
-  static const std::array<Cursor, 10> kCursors;
+  static const std::array<std::shared_ptr<StandardCursor>, 10> kCursors;
+};
+
+class CustomCursor : public Cursor
+{
+public:
+  CustomCursor(int iXHot, int iYHot) : fXHot{iXHot}, fYHot{iYHot} {}
+  void set(GLFWwindow *iWindow) const override;
+
+private:
+  int fXHot;
+  int fYHot;
 };
 
 }

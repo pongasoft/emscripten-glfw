@@ -117,7 +117,7 @@ public:
     if(oYPos) {*oYPos = fMouse.fCursorPos.y; }
   }
   glfw_mouse_button_state_t getMouseButtonState(glfw_mouse_button_t iButton);
-  void setCursor(GLFWcursor* iCursor);
+  void setCursor(std::shared_ptr<Cursor> const &iCursor);
 
   // keyboard
   glfw_key_state_t getKeyState(glfw_key_t iKey) { return fKeyboard.getKeyState(iKey); }

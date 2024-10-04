@@ -78,7 +78,9 @@ public:
 
   // cursor
   GLFWcursor *createStandardCursor(int iShape);
+  GLFWcursor* createCursor(GLFWimage const *iImage, int iXHot, int iYHot);
   void destroyCursor(GLFWcursor *iCursor);
+  void setCursor(GLFWwindow *iWindow, GLFWcursor *iCursor);
 
   // joystick
   GLFWjoystickfun setJoystickCallback(GLFWjoystickfun iCallback) { return std::exchange(fJoystickCallback, iCallback); }
@@ -124,6 +126,7 @@ private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
+  std::shared_ptr<CustomCursor> findCustomCursor(GLFWcursor *iCursor) const;
   void addOrRemoveEventListeners(bool iAdd);
   bool onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent);
   bool onExitFullscreen();
@@ -168,6 +171,7 @@ private:
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
+  std::vector<std::shared_ptr<CustomCursor>> fCustomCursors{};
 
   // keyboard
   browser_key_fun_t fBrowserKeyCallback{};

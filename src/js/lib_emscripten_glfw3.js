@@ -16,6 +16,7 @@ let emscripten_glfw3_impl = {
   $GLFW3: {
     fDestructors: [],
     fWindowContexts: null,
+    fCustomCursors: null,
     fScaleMQL: null,
     fScaleChangeCallback: null,
     fWindowResizeCallback: null,
@@ -391,6 +392,7 @@ let emscripten_glfw3_impl = {
     specialHTMLTargets["window"] = window;
 
     GLFW3.fWindowContexts = {};
+    GLFW3.fCustomCursors = {};
     GLFW3.fCSSValues = new Map();
     GLFW3.fScaleChangeCallback = scaleChangeCallback;
     GLFW3.fWindowResizeCallback = windowResizeCallback;
@@ -475,6 +477,7 @@ let emscripten_glfw3_impl = {
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy: () => {
     GLFW3.fWindowContexts = null;
+    GLFW3.fCustomCursors = null;
     GLFW3.fCSSValues = null;
     GLFW3.fScaleChangeCallback = null;
     GLFW3.fWindowResizeCallback = null;
@@ -581,11 +584,21 @@ let emscripten_glfw3_impl = {
     {{{ makeSetValue('y', '0', 'rect.y', 'i32') }}};
   },
 
-  //! emscripten_glfw3_window_set_cursor
-  emscripten_glfw3_window_set_cursor: (glfwWindow, cursor) => {
+  //! emscripten_glfw3_window_set_standard_cursor
+  emscripten_glfw3_window_set_standard_cursor: (glfwWindow, cursor) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(cursor)
       ctx.setCSSValue("cursor", UTF8ToString(cursor));
+    else
+      ctx.restoreCSSValue("cursor");
+  },
+
+  //! emscripten_glfw3_window_set_custom_cursor
+  emscripten_glfw3_window_set_custom_cursor: (glfwWindow, glfwCursor, xhot, yhot) => {
+    const ctx = GLFW3.fWindowContexts[glfwWindow];
+    const cursor = GLFW3.fCustomCursors[glfwCursor];
+    if(cursor)
+      ctx.setCSSValue("cursor", `url(${cursor}) ${xhot} ${yhot}, auto`);
     else
       ctx.restoreCSSValue("cursor");
   },
@@ -613,6 +626,32 @@ let emscripten_glfw3_impl = {
       ctx.setCSSValue("display", "none");
     else
       ctx.restoreCSSValue("display");
+  },
+
+  //! emscripten_glfw3_create_custom_cursor
+  emscripten_glfw3_create_custom_cursor: (glfwCursor, width, height, pixels) => {
+    // Use a canvas element to get a dataURL that will be used as the CSS value (url(xx))
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    const imageData = ctx.createImageData(width, height);
+    for(let i = 0; i < width * height * 4; i++) {
+      var p = getValue(pixels + i, 'i8');
+      if(p < 0)
+        p += 256;
+      imageData.data[i] = p;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    GLFW3.fCustomCursors[glfwCursor] = canvas.toDataURL();
+  },
+
+  //! emscripten_glfw3_destroy_custom_cursor
+  emscripten_glfw3_destroy_custom_cursor: (glfwCursor) => {
+    delete GLFW3.fCustomCursors[glfwCursor];
   },
 
   //! emscripten_glfw3_context_gl_init

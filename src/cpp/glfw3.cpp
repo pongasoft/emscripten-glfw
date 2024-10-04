@@ -536,6 +536,18 @@ GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape)
 }
 
 //------------------------------------------------------------------------
+// glfwCreateCursor
+//------------------------------------------------------------------------
+GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
+{
+  auto context = getContext();
+  if(context)
+    return context->createCursor(image, xhot, yhot);
+  else
+    return nullptr;
+}
+
+//------------------------------------------------------------------------
 // glfwDestroyCursor
 //------------------------------------------------------------------------
 GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor)
@@ -550,9 +562,9 @@ GLFWAPI void glfwDestroyCursor(GLFWcursor* cursor)
 //------------------------------------------------------------------------
 GLFWAPI void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor)
 {
-  auto w = getWindow(window);
-  if(w)
-    w->setCursor(cursor);
+  auto context = getContext();
+  if(context)
+    context->setCursor(window, cursor);
 }
 
 //------------------------------------------------------------------------
@@ -1306,11 +1318,6 @@ GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor) { return nullp
 GLFWAPI GLFWcharmodsfun glfwSetCharModsCallback(GLFWwindow* window, GLFWcharmodsfun callback)
 {
   ErrorHandler::instance().logWarning("glfwSetCharModsCallback is deprecated.");
-  return nullptr;
-}
-GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
-{
-  logNotImplemented("glfwCreateCursor");
   return nullptr;
 }
 GLFWAPI void glfwInitAllocator(const GLFWallocator* allocator) { logNotImplemented("glfwInitAllocator"); }

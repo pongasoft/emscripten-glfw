@@ -30,7 +30,8 @@ void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_window_get_position(GLFWwindow *iWindow, int *oX, int *oY);
 void emscripten_glfw3_window_focus(GLFWwindow *iWindow);
-void emscripten_glfw3_window_set_cursor(GLFWwindow *iWindow, char const *iCursor);
+void emscripten_glfw3_window_set_standard_cursor(GLFWwindow *iWindow, char const *iCursor);
+void emscripten_glfw3_window_set_custom_cursor(GLFWwindow *iWindow, GLFWcursor *iCursor, int iXHot, int iYHot);
 float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
 bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
@@ -54,20 +55,36 @@ static ErrorHandler &kErrorHandler = ErrorHandler::instance();
 // cursor property is removed, thus reverting to the "default" which can
 // be overriden in CSS
 //------------------------------------------------------------------------
-const std::array<Cursor, 10> Cursor::kCursors = {
-  Cursor{GLFW_ARROW_CURSOR, nullptr}, // default
-  Cursor{GLFW_IBEAM_CURSOR, "text"},
-  Cursor{GLFW_CROSSHAIR_CURSOR, "crosshair"},
-  Cursor{GLFW_POINTING_HAND_CURSOR, "pointer"},
-  Cursor{GLFW_RESIZE_EW_CURSOR, "ew-resize"},
-  Cursor{GLFW_RESIZE_NS_CURSOR, "ns-resize"},
-  Cursor{GLFW_RESIZE_NWSE_CURSOR, "nwse-resize"},
-  Cursor{GLFW_RESIZE_NESW_CURSOR, "nesw-resize"},
-  Cursor{GLFW_RESIZE_ALL_CURSOR, "all-scroll"},
-  Cursor{GLFW_NOT_ALLOWED_CURSOR, "not-allowed"},
+const std::array<std::shared_ptr<StandardCursor>, 10> StandardCursor::kCursors = {
+  std::make_shared<StandardCursor>(GLFW_ARROW_CURSOR, nullptr), // default
+  std::make_shared<StandardCursor>(GLFW_IBEAM_CURSOR, "text"),
+  std::make_shared<StandardCursor>(GLFW_CROSSHAIR_CURSOR, "crosshair"),
+  std::make_shared<StandardCursor>(GLFW_POINTING_HAND_CURSOR, "pointer"),
+  std::make_shared<StandardCursor>(GLFW_RESIZE_EW_CURSOR, "ew-resize"),
+  std::make_shared<StandardCursor>(GLFW_RESIZE_NS_CURSOR, "ns-resize"),
+  std::make_shared<StandardCursor>(GLFW_RESIZE_NWSE_CURSOR, "nwse-resize"),
+  std::make_shared<StandardCursor>(GLFW_RESIZE_NESW_CURSOR, "nesw-resize"),
+  std::make_shared<StandardCursor>(GLFW_RESIZE_ALL_CURSOR, "all-scroll"),
+  std::make_shared<StandardCursor>(GLFW_NOT_ALLOWED_CURSOR, "not-allowed"),
 };
 
-const Cursor Cursor::kCursorHidden{0, "none"};
+const std::shared_ptr<StandardCursor> StandardCursor::kCursorHidden = std::make_shared<StandardCursor>(0, "none");
+
+//------------------------------------------------------------------------
+// StandardCursor::set
+//------------------------------------------------------------------------
+void StandardCursor::set(GLFWwindow *iWindow) const
+{
+  emscripten_glfw3_window_set_standard_cursor(iWindow, fCSSValue);
+}
+
+//------------------------------------------------------------------------
+// CustomCursor::set
+//------------------------------------------------------------------------
+void CustomCursor::set(GLFWwindow *iWindow) const
+{
+  emscripten_glfw3_window_set_custom_cursor(iWindow, asOpaquePtr(), fXHot, fYHot);
+}
 
 //------------------------------------------------------------------------
 // Window::Window
@@ -523,17 +540,16 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
 //------------------------------------------------------------------------
 // Window::setCursor
 //------------------------------------------------------------------------
-void Window::setCursor(GLFWcursor *iCursor)
+void Window::setCursor(std::shared_ptr<Cursor> const &iCursor)
 {
-  auto cursor = Cursor::findCursor(iCursor);
-  if(cursor)
+  if(iCursor)
   {
     if(isPointerLock() || fMouse.isCursorHidden())
-      fMouse.fVisibleCursor = cursor;
+      fMouse.fVisibleCursor = iCursor;
     else
     {
-      fMouse.fCursor = cursor;
-      emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+      fMouse.fCursor = iCursor;
+      iCursor->set(asOpaquePtr());
     }
   }
   else
@@ -642,8 +658,8 @@ void Window::setCursorMode(glfw_cursor_mode_t iCursorMode)
     else
     {
       fMouse.fCursorMode = iCursorMode;
-      auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
-      emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+      auto const cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
+      cursor->set(asOpaquePtr());
     }
   }
 }
@@ -673,8 +689,8 @@ bool Window::onPointerUnlock(std::optional<glfw_cursor_mode_t> iCursorMode)
   {
     auto cursorMode = iCursorMode ? *iCursorMode : GLFW_CURSOR_NORMAL;
     fMouse.fCursorMode = cursorMode;
-    auto const *cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
-    emscripten_glfw3_window_set_cursor(asOpaquePtr(), cursor->fCSSValue);
+    auto const cursor = iCursorMode == GLFW_CURSOR_HIDDEN ? fMouse.hideCursor() : fMouse.showCursor();
+    cursor->set(asOpaquePtr());
     setCursorPos(fMouse.fCursorPosBeforePointerLock);
     return true;
   }

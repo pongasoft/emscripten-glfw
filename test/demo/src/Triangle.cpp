@@ -50,6 +50,59 @@ static std::array<int, 10> kStandardCursorShapes =
    GLFW_VRESIZE_CURSOR, GLFW_RESIZE_NWSE_CURSOR, GLFW_RESIZE_NESW_CURSOR, GLFW_RESIZE_ALL_CURSOR,
    GLFW_NOT_ALLOWED_CURSOR};
 
+struct Color
+{
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
+  unsigned char a;
+};
+
+static std::array<Color, 9> kCustomCursorImagePalette = {
+  Color{0, 0, 0, 0},  // 0 (fully transparent)
+  Color{0, 0, 0, 255}, // Black
+  Color{0, 0, 0, 128}, // Grey / transparent
+  Color{255, 0, 0, 255},    // Red
+  Color{255, 165, 0, 255},  // Orange
+  Color{255, 255, 0, 255},  // Yellow
+  Color{0, 128, 0, 255},    // Green
+  Color{0, 0, 255, 255},    // Blue
+  Color{75, 0, 130, 255}    // Indigo
+};
+
+// palette based image
+static std::array<unsigned char, 16 * 16> kCustomCursorImage = {
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 1,
+  1, 0, 0, 0, 0, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 1,
+  1, 0, 0, 0, 0, 2, 3, 3, 3, 2, 0, 0, 0, 0, 0, 1,
+  1, 0, 0, 0, 0, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 1,
+  1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 1,
+  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 1,
+  1, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 1,
+  1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 1,
+  1, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 1,
+  1, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 2, 1,
+  1, 2, 2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2, 2, 1,
+  1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+  1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+};
+
+
+// custom cursor image (ready for GLFWimage)
+static auto kGLFWCustomCursorImage = []{
+  std::array<unsigned char, kCustomCursorImage.size() * 4> image{};
+  size_t i = 0;
+  for(auto p: kCustomCursorImage)
+  {
+    auto const &c = kCustomCursorImagePalette[p];
+    image[i++] = c.r; image[i++] = c.g; image[i++] = c.b; image[i++] = c.a;
+  }
+  return image;
+}();
+
 //------------------------------------------------------------------------
 // Triangle::Triangle
 //------------------------------------------------------------------------
@@ -73,6 +126,9 @@ Triangle::Triangle(GLFWwindow *iWindow,
 
   for(auto shape: kStandardCursorShapes)
     fCursors.emplace_back(glfwCreateStandardCursor(shape));
+
+  GLFWimage cursor{ 16, 16, kGLFWCustomCursorImage.data() };
+  fCursors.emplace_back(glfwCreateCursor(&cursor, 7, 3));
 }
 
 //------------------------------------------------------------------------
