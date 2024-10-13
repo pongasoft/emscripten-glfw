@@ -4,16 +4,11 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![emscripten - 3.1.69](https://img.shields.io/badge/emscripten-3.1.69-blue)](https://emscripten.org)
 [![Latest - 3.4.0.20241004](https://img.shields.io/badge/Latest-3.4.0.20241004-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
-
-[![emscripten - 3.1.66](https://img.shields.io/badge/emscripten-3.1.66-blue)](https://emscripten.org)
-[![Previous - 3.4.0.20240907](https://img.shields.io/badge/Previous-3.4.0.20240907-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
-[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
-
 
 Goal
 ----
@@ -197,7 +192,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.4.0.20241004 |
+> | 3.1.69     | 3.4.0.20241004 |
 > | 3.1.66     | 3.4.0.20240907 |
 > | 3.1.65     | 3.4.0.20240817 |
 > | 3.1.63     | 3.4.0.20240627 |
@@ -229,7 +224,7 @@ Note that care has been taken to be backward compatible with the pure JavaScript
 
 Release Notes
 -------------
-#### 3.4.0.20241004 - 2024-10-04 | Emscripten TBD
+#### 3.4.0.20241004 - 2024-10-04 | Emscripten 3.1.69
 
 - Implemented custom cursors (`glfwCreateCursor`)
   - uses a canvas to draw the cursor image into it and convert it into a URL (`canvas.toDataURL()`)
