@@ -8,7 +8,7 @@ This page documents the most important aspects of the library.
 ## Main concept
 
 This port, as well as other library ports (like [SDL](https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md)), associates the concept of a "window" (in this instance 
-a `GLFWwindow`) to an html "canvas". The framebuffer size of the window is the size of the canvas 
+a `GLFWwindow`) to an HTML "canvas". The framebuffer size of the window is the size of the canvas 
 (`canvas.width` x `canvas.height`) and this is what you use for your viewport.
 The size of the window is the CSS style size of the canvas (which in the case of Hi DPI is different). The opacity
 is the CSS style `opacity`, etc...
@@ -47,13 +47,13 @@ auto window1 = glfwCreateWindow(300, 200, "hello world", nullptr, nullptr);
 ```
 
 This function is required if you use more than one window since the `Module` solution only supports 1 canvas.
-It also offers the advantage of defining the association in C/C++ as opposed to html/JavaScript.
+It also offers the advantage of defining the association in C/C++ as opposed to HTML/JavaScript.
 
 ### How to make the canvas resizable by the user?
 
 GLFW deals with windows. Windows, in the context of a desktop application, are usually resizable by the user (note that
 the GLFW window hint/attribute `GLFW_RESIZABLE` lets you disable this feature). So how does this translate into the
-html/canvas world?
+HTML/canvas world?
 
 To make the canvas resizable, and behave more like a "traditional" window, this implementation offers a
 convenient API: `emscripten::glfw3::MakeCanvasResizable`:
@@ -65,7 +65,7 @@ int MakeCanvasResizable(GLFWwindow *window,
 ```
 
 Since this library takes control of the canvas size, the idea behind this function is to specify which
-other (html) element dictates the size of the canvas. The parameter `canvasResizeSelector` defines the
+other (HTML) element dictates the size of the canvas. The parameter `canvasResizeSelector` defines the
 (CSS path) selector to this element.
 
 The 3 typical use cases are:
@@ -266,6 +266,10 @@ emscripten::glfw3::AddBrowserKeyCallback([](GLFWwindow* window, int key, int sca
 });
 ```
 
+> [!NOTE]
+> At this time, `GLFW_MOD_CAPS_LOCK` and `GLFW_MOD_NUM_LOCK` are **not** supported.
+
+
 ### The problem of the "Super" key
 
 The key called "Super" by the GLFW library (also known as Meta or Command) exhibits an issue in the context of the
@@ -434,7 +438,7 @@ As explained previously, some CPP functions are defined in `<GLFW/emscripten_glf
 |---------------------------------|----------------------------------------------------------------|
 | `SetNextWindowCanvasSelector`   | to specify the association window <-> canvas                   |
 | `MakeCanvasResizable`           | to make the canvas resizable                                   |
-| `UnmakeCanvasResizable`         | to revert `emscripten_glfw_make_canvas_resizable`              |
+| `UnmakeCanvasResizable`         | to revert `MakeCanvasResizable`                                |
 | `IsWindowFullscreen`            | to check if the window is fullscreen                           |
 | `RequestFullscreen`             | to request fullscreen                                          |
 | `OpenURL`                       | to open a URL                                                  |
@@ -472,8 +476,8 @@ This implementation adds the following functions to the `Module`:
 | `glfwGetWindow(any)`                                              | Returns the `GLFWwindow` pointer associated to the canvas (`any` can be a canvas selector or a `HTMLCanvasElement`)                                   |
 | `glfwGetCanvas(any)`                                              | Returns the canvas associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                                        |
 | `glfwGetCanvasSelector(any)`                                      | Returns the canvas selector associated to the window (`any` can be a canvas selector or a `GLFWwindow`)                                               |
-| `glfwMakeCanvasResizable(any, resizableSelector, handleSelector)` | Same functionality as `emscripten_glfw_make_canvas_resizable` (`any` can be a canvas selector or a `GLFWwindow` or a `HTMLCanvasElement`              |
-| `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwGetCanvasSelector`                                                                                                              |
+| `glfwMakeCanvasResizable(any, resizableSelector, handleSelector)` | Same functionality as `MakeCanvasResizable` (`any` can be a canvas selector or a `GLFWwindow` or a `HTMLCanvasElement`                                |
+| `glfwUnmakeCanvasResizable(any)`                                  | To revert `Module.glfwMakeCanvasResizable`                                                                                                            |
 | `glfwIsRuntimePlatformApple()`                                    | To check if the platform is Apple (ex: for keyboard shortcuts)                                                                                        |
 
 In addition, this implementation will check if the function `Module.glfwOnWindowCreated(glfwWindow, selector)` is
@@ -908,7 +912,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwSetCharCallback</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses <code>KeyboardEvent.key</code> to compute the proper codepoint</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Uses <code>KeyboardEvent.key</code> to compute the proper codepoint. Note that `GLFW_MOD_CAPS_LOCK` and `GLFW_MOD_NUM_LOCK` are **not** supported</td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
   </tr>
   <tr>
