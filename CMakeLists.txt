@@ -25,8 +25,6 @@ option(EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK "Disable joystick support" OFF)
 # Use this CMake option to disable multi window support
 option(EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT "Disable multi window support" OFF)
 
-set(target "glfw3")
-
 set(glfw3_headers
     src/cpp/emscripten/glfw3/Clipboard.h
     src/cpp/emscripten/glfw3/Config.h
@@ -67,18 +65,27 @@ if(NOT ${NEW_VERSION_HASH} STREQUAL ${OLD_VERSION_HASH})
   configure_file("${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" "${VERSION_FILE}")
 endif()
 
-add_library(${target} ${glfw3_sources})
-target_sources(${target} PUBLIC
-    FILE_SET headers TYPE HEADERS BASE_DIRS src/cpp/emscripten/glfw3 FILES ${glfw3_headers}
-)
+macro(add_glfw_lib LIBRARY_NAME)
+  add_library(${LIBRARY_NAME} ${glfw3_sources})
+  target_sources(${LIBRARY_NAME} PUBLIC
+      FILE_SET headers TYPE HEADERS BASE_DIRS src/cpp/emscripten/glfw3 FILES ${glfw3_headers}
+  )
 
-target_include_directories(${target} PUBLIC external include)
-target_compile_definitions(${target} PUBLIC
-    $<$<CONFIG:Release>:EMSCRIPTEN_GLFW3_DISABLE_WARNING>
-    $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK}>:EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK>
-    $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT}>:EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT>
-)
-target_link_options(${target} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
+  target_include_directories(${LIBRARY_NAME} PUBLIC external include)
+  target_compile_definitions(${LIBRARY_NAME} PUBLIC
+      $<$<CONFIG:Release>:EMSCRIPTEN_GLFW3_DISABLE_WARNING>
+      $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK}>:EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK>
+      $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT}>:EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT>
+  )
+  target_link_options(${LIBRARY_NAME} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
+endmacro()
+
+# main library
+add_glfw_lib("glfw3")
+
+# library compiled with -pthread
+add_glfw_lib("glfw3_pthread")
+target_compile_options(glfw3_pthread PUBLIC "-pthread")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   ### create archive/emscripten-glfw3-${emscripten-glfw_VERSION}.zip for the port
@@ -105,6 +112,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("examples/example_asyncify" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_minimal" EXCLUDE_FROM_ALL)
+  add_subdirectory("examples/example_pthread" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container_with_handle" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_full_window" EXCLUDE_FROM_ALL)
@@ -115,6 +123,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       "example-asyncify"
       "example-hi-dpi"
       "example-minimal"
+      "example-pthread"
       "example-resizable-container"
       "example-resizable-container-with-handle"
       "example-resizable-full-window"

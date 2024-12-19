@@ -56,6 +56,7 @@ def get_lib_name(settings):
           ('-nw' if opts['disableWarning'] else '') +
           ('-nj' if opts['disableJoystick'] else '') +
           ('-sw' if opts['disableMultiWindow'] else '') +
+          ('-mt' if settings.PTHREADS else '') +
           '.a')
 
 
@@ -81,6 +82,9 @@ def get(ports, settings, shared):
 
     if opts['disableMultiWindow']:
       flags += ['-DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT']
+
+    if settings.PTHREADS:
+      flags += ['-pthread']
 
     ports.build_port(source_path, final, port_name, includes=source_include_paths, flags=flags)
 

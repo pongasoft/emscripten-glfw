@@ -114,6 +114,14 @@ Examples (part of this project)
       Uses the default shell that comes with emscripten</td>
   </tr>
   <tr>
+    <td>example_pthread (<a href="examples/example_pthread">src</a>)</td>
+    <td>The purpose of this example is to demonstrate how to use pthread.
+      It creates 2 threads that are incrementing a counter to simulate work on separate threads. 
+      Note that this test will only work if the proper headers are set.
+      Github does not set these headers.
+    </td>
+  </tr>
+  <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container/main.html">example_resizable_container</a> (<a href="examples/example_resizable_container">src</a>)</td>
     <td>The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
       surrounding div) driving its size. The container width is proportional to the size of the window and so as the

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="EN-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <title>example_pthread | emscripten-glfw</title>
+
+  <style>
+
+    #canvas {
+      margin: auto;
+      padding: 0;
+      display: block;
+    }
+
+    #canvas:focus {
+      outline: none;
+    }
+
+    #canvas-button {
+      text-align: center;
+      padding-top: 1em;
+    }
+  </style>
+</head>
+<body>
+<h4>Welcome to pthread Example</h4>
+<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<div id="canvas-button"><input id="fullscreen" type="button" name="fs" value="Fullscreen" onclick="Module.glfwRequestFullscreen('#canvas', false, true);"></div>
+<h4>Help</h4>
+<ul>
+  <li>CTRL+Q to terminate</li>
+</ul>
+<script>
+  var Module = {};
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
