@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(emscripten_glfw_example_resizable_full_window LANGUAGES CXX)
 

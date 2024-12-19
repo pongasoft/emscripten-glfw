@@ -26,7 +26,12 @@
 
 /**
  * The purpose of this example is to demonstrate how to use pthread.
- * It creates 2 threads that are incrementing a counter to simulate work on separate threads. */
+ * It creates 2 threads that are incrementing a counter to simulate work on separate threads.
+ * In total there are 4 threads:
+ * - the main browser thread which executes `jsRenderFrame` and the key callback (`onKeyChange`)
+ * - the `main` function which is its separate thread due to `-sPROXY_TO_PTHREAD` option
+ * - two worker threads (the counters) started in `main`
+ */
 
 //! Display error message in the Console
 void consoleErrorHandler(int iErrorCode, char const *iErrorMessage)
