@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="EN-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <title>emscripten glfw</title>
+
+  <style>
+
+    #canvas-container {
+      width: 75vw;
+      height: 50vh;
+      margin: auto;
+      padding: 5px;
+      border: 1px solid black;
+    }
+
+    #canvas {
+      margin: 0;
+      padding: 0;
+      display: block; /* This is VERY important */
+    }
+
+    #canvas:focus {
+      outline: none;
+    }
+
+    #canvas-button {
+      text-align: center;
+      padding-top: 1em;
+    }
+  </style>
+</head>
+<body>
+<h4>Welcome to Offscreen Canvas Example</h4>
+<div id="canvas-container"><canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas></div>
+<div id="canvas-button"><input id="fullscreen" type="button" name="fs" value="Fullscreen" onclick="Module.glfwRequestFullscreen('#canvas', false, true);"></div>
+<h4>Help</h4>
+<ul>
+  <li>Resize the canvas by resizing the browser window</li>
+  <li>CTRL+Q to terminate</li>
+  <li>CTRL+F or click the button for fullscreen</li>
+</ul>
+<script>
+  var Module = {};
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

@@ -551,8 +551,14 @@ let emscripten_glfw3_impl = {
 
       ctx.restoreCSSValues();
 
+#if OFFSCREENCANVAS_SUPPORT
+      const selector = stringToNewUTF8(ctx.selector);
+      _emscripten_set_canvas_element_size(selector, ctx.originalSize.width, ctx.originalSize.height);
+      _free(selector);
+#else
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
+#endif // OFFSCREENCANVAS_SUPPORT
 
       if(ctx.fCanvasResize)
       {
@@ -577,8 +583,14 @@ let emscripten_glfw3_impl = {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const canvas = ctx.canvas;
 
+#if OFFSCREENCANVAS_SUPPORT
+    const selector = stringToNewUTF8(ctx.selector);
+    _emscripten_set_canvas_element_size(selector, fbWidth, fbHeight);
+    _free(selector);
+#else
     if(canvas.width !== fbWidth) canvas.width = fbWidth;
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
+#endif // OFFSCREENCANVAS_SUPPORT
 
     // this will (on purpose) override any css setting
     ctx.setCSSValue("width",   width + "px", "important");

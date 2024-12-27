@@ -112,6 +112,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_subdirectory("examples/example_asyncify" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_hi_dpi" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_minimal" EXCLUDE_FROM_ALL)
+  add_subdirectory("examples/example_offscreen_canvas" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_pthread" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container" EXCLUDE_FROM_ALL)
   add_subdirectory("examples/example_resizable_container_with_handle" EXCLUDE_FROM_ALL)
@@ -123,6 +124,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       "example-asyncify"
       "example-hi-dpi"
       "example-minimal"
+      "example-offscreen-canvas"
       "example-pthread"
       "example-resizable-container"
       "example-resizable-container-with-handle"
