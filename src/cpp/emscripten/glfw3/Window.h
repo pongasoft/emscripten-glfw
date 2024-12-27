@@ -155,7 +155,8 @@ public:
 
   // OpenGL
   bool createGLContext();
-  void makeGLContextCurrent();
+  void makeGLContextCurrent() const;
+  constexpr bool hasGLContext() const { return fWebGLContextHandle != 0; }
 
   // Canvas
   int makeCanvasResizable(std::string_view canvasResizeSelector,
@@ -221,7 +222,7 @@ private:
   std::optional<std::string> fTitle{};
   float fOpacity{1.0f};
   int fShouldClose{}; // GLFW bool
-  bool fHasGLContext{};
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE fWebGLContextHandle{};
   Mouse fMouse{};
   Keyboard fKeyboard{};
   void *fUserPointer{};

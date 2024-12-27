@@ -36,10 +36,6 @@ float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
 bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
-void emscripten_glfw3_context_gl_init(GLFWwindow *iWindow);
-void emscripten_glfw3_context_gl_bool_attribute(GLFWwindow *iWindow, char const *iAttributeName, bool iAttributeValue);
-int emscripten_glfw3_context_gl_create_context(GLFWwindow *iWindow);
-int emscripten_glfw3_context_gl_make_context_current(GLFWwindow *iWindow);
 int emscripten_glfw3_context_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
 int emscripten_glfw3_context_unmake_canvas_resizable(GLFWwindow *window);
 double emscripten_glfw3_context_get_now();
@@ -135,6 +131,8 @@ void Window::destroy()
   if(!isDestroyed())
   {
     addOrRemoveEventListeners(false);
+    if(hasGLContext())
+      emscripten_webgl_destroy_context(fWebGLContextHandle);
     emscripten_glfw3_window_destroy(asOpaquePtr());
     fDestroyed = true;
   }
@@ -477,20 +475,18 @@ bool Window::createGLContext()
 {
   if(fConfig.fClientAPI != GLFW_NO_API)
   {
-    auto id = asOpaquePtr();
-    emscripten_glfw3_context_gl_init(id);
-    emscripten_glfw3_context_gl_bool_attribute(id, "antialias", fConfig.fSamples > 0);
-    emscripten_glfw3_context_gl_bool_attribute(id, "depth", fConfig.fDepthBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(id, "stencil", fConfig.fStencilBits > 0);
-    emscripten_glfw3_context_gl_bool_attribute(id, "alpha", fConfig.fAlphaBits > 0);
+    EmscriptenWebGLContextAttributes attributes{};
+    attributes.antialias = fConfig.fSamples > 0;
+    attributes.depth = fConfig.fDepthBits > 0;
+    attributes.stencil = fConfig.fStencilBits > 0;
+    attributes.alpha = fConfig.fAlphaBits > 0;
 
-    if(emscripten_glfw3_context_gl_create_context(id) != EMSCRIPTEN_RESULT_SUCCESS)
+    fWebGLContextHandle = emscripten_webgl_create_context(getCanvasSelector(), &attributes);
+    if(fWebGLContextHandle == 0)
     {
       kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot create GL context for [%s]", getCanvasSelector());
       return false;
     }
-
-    fHasGLContext = true;
   }
 
   return true;
@@ -499,10 +495,13 @@ bool Window::createGLContext()
 //------------------------------------------------------------------------
 // Window::makeGLContextCurrent
 //------------------------------------------------------------------------
-void Window::makeGLContextCurrent()
+void Window::makeGLContextCurrent() const
 {
-  if(fHasGLContext)
-    emscripten_glfw3_context_gl_make_context_current(asOpaquePtr());
+  if(hasGLContext())
+  {
+    if(emscripten_webgl_make_context_current(fWebGLContextHandle) != EMSCRIPTEN_RESULT_SUCCESS)
+      kErrorHandler.logError(GLFW_PLATFORM_ERROR, "Cannot make GL context current for [%s]", getCanvasSelector());
+  }
 }
 
 //------------------------------------------------------------------------

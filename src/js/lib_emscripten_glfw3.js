@@ -675,53 +675,6 @@ let emscripten_glfw3_impl = {
     delete GLFW3.fCustomCursors[glfwCursor];
   },
 
-  //! emscripten_glfw3_context_gl_init
-  emscripten_glfw3_context_gl_init__proxy: 'sync',
-  emscripten_glfw3_context_gl_init: (glfwWindow) => {
-    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
-    if(!canvasCtx)
-      return;
-    canvasCtx.glAttributes = {};
-  },
-
-  //! emscripten_glfw3_context_gl_bool_attribute
-  emscripten_glfw3_context_gl_bool_attribute__proxy: 'sync',
-  emscripten_glfw3_context_gl_bool_attribute: (glfwWindow, attributeName, attributeValue) => {
-    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
-    if(!canvasCtx)
-      return;
-    canvasCtx.glAttributes[UTF8ToString(attributeName)] = !!attributeValue;
-  },
-
-  //! emscripten_glfw3_context_gl_create_context
-  emscripten_glfw3_context_gl_create_context__proxy: 'sync',
-  emscripten_glfw3_context_gl_create_context: (glfwWindow) => {
-    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
-    if(!canvasCtx)
-      return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
-    const contextHandle = GL.createContext(canvasCtx.canvas, canvasCtx.glAttributes);
-    if(contextHandle) {
-      canvasCtx.glContextHandle = contextHandle;
-      return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
-    } else {
-      return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
-    }
-  },
-
-  //! emscripten_glfw3_context_gl_make_context_current
-  emscripten_glfw3_context_gl_make_context_current__proxy: 'sync',
-  emscripten_glfw3_context_gl_make_context_current: (glfwWindow) => {
-    const canvasCtx = GLFW3.fWindowContexts[glfwWindow];
-    if(!canvasCtx)
-      return {{{ cDefs.EMSCRIPTEN_RESULT_UNKNOWN_TARGET }}};
-    if(!canvasCtx.glContextHandle)
-      return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
-    if(GL.makeContextCurrent(canvasCtx.glContextHandle))
-      return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
-    else
-      return {{{ cDefs.EMSCRIPTEN_RESULT_FAILED }}};
-  },
-
   //! emscripten_glfw3_context_make_canvas_resizable
   emscripten_glfw3_context_make_canvas_resizable__proxy: 'sync',
   emscripten_glfw3_context_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
