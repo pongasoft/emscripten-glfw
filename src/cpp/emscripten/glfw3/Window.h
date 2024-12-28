@@ -134,6 +134,7 @@ public:
   void setMonitorScale(float iScale);
 
   // fullscreen
+  FullscreenRequest requestFullscreen(bool iResizeCanvas);
   void onEnterFullscreen(std::optional<Vec2<int>> const &iScreenSize);
   bool onExitFullscreen();
 

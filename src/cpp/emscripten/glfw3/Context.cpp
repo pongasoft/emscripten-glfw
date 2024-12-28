@@ -341,7 +341,7 @@ int Context::requestFullscreen(GLFWwindow *iWindow, bool iLockPointer, bool iRes
 
   if(window)
   {
-    fFullscreenRequest = {window->asOpaquePtr(), iResizeCanvas};
+    fFullscreenRequest = window->requestFullscreen(iResizeCanvas);
     auto res = emscripten_request_fullscreen(window->getCanvasSelector(), false);
     if(res != EMSCRIPTEN_RESULT_SUCCESS)
     {
