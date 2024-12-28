@@ -867,7 +867,10 @@ void Window::addOrRemoveEventListeners(bool iAdd)
 //------------------------------------------------------------------------
 Window::FullscreenRequest Window::requestFullscreen(bool iResizeCanvas)
 {
-  fSizeBeforeFullscreen = fSize;
+  if(iResizeCanvas)
+    fSizeBeforeFullscreen = fSize;
+  else
+    fSizeBeforeFullscreen = std::nullopt;
   return {asOpaquePtr(), iResizeCanvas};
 }
 
@@ -879,8 +882,6 @@ void Window::onEnterFullscreen(std::optional<Vec2<int>> const &iScreenSize)
   fFullscreen = true;
   if(iScreenSize)
     setSize(*iScreenSize);
-  else
-    fSizeBeforeFullscreen = std::nullopt;
   focus();
 }
 
