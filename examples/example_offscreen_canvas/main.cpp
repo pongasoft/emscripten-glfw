@@ -53,6 +53,14 @@ void renderFrame(GLFWwindow *iWindow)
 //! The main loop (called by emscripten for each frame)
 void main_loop(void *iUserData)
 {
+  static bool terminated = false;
+
+  if(terminated)
+  {
+    emscripten_cancel_main_loop();
+    return;
+  }
+
   if(auto window = reinterpret_cast<GLFWwindow *>(iUserData); !glfwWindowShouldClose(window))
   {
     // not done => renderFrame
@@ -62,7 +70,8 @@ void main_loop(void *iUserData)
   {
     // done => terminating
     glfwTerminate();
-    emscripten_cancel_main_loop();
+    // deferring emscripten_cancel_main_loop() otherwise glfwTerminate() does not complete properly
+    terminated = true;
   }
 }
 
