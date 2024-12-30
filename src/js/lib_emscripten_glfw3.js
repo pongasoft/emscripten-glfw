@@ -515,6 +515,9 @@ let emscripten_glfw3_impl = {
     var canvasCtx = {};
     canvasCtx.glfwWindow = glfwWindow;
     canvasCtx.selector = canvasSelector;
+#if OFFSCREENCANVAS_SUPPORT
+    canvasCtx.CSelector = stringToNewUTF8(canvasSelector);
+#endif
     canvasCtx.canvas = canvas;
     canvasCtx.originalSize = { width: canvas.width, height: canvas.height};
 
@@ -552,9 +555,8 @@ let emscripten_glfw3_impl = {
       ctx.restoreCSSValues();
 
 #if OFFSCREENCANVAS_SUPPORT
-      const selector = stringToNewUTF8(ctx.selector);
-      _emscripten_set_canvas_element_size(selector, ctx.originalSize.width, ctx.originalSize.height);
-      _free(selector);
+      _emscripten_set_canvas_element_size(ctx.CSelector, ctx.originalSize.width, ctx.originalSize.height);
+      _free(ctx.CSelector);
 #else
       canvas.width = ctx.originalSize.width;
       canvas.height = ctx.originalSize.height;
@@ -584,9 +586,7 @@ let emscripten_glfw3_impl = {
     const canvas = ctx.canvas;
 
 #if OFFSCREENCANVAS_SUPPORT
-    const selector = stringToNewUTF8(ctx.selector);
-    _emscripten_set_canvas_element_size(selector, fbWidth, fbHeight);
-    _free(selector);
+    _emscripten_set_canvas_element_size(ctx.CSelector, fbWidth, fbHeight);
 #else
     if(canvas.width !== fbWidth) canvas.width = fbWidth;
     if(canvas.height !== fbHeight) canvas.height = fbHeight;
