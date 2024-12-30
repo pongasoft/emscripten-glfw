@@ -133,6 +133,11 @@ This section describes the main features implemented by both libraries.
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Broken-aa0000"></td>
   </tr>
+  <tr>
+    <td>Pthread / Offscreen canvas support</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+    <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
+  </tr>
   </tbody>
 </table>
 
