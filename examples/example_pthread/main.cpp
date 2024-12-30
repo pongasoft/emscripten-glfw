@@ -55,7 +55,7 @@ void jsRenderFrame(GLFWwindow *glfwWindow, int w, int h, int fw, int fh, double 
       ctx.fillRect(0, 0, fw, fh); // using framebuffer width/height
       ctx.save();
       ctx.scale(fw/w, fh/h);
-      const text = `${w}x${h} | ${$5}x${$6}; | c1${c1} | c2${c2}`;
+      const text = `${w}x${h} | ${$5}x${$6} | c1${c1} | c2${c2}`;
       ctx.font = '15px monospace';
       ctx.fillStyle = `rgb(${255 - color}, 0, 0)`;
       ctx.fillText(text, 10 + (color / 4), 20 + color);
