@@ -141,6 +141,8 @@ std::unique_ptr<Triangle> Triangle::init(GLFWwindow *iWindow,
 {
   glfwMakeContextCurrent(iWindow);
 
+  printf("%s | WebGL: %s | %s\n", iName, glGetString(GL_VERSION), glGetString(GL_RENDERER));
+
   // Setup Step 2: Define the shape of the triangle
   float triangleVertices[] = {// Top middle
     0.0f, 0.5f,

@@ -5,7 +5,7 @@ This project is an Emscripten port of GLFW written in C++ for the web/wasm platf
 GLFW API is 3.4.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20241230](https://img.shields.io/badge/contrib.glfw3-3.4.0.20241230-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![contrib.glfw3 - 3.4.0.20250112](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250112-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
@@ -212,7 +212,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.4.0.20241230 |
+> | TBD        | 3.4.0.20250112 |
 > | 3.1.69     | 3.4.0.20241004 |
 > | 3.1.66     | 3.4.0.20240907 |
 > | 3.1.65     | 3.4.0.20240817 |
@@ -249,6 +249,11 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
+#### 3.4.0.20250112 - 2025-01-12 | Emscripten TBD
+
+- Added support for `GLFW_CONTEXT_VERSION_MAJOR` and `GLFW_CONTEXT_VERSION_MINOR`
+- Re-enable GL extensions by default (regression introduced in 3.4.0.20241230). Fixes #13.
+
 #### 3.4.0.20241230 - 2024-12-30 | Emscripten TBD
 
 - Added support for offscreen canvas (check [example_offscreen_canvas](examples/example_offscreen_canvas) for a comprehensive example)

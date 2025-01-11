@@ -744,7 +744,15 @@ void Context::setWindowHint(int iHint, int iValue)
       fConfig.fClientAPI = iValue;
       break;
 
-    // Window
+    case GLFW_CONTEXT_VERSION_MAJOR:
+      fConfig.fContextVersionMajor = iValue;
+      break;
+
+    case GLFW_CONTEXT_VERSION_MINOR:
+      fConfig.fContextVersionMinor = iValue;
+      break;
+
+      // Window
     case GLFW_SCALE_TO_MONITOR:
       kErrorHandler.logWarning("GLFW_SCALE_TO_MONITOR is deprecated for this platform. Use GLFW_SCALE_FRAMEBUFFER instead.");
       fConfig.fScaleToMonitor = toGlfwBool(iValue);

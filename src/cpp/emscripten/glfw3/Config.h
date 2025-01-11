@@ -39,6 +39,8 @@ struct Config
 
   // GL Context
   int fClientAPI{GLFW_OPENGL_API}; // GLFW_CLIENT_API
+  int fContextVersionMajor{1};     // GLFW_CONTEXT_VERSION_MAJOR
+  int fContextVersionMinor{0};     // GLFW_CONTEXT_VERSION_MINOR
 
   // Window
   glfw_bool_t fScaleToMonitor{GLFW_FALSE};   // GLFW_SCALE_TO_MONITOR

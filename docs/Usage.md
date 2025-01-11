@@ -423,6 +423,34 @@ glfwSetKeyCallback(window, onKeyChange);
 >   ImGui::GetClipboardText();
 > ```
 
+## WebGL/OpenGL Support
+
+The `GLFW_CLIENT_API` window hint dictates whether the OpenGL context is created or not
+(note that this hint is so to `true` by default).
+
+In this case, it is a WebGL context created using the Emscripten call `emscripten_webgl_create_context`.
+
+This implementation supports the window hints: `GLFW_CONTEXT_VERSION_MAJOR` and 
+`GLFW_CONTEXT_VERSION_MINOR` as supported by Emscripten.
+
+> [!CAUTION]
+> At this moment, the Emscripten implementation ignores the major version unless the `-sMAX_WEBGL_VERSION=2` compiler 
+> flag is provided
+> * No flag => WebGL 1.0 regardless of `GLFW_CONTEXT_VERSION_MAJOR`
+> * `-sMIN_WEBGL_VERSION=2` => WebGL 2.0 regardless of `GLFW_CONTEXT_VERSION_MAJOR`
+> * `-sMAX_WEBGL_VERSION=2` => WebGL 1.0 or 2.0 depending on value of `GLFW_CONTEXT_VERSION_MAJOR`
+
+Due to the limitations with the GLFW API, if you want more control over the WebGL context created,
+you can set `GLFW_CLIENT_API` to `GLFW_FALSE` and manage the context yourself:
+
+```cpp
+glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+EmscriptenWebGLContextAttributes attributes{};                         // configure as you wish
+auto handle = emscripten_webgl_create_context("#canvas", &attributes); // to create
+emscripten_webgl_make_context_current(handle);                         // to use
+emscripten_webgl_destroy_context(handle);                              // to destroy
+```
+
 ## Extensions
 
 This implementation offers a few extensions to the normal GLFW api necessary for this specific platform.
@@ -1155,6 +1183,8 @@ This table contains the list of all the GLFW functions API and whether they are 
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00">
         <ul>
           <li><code>GLFW_CLIENT_API</code></li>
+          <li><code>GLFW_CONTEXT_VERSION_MAJOR</code></li>
+          <li><code>GLFW_CONTEXT_VERSION_MINOR</code></li>
           <li><code>GLFW_SCALE_FRAMEBUFFER</code></li>
           <li><code>GLFW_SCALE_TO_MONITOR</code></li>
           <li><code>GLFW_FOCUS_ON_SHOW</code></li>

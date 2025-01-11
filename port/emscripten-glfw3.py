@@ -17,8 +17,8 @@
 import os
 from typing import Union, Dict
 
-TAG = '3.4.0.20241230'
-HASH = '917df0d23e425d71b189294481fe369dc50baa28493c8f4d6590c9d99b4d880ddeb1064d1481ef1586bee1504898d5b0d0a2f9b4e77c7ac384237af238e1a7a6'
+TAG = '3.4.0.20250112'
+HASH = 'd37660863614a70336f81e5899780fb7237e1abb4fc4ed6360541ac39ef41a5e10353af931df87bbee99df3009589b3fafe61a583ba9b85c713e113bfec4c4dc'
 ZIP_URL = f'https://github.com/pongasoft/emscripten-glfw/releases/download/v{TAG}/emscripten-glfw3-{TAG}.zip'
 
 # contrib port information (required)
