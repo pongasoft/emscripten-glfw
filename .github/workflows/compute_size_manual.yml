@@ -66,6 +66,5 @@ jobs:
           js_size=$(stat --format="%s" build-with-port-small/index.js)
           wasm_size=$(stat --format="%s" build-with-port-small/index.wasm)
           total_size=$((js_size + wasm_size))
-          echo "js:$js_size, wasm:$wasm_size, total: $total_size"
           delta=$(echo "scale=2; $total_size / $TOTAL_SIZE_LIBRARY_GLFW" | bc)
           echo "js:$js_size, wasm:$wasm_size, total: $total_size | ${delta}x"
