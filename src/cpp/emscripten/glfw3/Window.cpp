@@ -476,13 +476,13 @@ bool Window::createGLContext()
   if(fConfig.fClientAPI != GLFW_NO_API)
   {
     EmscriptenWebGLContextAttributes attributes{};
+    emscripten_webgl_init_context_attributes(&attributes);
     attributes.majorVersion = fConfig.fContextVersionMajor;
     attributes.minorVersion = fConfig.fContextVersionMinor;
     attributes.antialias = fConfig.fSamples > 0;
     attributes.depth = fConfig.fDepthBits > 0;
     attributes.stencil = fConfig.fStencilBits > 0;
     attributes.alpha = fConfig.fAlphaBits > 0;
-    attributes.enableExtensionsByDefault = true;
 
     fWebGLContextHandle = emscripten_webgl_create_context(getCanvasSelector(), &attributes);
     if(fWebGLContextHandle == 0)

@@ -440,12 +440,15 @@ This implementation supports the window hints: `GLFW_CONTEXT_VERSION_MAJOR` and
 > * `-sMIN_WEBGL_VERSION=2` => WebGL 2.0 regardless of `GLFW_CONTEXT_VERSION_MAJOR`
 > * `-sMAX_WEBGL_VERSION=2` => WebGL 1.0 or 2.0 depending on value of `GLFW_CONTEXT_VERSION_MAJOR`
 
+In addition, by default, the context created is set with `premultipliedAlpha=true`.
+
 Due to the limitations with the GLFW API, if you want more control over the WebGL context created,
 you can set `GLFW_CLIENT_API` to `GLFW_FALSE` and manage the context yourself:
 
 ```cpp
 glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-EmscriptenWebGLContextAttributes attributes{};                         // configure as you wish
+EmscriptenWebGLContextAttributes attributes{};                         
+// attributes.xxxx ;                                                   // configure as you wish
 auto handle = emscripten_webgl_create_context("#canvas", &attributes); // to create
 emscripten_webgl_make_context_current(handle);                         // to use
 emscripten_webgl_destroy_context(handle);                              // to destroy
