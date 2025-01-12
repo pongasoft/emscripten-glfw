@@ -550,8 +550,8 @@ As of initial release, I ran the following experiment on both implementations us
 
 ## Implementation size (update)
 
-![emscripten - 3.1.69](https://img.shields.io/badge/emscripten-3.1.69-blue)
-![emscripten-glfw-3.4.0.20241004](https://img.shields.io/badge/emscripten--glfw-3.4.0.20241004-blue)
+![emscripten - 3.1.74](https://img.shields.io/badge/emscripten-3.1.74-blue)
+![emscripten-glfw-3.4.0.20250112](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
 
 ```text
 > cd examples/example_minimal
@@ -565,8 +565,8 @@ As of initial release, I ran the following experiment on both implementations us
 
 | Mode              | `library_glfw.js`                      | This implementation                      | Delta |
 |-------------------|----------------------------------------|------------------------------------------|-------|
-| Release           | js: 103908, wasm: 13903, total: 117811 | js: 59019, wasm: 73839, total: 132858    | 1.13x |
-| Release (minimal) | -                                      | js: 56795, wasm: 66456, total: 123251    | 1.04x |
+| Release           | js: 103917, wasm: 13904, total: 117821 | js: 58854, wasm: 73832, total: 132686    | 1.13x |
+| Release (minimal) | -                                      | js: 56630, wasm: 66486, total: 123116    | 1.04x |
 
 > [!NOTE]
 > The good news is that Emscripten is improving and this implementation is benefitting from it.
