@@ -27,7 +27,16 @@ jobs:
           source ./emsdk_env.sh
           emcc -v
 
-      - name: Compile with port
+      - name: Compiling with library_glfw.js
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          source ${{github.workspace}}/emscripten/emsdk_env.sh
+          mkdir build-with-library_glfw
+          emcc --version
+          emcc -sUSE_GLFW=3 main.cpp -O2 -o build-with-library_glfw/index.html
+          ls -l build-with-library_glfw
+
+      - name: Compiling with contrib.glfw3
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
@@ -36,7 +45,7 @@ jobs:
           emcc --use-port=contrib.glfw3 examples/example_minimal/main.cpp -O2 -o build-with-port/index.html
           ls -l build-with-port
 
-      - name: Compile with port (small)
+      - name: Compiling with contrib.glfw3 (small)
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
