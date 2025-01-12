@@ -33,7 +33,7 @@ jobs:
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           mkdir build-with-library_glfw
           emcc --version
-          emcc -sUSE_GLFW=3 main.cpp -O2 -o build-with-library_glfw/index.html
+          emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp -O2 -o build-with-library_glfw/index.html
           ls -l build-with-library_glfw
 
       - name: Compiling with contrib.glfw3
