@@ -4,6 +4,9 @@ project(emscripten_glfw_demo LANGUAGES CXX)
 
 set(target "demo")
 
+# the linker flag -sMAX_WEBGL_VERSION=2 is used because due to Emscripten internals,
+# the GLFW_CONTEXT_VERSION_MAJOR is ignored. When using the port, the flag is
+# automatically set so there is no need to set it.
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -sMAX_WEBGL_VERSION=2 -sNO_DISABLE_EXCEPTION_CATCHING -s ASSERTIONS=1 -s WASM=1 -s SAFE_HEAP=1")
 
 add_executable(${target} src/main.cpp src/Triangle.cpp)
