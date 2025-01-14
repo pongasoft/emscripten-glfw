@@ -426,12 +426,12 @@ glfwSetKeyCallback(window, onKeyChange);
 ## WebGL/OpenGL Support
 
 The `GLFW_CLIENT_API` window hint dictates whether the OpenGL context is created or not
-(note that this hint is so to `true` by default).
+(note that this hint is set to `true` by default).
 
 In this case, it is a WebGL context created using the Emscripten call `emscripten_webgl_create_context`.
 
 This implementation supports the window hints: `GLFW_CONTEXT_VERSION_MAJOR` and 
-`GLFW_CONTEXT_VERSION_MINOR` as supported by Emscripten.
+`GLFW_CONTEXT_VERSION_MINOR`.
 
 > [!CAUTION]
 > At this moment, the Emscripten implementation ignores the major version unless the `-sMAX_WEBGL_VERSION=2` compiler 

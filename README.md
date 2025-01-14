@@ -10,8 +10,8 @@ GLFW API is 3.4.
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![emscripten - 3.1.69](https://img.shields.io/badge/emscripten-3.1.69-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20241004](https://img.shields.io/badge/contrib.glfw3-3.4.0.20241004-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - 4.0.0](https://img.shields.io/badge/emscripten-4.0.0-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20241230](https://img.shields.io/badge/contrib.glfw3-3.4.0.20241230-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
@@ -213,6 +213,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > | Emscripten | this port      |
 > |------------|----------------|
 > | TBD        | 3.4.0.20250112 |
+> | 4.0.0      | 3.4.0.20241230 |
 > | 3.1.69     | 3.4.0.20241004 |
 > | 3.1.66     | 3.4.0.20240907 |
 > | 3.1.65     | 3.4.0.20240817 |
@@ -254,11 +255,11 @@ Release Notes
 - Added support for `GLFW_CONTEXT_VERSION_MAJOR` and `GLFW_CONTEXT_VERSION_MINOR`
 - Re-enable GL extensions by default (regression introduced in 3.4.0.20241230). Fixes #13.
 
-#### 3.4.0.20241230 - 2024-12-30 | Emscripten TBD
+#### 3.4.0.20241230 - 2024-12-30 | 4.0.0
 
 - Added support for offscreen canvas (check [example_offscreen_canvas](examples/example_offscreen_canvas) for a comprehensive example)
 
-#### 3.4.0.20241221 - 2024-12-21 | Emscripten TBD
+#### 3.4.0.20241221 - 2024-12-21 | 4.0.0
 
 - Added support for pthread (check [example_pthread](examples/example_pthread) for a comprehensive example)
 
