@@ -559,7 +559,7 @@ As of initial release, I ran the following experiment on both implementations us
 # using contrib.glfw3
 > emcc --use-port=contrib.glfw3 main.cpp -O2 -o /tmp/build/index.html
 # using contrib.glfw3 (minimal)
-> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true main.cpp -O2 -o /tmp/build/index.html
+> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true main.cpp -O2 -o /tmp/build/index.html
 ```
 
 | Mode              | `library_glfw.js`                     | This implementation                  | Delta  |

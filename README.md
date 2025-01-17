@@ -202,6 +202,7 @@ The port can be configured with the following options:
 | `disableJoystick`    | Boolean to disable support for joystick entirely, which can be useful if you don't need it due to polling |
 | `disableWarning`     | Boolean to disable warnings emitted by the library (for example when using non supported features)        |
 | `disableMultiWindow` | Boolean to disable multi window support which makes the code smaller and faster if you don't need it      |
+| `disableWebGL2`      | Boolean to disable support for WebGL2 (which makes the code smaller) if you don't need it                 |
 
 Example using `disableWarning` and `disableMultiWindow`:
 
