@@ -433,12 +433,11 @@ In this case, it is a WebGL context created using the Emscripten call `emscripte
 This implementation supports the window hints: `GLFW_CONTEXT_VERSION_MAJOR` and 
 `GLFW_CONTEXT_VERSION_MINOR`.
 
-> [!CAUTION]
-> At this moment, the Emscripten implementation ignores the major version unless the `-sMAX_WEBGL_VERSION=2` compiler 
-> flag is provided
-> * No flag => WebGL 1.0 regardless of `GLFW_CONTEXT_VERSION_MAJOR`
-> * `-sMIN_WEBGL_VERSION=2` => WebGL 2.0 regardless of `GLFW_CONTEXT_VERSION_MAJOR`
-> * `-sMAX_WEBGL_VERSION=2` => WebGL 1.0 or 2.0 depending on value of `GLFW_CONTEXT_VERSION_MAJOR`
+> [!TIP]
+> Since Emscripten 4.0.1, when using the port, it automatically sets the Emscripten linker 
+> flag `-sMAX_WEBGL_VERSION=2` to enable choosing the OpenGL version via the 
+> `GLFW_CONTEXT_VERSION_MAJOR` window hint.
+> Prior to Emscripten 4.0.1, you have to manually set it.
 
 In addition, by default, the context created is set with `premultipliedAlpha=true`.
 
@@ -550,7 +549,7 @@ As of initial release, I ran the following experiment on both implementations us
 
 ## Implementation size (update)
 
-![emscripten - 3.1.74](https://img.shields.io/badge/emscripten-3.1.74-blue)
+![emscripten - 4.0.1](https://img.shields.io/badge/emscripten-4.0.1-blue)
 ![emscripten-glfw-3.4.0.20250112](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
 
 ```text
@@ -563,10 +562,10 @@ As of initial release, I ran the following experiment on both implementations us
 > emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true main.cpp -O2 -o /tmp/build/index.html
 ```
 
-| Mode              | `library_glfw.js`                      | This implementation                      | Delta |
-|-------------------|----------------------------------------|------------------------------------------|-------|
-| Release           | js: 103917, wasm: 13904, total: 117821 | js: 58854, wasm: 73832, total: 132686    | 1.13x |
-| Release (minimal) | -                                      | js: 56630, wasm: 66486, total: 123116    | 1.04x |
+| Mode              | `library_glfw.js`                     | This implementation                  | Delta  |
+|-------------------|---------------------------------------|--------------------------------------|--------|
+| Release           | js:103492, wasm:13831, total:117323   | js:59906, wasm:73001, total:132907   | 13.28% |
+| Release (minimal) | -                                     | js:57682, wasm:65877, total:123559   | 5.31%  |
 
 > [!NOTE]
 > The good news is that Emscripten is improving and this implementation is benefitting from it.

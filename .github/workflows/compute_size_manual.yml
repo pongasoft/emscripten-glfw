@@ -38,7 +38,7 @@ jobs:
           js_size=$(stat --format="%s" build-with-library_glfw/index.js)
           wasm_size=$(stat --format="%s" build-with-library_glfw/index.wasm)
           total_size=$((js_size + wasm_size))
-          echo "js:$js_size, wasm:$wasm_size, total: $total_size"
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size"
           echo "TOTAL_SIZE_LIBRARY_GLFW=$total_size" >> $GITHUB_ENV
 
       - name: Compiling with contrib.glfw3
@@ -53,7 +53,7 @@ jobs:
           wasm_size=$(stat --format="%s" build-with-port/index.wasm)
           total_size=$((js_size + wasm_size))
           delta=$(echo "scale=10; d=($total_size / $TOTAL_SIZE_LIBRARY_GLFW - 1) * 100; scale=2; d/1" | bc)
-          echo "js:$js_size, wasm:$wasm_size, total: $total_size | ${delta}%"
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
 
       - name: Compiling with contrib.glfw3 (small)
         working-directory: ${{github.workspace}}/emscripten-glfw
@@ -67,4 +67,4 @@ jobs:
           wasm_size=$(stat --format="%s" build-with-port-small/index.wasm)
           total_size=$((js_size + wasm_size))
           delta=$(echo "scale=10; d=($total_size / $TOTAL_SIZE_LIBRARY_GLFW - 1) * 100; scale=2; d/1" | bc)
-          echo "js:$js_size, wasm:$wasm_size, total: $total_size | ${delta}%"
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
