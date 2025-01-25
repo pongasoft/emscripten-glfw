@@ -227,6 +227,30 @@ void Context::addOrRemoveEventListeners(bool iAdd)
       })
       .add(emscripten_set_pointerlockerror_callback_on_thread);
 
+    // fOnTouchStart
+    fOnTouchStart
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenTouchEvent *iEvent) { return onTouchStart(nullptr, iEvent); })
+      .add(emscripten_set_touchstart_callback_on_thread);
+
+    // fOnTouchMove
+    fOnTouchMove
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenTouchEvent *iEvent) { return onTouchMove(iEvent); })
+      .add(emscripten_set_touchmove_callback_on_thread);
+
+    // fOnTouchCancel
+    fOnTouchCancel
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenTouchEvent *iEvent) { return onTouchEnd(iEvent); })
+      .add(emscripten_set_touchcancel_callback_on_thread);
+
+    // fOnTouchEnd
+    fOnTouchEnd
+      .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
+      .listener([this](int iEventType, const EmscriptenTouchEvent *iEvent) { return onTouchEnd(iEvent); })
+      .add(emscripten_set_touchend_callback_on_thread);
+
     // gamepad/joystick
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
     fOnGamepadConnected
@@ -245,6 +269,11 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnFullscreenChange.remove();
     fOnPointerLockChange.remove();
     fOnPointerLockError.remove();
+
+    fOnTouchStart.remove();
+    fOnTouchMove.remove();
+    fOnTouchCancel.remove();
+    fOnTouchEnd.remove();
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
     fOnGamepadConnected.remove();
@@ -288,11 +317,11 @@ void Context::computeWindowPos()
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
   {
-    w->computePos();
+    w->computePos(!isTrackingTouch());
   }
 #else
   if(fSingleWindow)
-    fSingleWindow->computePos();
+    fSingleWindow->computePos(!isTrackingTouch());
 #endif
 
 }
@@ -493,6 +522,117 @@ bool Context::onPointerUnlock()
 
 
   return res;
+}
+
+//------------------------------------------------------------------------
+// Context::findTouchPoint
+//------------------------------------------------------------------------
+EmscriptenTouchPoint const *Context::findTouchPoint(EmscriptenTouchEvent const *iEvent) const
+{
+  if(!isTrackingTouch())
+    return nullptr;
+
+  for(auto i = 0; i < iEvent->numTouches; i++)
+  {
+    auto const touchPoint = &iEvent->touches[i];
+
+    // no change => skip
+    if(!touchPoint->isChanged)
+      continue;
+
+    if(touchPoint->identifier == *fTouchPointId)
+      return touchPoint;
+  }
+
+  return nullptr;
+}
+
+namespace impl {
+
+//------------------------------------------------------------------------
+// impl::findFirstTouchPoint
+//------------------------------------------------------------------------
+EmscriptenTouchPoint const *findFirstTouchPoint(EmscriptenTouchEvent const *iEvent)
+{
+  for(auto i = 0; i < iEvent->numTouches; i++)
+  {
+    auto const touchPoint = &iEvent->touches[i];
+
+    // no change => skip
+    if(!touchPoint->isChanged)
+      continue;
+
+    return touchPoint;
+  }
+
+  return nullptr;
+}
+
+}
+
+//------------------------------------------------------------------------
+// Context::onTouchStart
+//------------------------------------------------------------------------
+bool Context::onTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchEvent const *iEvent)
+{
+  // we don't handle multitouch
+  if(isTrackingTouch())
+    return false;
+
+  auto touchPoint = impl::findFirstTouchPoint(iEvent);
+
+  if(touchPoint)
+  {
+    fTouchPointId = touchPoint->identifier;
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+    for(auto &w: fWindows)
+      w->onGlobalTouchStart(iOriginWindow, touchPoint);
+#else
+    if(fSingleWindow)
+      fSingleWindow->onGlobalTouchStart(iOriginWindow, touchPoint);
+#endif
+    return iOriginWindow != nullptr;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------
+// Context::onTouchMove
+//------------------------------------------------------------------------
+bool Context::onTouchMove(EmscriptenTouchEvent const *iEvent)
+{
+  auto touchPoint = findTouchPoint(iEvent);
+  if(touchPoint)
+  {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+    for(auto &w: fWindows)
+      w->onGlobalTouchMove(touchPoint);
+#else
+    if(fSingleWindow)
+      fSingleWindow->onGlobalTouchMove(touchPoint);
+#endif
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------
+// Context::onTouchEnd
+//------------------------------------------------------------------------
+bool Context::onTouchEnd(EmscriptenTouchEvent const *iEvent)
+{
+  auto touchPoint = findTouchPoint(iEvent);
+  fTouchPointId = std::nullopt;
+  if(touchPoint)
+  {
+#ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
+    for(auto &w: fWindows)
+      w->onGlobalTouchEnd(touchPoint);
+#else
+    fSingleWindow && fSingleWindow->onGlobalTouchEnd(touchPoint);
+#endif
+  }
+  return false;
 }
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK

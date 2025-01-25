@@ -87,7 +87,9 @@ public:
   void setTitle(char const *iTitle) { fTitle = iTitle ? std::optional<std::string>(iTitle): std::nullopt; }
 
   constexpr bool isFocused() const { return fFocused; }
-  void focus();
+  void changeFocus(bool isFocussed);
+  inline void focus() { changeFocus(true); }
+  inline void blur() { changeFocus(false); }
 
   constexpr bool isHovered() const { return fHovered; }
 
@@ -174,7 +176,9 @@ protected:
   void init(int iWidth, int iHeight);
   void destroy();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
-  bool onMouseButtonUp(const EmscriptenMouseEvent *iMouseEvent);
+  bool onMouseButtonDown(int iGLFWButton);
+  bool onMouseButtonUp(EmscriptenMouseEvent const *iEvent);
+  bool onMouseButtonUp(int iGLFWButton);
   inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   void handleSuperPlusKeys(Keyboard::SuperPlusKeyTimeout const &iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
@@ -195,12 +199,21 @@ private:
   EventListener<EmscriptenFocusEvent> fOnFocusChange{};
   EventListener<EmscriptenFocusEvent> fOnBlurChange{};
 
+  // touch
+private:
+  EventListener<EmscriptenTouchEvent> fOnTouchStart{};
+  void onGlobalTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchPoint const *iTouchPoint);
+  void onGlobalTouchMove(EmscriptenTouchPoint const *iTouchPoint);
+  void onGlobalTouchEnd(EmscriptenTouchPoint const *iTouchPoint);
+
 private:
   void addOrRemoveEventListeners(bool iAdd);
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
   void setCursorPos(Vec2<double> const &iPos);
+  template<typename E>
+  void setCursorPos(E const *iEvent);
   void onGlobalMouseMove(EmscriptenMouseEvent const *iEvent);
-  void computePos();
+  void computePos(bool iAdjustCursor);
 
 private:
   Context *fContext;

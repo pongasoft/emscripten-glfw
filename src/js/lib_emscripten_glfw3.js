@@ -572,11 +572,11 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  //! emscripten_glfw3_window_focus
-  emscripten_glfw3_window_focus__proxy: 'sync',
-  emscripten_glfw3_window_focus: (glfwWindow) => {
+  //! emscripten_glfw3_window_change_focus
+  emscripten_glfw3_window_change_focus__proxy: 'sync',
+  emscripten_glfw3_window_change_focus: (glfwWindow, isFocussed) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
-    canvas.focus();
+    if(isFocussed) { canvas.focus(); } else { canvas.blur(); }
   },
 
   //! emscripten_glfw3_window_set_size

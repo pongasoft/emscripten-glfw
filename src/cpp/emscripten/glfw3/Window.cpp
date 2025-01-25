@@ -29,7 +29,7 @@ void emscripten_glfw3_context_set_title(char const *iTitle);
 void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
 void emscripten_glfw3_window_get_position(GLFWwindow *iWindow, int *oX, int *oY);
-void emscripten_glfw3_window_focus(GLFWwindow *iWindow);
+void emscripten_glfw3_window_change_focus(GLFWwindow *iWindow, bool isFocussed);
 void emscripten_glfw3_window_set_standard_cursor(GLFWwindow *iWindow, char const *iCursor);
 void emscripten_glfw3_window_set_custom_cursor(GLFWwindow *iWindow, GLFWcursor *iCursor, int iXHot, int iYHot);
 float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
@@ -109,10 +109,12 @@ void Window::init(int iWidth, int iHeight)
     focus();
     emscripten_glfw3_context_set_title(getTitle());
   }
+  else
+    blur();
 
   setCanvasSize({iWidth, iHeight});
 
-  computePos();
+  computePos(true);
 }
 
 //------------------------------------------------------------------------
@@ -139,12 +141,12 @@ void Window::destroy()
 }
 
 //------------------------------------------------------------------------
-// Window::focus
+// Window::changeFocus
 //------------------------------------------------------------------------
-void Window::focus()
+void Window::changeFocus(bool isFocussed)
 {
-  fFocused = true;
-  emscripten_glfw3_window_focus(asOpaquePtr());
+  fFocused = isFocussed;
+  emscripten_glfw3_window_change_focus(asOpaquePtr(), isFocussed);
 }
 
 //------------------------------------------------------------------------
@@ -275,13 +277,13 @@ void Window::getPosition(int *oX, int *oY) const
 //------------------------------------------------------------------------
 // Window::computePos
 //------------------------------------------------------------------------
-void Window::computePos()
+void Window::computePos(bool iAdjustCursor)
 {
   Vec2<int> pos{};
   emscripten_glfw3_window_get_position(asOpaquePtr(), &pos.x, &pos.y);
   if(fPos != pos)
   {
-    if(!isPointerLock())
+    if(iAdjustCursor && !isPointerLock())
     {
       // adjust the cursor position since the window has moved...
       auto delta = fPos - pos;
@@ -353,6 +355,15 @@ void Window::setCursorPos(Vec2<double> const &iPos)
 }
 
 //------------------------------------------------------------------------
+// Window::setCursorPos
+//------------------------------------------------------------------------
+template<typename E>
+void Window::setCursorPos(E const *iEvent)
+{
+  setCursorPos({static_cast<double>(iEvent->targetX - fPos.x), static_cast<double>(iEvent->targetY - fPos.y)});
+}
+
+//------------------------------------------------------------------------
 // Window::onGlobalMouseMove
 //------------------------------------------------------------------------
 void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
@@ -369,7 +380,7 @@ void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
   }
   else
   {
-    setCursorPos({static_cast<double>(iEvent->targetX - fPos.x), static_cast<double>(iEvent->targetY - fPos.y)});
+    setCursorPos(iEvent);
   }
 }
 
@@ -443,6 +454,8 @@ void Window::setAttrib(int iAttrib, int iValue)
     case GLFW_FOCUSED:
       if(toCBool(iValue))
         focus();
+      else
+        blur();
       break;
 
     case GLFW_FOCUS_ON_SHOW:
@@ -676,7 +689,7 @@ void Window::onPointerLock()
 
   fMouse.hideCursor();
 
-  fMouse.fCursorLockResidual= {};
+  fMouse.fCursorLockResidual = {};
   fMouse.fCursorPosBeforePointerLock = fMouse.fCursorPos;
   fMouse.fCursorMode = GLFW_CURSOR_DISABLED;
   setCursorPos({});
@@ -736,19 +749,47 @@ bool Window::onFocusChange(bool iFocus)
 }
 
 //------------------------------------------------------------------------
+// Window::onMouseButtonDown
+//------------------------------------------------------------------------
+bool Window::onMouseButtonDown(int iGLFWButton)
+{
+  if(iGLFWButton >= 0)
+  {
+    // down can only happen when inside the window
+    fMouse.fLastButton = iGLFWButton;
+    fMouse.fLastButtonState = GLFW_PRESS;
+    fMouse.fButtonStates[iGLFWButton] = GLFW_PRESS;
+
+    if(fFocusOnMouse && !isFocused())
+      focus();
+
+    if(fMouse.fButtonCallback)
+      fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
+  }
+  return true;
+}
+
+//------------------------------------------------------------------------
 // Window::onMouseButtonUp
 //------------------------------------------------------------------------
-bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
+bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iEvent)
 {
-  auto lastButton = emscriptenToGLFWButton(iMouseEvent->button);
-  if(lastButton >= 0)
+  return onMouseButtonUp(emscriptenToGLFWButton(iEvent->button));
+}
+
+//------------------------------------------------------------------------
+// Window::onMouseButtonUp
+//------------------------------------------------------------------------
+bool Window::onMouseButtonUp(int iGLFWButton)
+{
+  if(iGLFWButton >= 0)
   {
     // up can happen even if mouse is outside the window
-    if(fMouse.fButtonStates[lastButton] == GLFW_PRESS)
+    if(fMouse.fButtonStates[iGLFWButton] == GLFW_PRESS)
     {
-      fMouse.fLastButton = lastButton;
+      fMouse.fLastButton = iGLFWButton;
       fMouse.fLastButtonState = GLFW_RELEASE;
-      fMouse.fButtonStates[lastButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
+      fMouse.fButtonStates[iGLFWButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
         fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
@@ -756,6 +797,34 @@ bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iMouseEvent)
   }
 
   return true;
+}
+
+//------------------------------------------------------------------------
+// Window::onGlobalTouchStart
+//------------------------------------------------------------------------
+void Window::onGlobalTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchPoint const *iTouchPoint)
+{
+  if(iOriginWindow == asOpaquePtr())
+    onMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT);
+  setCursorPos(iTouchPoint);
+}
+
+
+//------------------------------------------------------------------------
+// Window::onGlobalTouchMove
+//------------------------------------------------------------------------
+void Window::onGlobalTouchMove(EmscriptenTouchPoint const *iTouchPoint)
+{
+  setCursorPos(iTouchPoint);
+}
+
+//------------------------------------------------------------------------
+// Window::onGlobalTouchEnd
+//------------------------------------------------------------------------
+void Window::onGlobalTouchEnd(EmscriptenTouchPoint const *iTouchPoint)
+{
+  setCursorPos(iTouchPoint);
+  onMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT);
 }
 
 //------------------------------------------------------------------------
@@ -771,21 +840,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
     fOnMouseButtonDown
       .target(selector)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-        auto lastButton = emscriptenToGLFWButton(iEvent->button);
-        if(lastButton >= 0)
-        {
-          // down can only happen when inside the window
-          fMouse.fLastButton = lastButton;
-          fMouse.fLastButtonState = GLFW_PRESS;
-          fMouse.fButtonStates[lastButton] = GLFW_PRESS;
-
-          if(fFocusOnMouse && !isFocused())
-            focus();
-
-          if(fMouse.fButtonCallback)
-            fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
-        }
-        return true;
+        return onMouseButtonDown(emscriptenToGLFWButton(iEvent->button));
       })
       .add(emscripten_set_mousedown_callback_on_thread);
 
@@ -853,6 +908,14 @@ void Window::addOrRemoveEventListeners(bool iAdd)
       .target(selector)
       .listener([this](int eventType, const EmscriptenFocusEvent *iEvent) { return onFocusChange(false); })
       .add(emscripten_set_blur_callback_on_thread);
+
+    // fOnTouchStart
+    fOnTouchStart
+      .target(selector)
+      .listener([this](int iEventType, const EmscriptenTouchEvent *iEvent) {
+        return fContext->onTouchStart(asOpaquePtr(), iEvent);
+      })
+      .add(emscripten_set_touchstart_callback_on_thread);
   }
   else
   {
@@ -862,6 +925,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
     fOnMouseWheel.remove();
     fOnFocusChange.remove();
     fOnBlurChange.remove();
+    fOnTouchStart.remove();
   }
 }
 

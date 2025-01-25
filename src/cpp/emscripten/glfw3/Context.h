@@ -122,6 +122,8 @@ public:
   bool onKeyDown(Keyboard::Event const &iEvent);
   bool onKeyUp(Keyboard::Event const &iEvent);
 
+  friend class Window;
+
 private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
@@ -134,6 +136,13 @@ private:
   bool onPointerUnlock();
   std::shared_ptr<Window> findFocusedOrSingleWindow() const;
   void computeWindowPos();
+
+  // touch
+  constexpr bool isTrackingTouch() const { return fTouchPointId.has_value(); }
+  bool onTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchEvent const *iEvent);
+  bool onTouchMove(EmscriptenTouchEvent const *iEvent);
+  bool onTouchEnd(EmscriptenTouchEvent const *iEvent);
+  EmscriptenTouchPoint const *findTouchPoint(EmscriptenTouchEvent const *iEvent) const;
 
   static double getPlatformTimerValue();
 
@@ -168,6 +177,14 @@ private:
   // mouse
   EventListener<EmscriptenMouseEvent> fOnMouseMove{};
   EventListener<EmscriptenMouseEvent> fOnMouseButtonUp{};
+
+  // touch
+  EventListener<EmscriptenTouchEvent> fOnTouchStart{};
+  EventListener<EmscriptenTouchEvent> fOnTouchMove{};
+  EventListener<EmscriptenTouchEvent> fOnTouchCancel{};
+  EventListener<EmscriptenTouchEvent> fOnTouchEnd{};
+  std::optional<int> fTouchPointId{};
+
   EventListener<EmscriptenFullscreenChangeEvent> fOnFullscreenChange{};
   EventListener<EmscriptenPointerlockChangeEvent> fOnPointerLockChange{};
   EventListener<void> fOnPointerLockError{};
