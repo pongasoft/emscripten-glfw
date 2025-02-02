@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(emscripten-glfw_RELEASE_YEAR  "2025")
-set(emscripten-glfw_RELEASE_MONTH "01"  )
-set(emscripten-glfw_RELEASE_DAY   "17"  )
+set(emscripten-glfw_RELEASE_MONTH "02"  )
+set(emscripten-glfw_RELEASE_DAY   "02"  )
 
 set(emscripten-glfw_GLFW_VERSION "3.4.0")
 

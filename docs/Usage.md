@@ -549,7 +549,7 @@ As of initial release, I ran the following experiment on both implementations us
 
 ## Implementation size (update)
 
-![emscripten - 4.0.1](https://img.shields.io/badge/emscripten-4.0.1-blue)
+![emscripten - 4.0.2](https://img.shields.io/badge/emscripten-4.0.2-blue)
 ![emscripten-glfw-3.4.0.20250112](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
 
 ```text
@@ -562,10 +562,10 @@ As of initial release, I ran the following experiment on both implementations us
 > emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true main.cpp -O2 -o /tmp/build/index.html
 ```
 
-| Mode              | `library_glfw.js`                     | This implementation                  | Delta  |
-|-------------------|---------------------------------------|--------------------------------------|--------|
-| Release           | js:103492, wasm:13831, total:117323   | js:59906, wasm:73001, total:132907   | 13.28% |
-| Release (minimal) | -                                     | js:57682, wasm:65877, total:123559   | 5.31%  |
+| Mode              | `library_glfw.js`                     | This implementation                | Delta  |
+|-------------------|---------------------------------------|------------------------------------|--------|
+| Release           |  js:103889, wasm:13831, total:117720  | js:59879, wasm:73001, total:132880 | 12.87% |
+| Release (minimal) | -                                     | js:56724, wasm:65877, total:122601 | 4.14%  |
 
 > [!NOTE]
 > The good news is that Emscripten is improving and this implementation is benefitting from it.

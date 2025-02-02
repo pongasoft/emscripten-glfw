@@ -252,6 +252,11 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
+#### 3.4.0.TBD - TBD | TBD
+
+- Added support for touch (mobile)
+- Added port option `disableTouch` to disable support for touch when not needed (reduces code size)
+
 #### 3.4.0.20250117 - 2025-01-17 | Emscripten 4.0.2
 
 - Added port option `disableWebGL2` to disable support for WebGL2 when not needed (reduces JavaScript code size)

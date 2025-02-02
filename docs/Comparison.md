@@ -69,6 +69,11 @@ This section describes the main features implemented by both libraries.
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> (NO sticky button behavior)</td>
   </tr>
   <tr>
+    <td>Touch (mobile)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
+  </tr>
+  <tr>
     <td>Keyboard</td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> (includes sticky key behavior)</td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> (NO sticky key behavior)</td>
