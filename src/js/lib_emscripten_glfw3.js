@@ -387,6 +387,7 @@ let emscripten_glfw3_impl = {
   //! emscripten_glfw3_context_init
   emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
   emscripten_glfw3_context_init__proxy: 'sync',
+  emscripten_glfw3_context_init__sig: 'vpfpppppp',
   emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardCallback, requestFullscreen, errorHandler) => {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
@@ -435,12 +436,14 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_is_any_element_focused
   emscripten_glfw3_context_is_any_element_focused__proxy: 'sync',
+  emscripten_glfw3_context_is_any_element_focused__sig: 'i',
   emscripten_glfw3_context_is_any_element_focused: () => {
     return GLFW3.isAnyElementFocused();
   },
 
   //! emscripten_glfw3_context_get_fullscreen_window
   emscripten_glfw3_context_get_fullscreen_window__proxy: 'sync',
+  emscripten_glfw3_context_get_fullscreen_window__sig: 'p',
   emscripten_glfw3_context_get_fullscreen_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.fullscreenElement);
     return ctx ? ctx.glfwWindow : null;
@@ -448,6 +451,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_get_pointer_lock_window
   emscripten_glfw3_context_get_pointer_lock_window__proxy: 'sync',
+  emscripten_glfw3_context_get_pointer_lock_window__sig: 'p',
   emscripten_glfw3_context_get_pointer_lock_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.pointerLockElement);
     return ctx ? ctx.glfwWindow : null;
@@ -455,6 +459,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_is_extension_supported (copied from library_glfw.js)
   emscripten_glfw3_context_is_extension_supported__proxy: 'sync',
+  emscripten_glfw3_context_is_extension_supported__sig: 'ip',
   emscripten_glfw3_context_is_extension_supported: (extension) => {
     extension = UTF8ToString(extension);
     if(!GLFW3.fGLExtensions)
@@ -469,12 +474,14 @@ let emscripten_glfw3_impl = {
   },
 
   //! emscripten_glfw3_context_get_now
+  emscripten_glfw3_context_get_now__sig: 'd',
   emscripten_glfw3_context_get_now: () => {
     return performance.now();
   },
 
   //! emscripten_glfw3_context_set_title
   emscripten_glfw3_context_set_title__proxy: 'sync',
+  emscripten_glfw3_context_set_title__sig: 'vp',
   emscripten_glfw3_context_set_title: (title) => {
     if(title)
       document.title = UTF8ToString(title);
@@ -482,6 +489,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_destroy
   emscripten_glfw3_context_destroy__proxy: 'sync',
+  emscripten_glfw3_context_destroy__sig: 'v',
   emscripten_glfw3_context_destroy: () => {
     GLFW3.fWindowContexts = null;
     GLFW3.fCustomCursors = null;
@@ -499,6 +507,7 @@ let emscripten_glfw3_impl = {
   //! emscripten_glfw3_window_init
   emscripten_glfw3_window_init__deps: ['$findEventTarget'],
   emscripten_glfw3_window_init__proxy: 'sync',
+  emscripten_glfw3_window_init__sig: 'ipp',
   emscripten_glfw3_window_init: (glfwWindow, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
 
@@ -534,6 +543,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_on_created
   emscripten_glfw3_window_on_created__proxy: 'sync',
+  emscripten_glfw3_window_on_created__sig: 'vp',
   emscripten_glfw3_window_on_created: (glfwWindow) => {
     if(Module.glfwOnWindowCreated) {
       Module.glfwOnWindowCreated(glfwWindow, GLFW3.fWindowContexts[glfwWindow].selector);
@@ -542,6 +552,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_destroy
   emscripten_glfw3_window_destroy__proxy: 'sync',
+  emscripten_glfw3_window_destroy__sig: 'vp',
   emscripten_glfw3_window_destroy: (glfwWindow) => {
     if(GLFW3.fWindowContexts)
     {
@@ -574,6 +585,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_change_focus
   emscripten_glfw3_window_change_focus__proxy: 'sync',
+  emscripten_glfw3_window_change_focus__sig: 'vpi',
   emscripten_glfw3_window_change_focus: (glfwWindow, isFocussed) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     if(isFocussed) { canvas.focus(); } else { canvas.blur(); }
@@ -581,6 +593,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_set_size
   emscripten_glfw3_window_set_size__proxy: 'sync',
+  emscripten_glfw3_window_set_size__sig: 'vpiiii',
   emscripten_glfw3_window_set_size: (glfwWindow, width, height, fbWidth, fbHeight) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const canvas = ctx.canvas;
@@ -602,6 +615,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_get_position
   emscripten_glfw3_window_get_position__proxy: 'sync',
+  emscripten_glfw3_window_get_position__sig: 'vppp',
   emscripten_glfw3_window_get_position: (glfwWindow, x, y) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     const rect = getBoundingClientRect(canvas);
@@ -611,6 +625,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_set_standard_cursor
   emscripten_glfw3_window_set_standard_cursor__proxy: 'sync',
+  emscripten_glfw3_window_set_standard_cursor__sig: 'vpp',
   emscripten_glfw3_window_set_standard_cursor: (glfwWindow, cursor) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(cursor)
@@ -621,6 +636,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_set_custom_cursor
   emscripten_glfw3_window_set_custom_cursor__proxy: 'sync',
+  emscripten_glfw3_window_set_custom_cursor__sig: 'vppii',
   emscripten_glfw3_window_set_custom_cursor: (glfwWindow, glfwCursor, xhot, yhot) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const cursor = GLFW3.fCustomCursors[glfwCursor];
@@ -632,12 +648,14 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_get_computed_opacity
   emscripten_glfw3_window_get_computed_opacity__proxy: 'sync',
+  emscripten_glfw3_window_get_computed_opacity__sig: 'fp',
   emscripten_glfw3_window_get_computed_opacity: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("opacity");
   },
 
   //! emscripten_glfw3_window_set_opacity
   emscripten_glfw3_window_set_opacity__proxy: 'sync',
+  emscripten_glfw3_window_set_opacity__sig: 'vpf',
   emscripten_glfw3_window_set_opacity: (glfwWindow, opacity) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     ctx.setCSSValue("opacity", opacity);
@@ -645,12 +663,14 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_window_get_computed_visibility
   emscripten_glfw3_window_get_computed_visibility__proxy: 'sync',
+  emscripten_glfw3_window_get_computed_visibility__sig: 'ip',
   emscripten_glfw3_window_get_computed_visibility: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("display") !== "none";
   },
 
   //! emscripten_glfw3_window_set_visibility
   emscripten_glfw3_window_set_visibility__proxy: 'sync',
+  emscripten_glfw3_window_set_visibility__sig: 'vpi',
   emscripten_glfw3_window_set_visibility: (glfwWindow, visible) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(!visible)
@@ -661,6 +681,7 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_create_custom_cursor
   emscripten_glfw3_create_custom_cursor__proxy: 'sync',
+  emscripten_glfw3_create_custom_cursor__sig: 'vpiip',
   emscripten_glfw3_create_custom_cursor: (glfwCursor, width, height, pixels) => {
     // Use a canvas element to get a dataURL that will be used as the CSS value (url(xx))
     const canvas = document.createElement('canvas');
@@ -683,12 +704,14 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_destroy_custom_cursor
   emscripten_glfw3_destroy_custom_cursor__proxy: 'sync',
+  emscripten_glfw3_destroy_custom_cursor__sig: 'vp',
   emscripten_glfw3_destroy_custom_cursor: (glfwCursor) => {
     delete GLFW3.fCustomCursors[glfwCursor];
   },
 
   //! emscripten_glfw3_context_make_canvas_resizable
   emscripten_glfw3_context_make_canvas_resizable__proxy: 'sync',
+  emscripten_glfw3_context_make_canvas_resizable__sig: 'ippp',
   emscripten_glfw3_context_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
     resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
     handleSelector = handleSelector ? UTF8ToString(handleSelector) : null;
@@ -697,12 +720,14 @@ let emscripten_glfw3_impl = {
 
   //! emscripten_glfw3_context_unmake_canvas_resizable
   emscripten_glfw3_context_unmake_canvas_resizable__proxy: 'sync',
+  emscripten_glfw3_context_unmake_canvas_resizable__sig: 'ip',
   emscripten_glfw3_context_unmake_canvas_resizable: (glfwWindow) => {
     return GLFW3.unmakeCanvasResizable(glfwWindow);
   },
 
   // emscripten_glfw3_context_set_clipboard_string
   emscripten_glfw3_context_set_clipboard_string__proxy: 'sync',
+  emscripten_glfw3_context_set_clipboard_string__sig: 'vp',
   emscripten_glfw3_context_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
     const errorHandler = (err) => {
@@ -733,6 +758,7 @@ let emscripten_glfw3_impl = {
 
   // emscripten_glfw3_context_open_url
   emscripten_glfw3_context_open_url__proxy: 'sync',
+  emscripten_glfw3_context_open_url__sig: 'vpp',
   emscripten_glfw3_context_open_url: (url, target) => {
     if(url) {
       url = UTF8ToString(url);
@@ -745,6 +771,7 @@ let emscripten_glfw3_impl = {
 
   // emscripten_glfw3_context_is_runtime_platform_apple
   emscripten_glfw3_context_is_runtime_platform_apple__proxy: 'sync',
+  emscripten_glfw3_context_is_runtime_platform_apple__sig: 'i',
   emscripten_glfw3_context_is_runtime_platform_apple: () => {
     return navigator.platform.indexOf("Mac") === 0 || navigator.platform === "iPhone";
   },
