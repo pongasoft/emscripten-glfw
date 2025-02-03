@@ -355,15 +355,6 @@ void Window::setCursorPos(Vec2<double> const &iPos)
 }
 
 //------------------------------------------------------------------------
-// Window::setCursorPos
-//------------------------------------------------------------------------
-template<typename E>
-void Window::setCursorPos(E const *iEvent)
-{
-  setCursorPos({static_cast<double>(iEvent->targetX - fPos.x), static_cast<double>(iEvent->targetY - fPos.y)});
-}
-
-//------------------------------------------------------------------------
 // Window::onGlobalMouseMove
 //------------------------------------------------------------------------
 void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
@@ -380,7 +371,7 @@ void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
   }
   else
   {
-    setCursorPos(iEvent);
+    setCursorPos({static_cast<double>(iEvent->targetX - fPos.x), static_cast<double>(iEvent->targetY - fPos.y)});
   }
 }
 
@@ -692,7 +683,7 @@ void Window::onPointerLock()
   fMouse.fCursorLockResidual = {};
   fMouse.fCursorPosBeforePointerLock = fMouse.fCursorPos;
   fMouse.fCursorMode = GLFW_CURSOR_DISABLED;
-  setCursorPos({});
+  setCursorPos(Vec2<double>{});
 }
 
 //------------------------------------------------------------------------
@@ -797,6 +788,14 @@ bool Window::onMouseButtonUp(int iGLFWButton)
   }
 
   return true;
+}
+
+//------------------------------------------------------------------------
+// Window::setCursorPos
+//------------------------------------------------------------------------
+void Window::setCursorPos(EmscriptenTouchPoint const *iTouchPoint)
+{
+  setCursorPos({static_cast<double>(iTouchPoint->clientX - fPos.x), static_cast<double>(iTouchPoint->clientY - fPos.y)});
 }
 
 //------------------------------------------------------------------------

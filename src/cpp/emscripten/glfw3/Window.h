@@ -202,6 +202,7 @@ private:
   // touch
 private:
   EventListener<EmscriptenTouchEvent> fOnTouchStart{};
+  void setCursorPos(EmscriptenTouchPoint const *iTouchPoint);
   void onGlobalTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchPoint const *iTouchPoint);
   void onGlobalTouchMove(EmscriptenTouchPoint const *iTouchPoint);
   void onGlobalTouchEnd(EmscriptenTouchPoint const *iTouchPoint);
@@ -210,8 +211,6 @@ private:
   void addOrRemoveEventListeners(bool iAdd);
   inline float getScale() const { return isHiDPIAware() ? fMonitorScale : 1.0f; }
   void setCursorPos(Vec2<double> const &iPos);
-  template<typename E>
-  void setCursorPos(E const *iEvent);
   void onGlobalMouseMove(EmscriptenMouseEvent const *iEvent);
   void computePos(bool iAdjustCursor);
 
