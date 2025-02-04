@@ -316,9 +316,10 @@ let emscripten_glfw3_impl = {
       var lastDownX = 0;
       var lastDownY = 0;
       var size = undefined;
+      var touchId = undefined;
 
       ctx.fCanvasResize.onSizeChanged = (width, height) => {
-        if (!size) { // while not resizing (otherwise it conflicts)
+        if (size === undefined) { // while not resizing (otherwise it conflicts)
           GLFW3.setCSSValue(resizable, 'width', `${width}px`);
           GLFW3.setCSSValue(resizable, 'height', `${height}px`);
         }
@@ -331,7 +332,6 @@ let emscripten_glfw3_impl = {
 
       // mouse down (target handle) => record size + location
       const onMouseDown = (e) => {
-        e.preventDefault();
         size = computeSize(resizable);
         lastDownX = e.clientX;
         lastDownY = e.clientY;
@@ -342,21 +342,20 @@ let emscripten_glfw3_impl = {
 
       // mouse move (target window) => if resizing, compute new size and make resizable this size
       const onMouseMove = (e) => {
-        if (!size) {
-          return;
+        if (size !== undefined) {
+          var offsetX = lastDownX - e.clientX;
+          var offsetY = lastDownY - e.clientY;
+          size.width -= offsetX;
+          size.height -= offsetY;
+          if (size.width < 0)
+            size.width = 0;
+          if (size.height < 0)
+            size.height = 0;
+          GLFW3.setCSSValue(resizable, 'width', `${size.width}px`);
+          GLFW3.setCSSValue(resizable, 'height', `${size.height}px`);
+          lastDownX = e.clientX;
+          lastDownY = e.clientY;
         }
-        var offsetX = lastDownX - e.clientX;
-        var offsetY = lastDownY - e.clientY;
-        size.width -= offsetX;
-        size.height -= offsetY;
-        if (size.width < 0)
-          size.width = 0;
-        if (size.height < 0)
-          size.height = 0;
-        GLFW3.setCSSValue(resizable, 'width', `${size.width}px`);
-        GLFW3.setCSSValue(resizable, 'height', `${size.height}px`);
-        lastDownX = e.clientX;
-        lastDownY = e.clientY;
       };
 
       window.addEventListener('mousemove', onMouseMove);
@@ -364,7 +363,7 @@ let emscripten_glfw3_impl = {
 
       // mouse up (target window) => if resizing, compute canvas size and adjust resizable accordingly
       const onMouseUp = (e) => {
-        if (size) {
+        if (size !== undefined) {
           const canvasSize = computeSize(ctx.canvas);
           GLFW3.setCSSValue(resizable, 'width', `${canvasSize.width}px`);
           GLFW3.setCSSValue(resizable, 'height', `${canvasSize.height}px`);
@@ -374,6 +373,48 @@ let emscripten_glfw3_impl = {
 
       window.addEventListener('mouseup', onMouseUp);
       ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('mouseup', onMouseUp); });
+
+      // touchstart
+      const onTouchStart = (e) => {
+        if (touchId === undefined && e.touches && e.touches.length === 1) {
+          const touch = e.touches[0];
+          touchId = touch.identifier;
+          e.preventDefault();
+          onMouseDown(touch);
+        }
+      };
+
+      handle.addEventListener('touchstart', onTouchStart);
+      ctx.fCanvasResize.destructors.push(() => { handle.removeEventListener('touchstart', onTouchStart); });
+
+      // touchmove
+      const onTouchMove = (e) => {
+        if (size !== undefined && touchId !== undefined) {
+          const touch = e.changedTouches ? Array.from(e.changedTouches).find(touch => touch.identifier === touchId) : undefined;
+          if (touch !== undefined) {
+            onMouseMove(touch);
+          }
+        }
+      };
+
+      window.addEventListener('touchmove', onTouchMove);
+      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchmove', onTouchMove); });
+
+      // touchend/touchcancel
+      const onTouchEnd = (e) => {
+        if (size !== undefined && touchId !== undefined) {
+          const touch = e.changedTouches ? Array.from(e.changedTouches).find(touch => touch.identifier === touchId) : undefined;
+          if (touch !== undefined) {
+            touchId = undefined;
+            onMouseUp(touch);
+          }
+        }
+      };
+
+      window.addEventListener('touchend', onTouchEnd);
+      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchend', onTouchEnd); });
+      window.addEventListener('touchcancel', onTouchEnd);
+      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchcancel', onTouchEnd); });
 
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     },
