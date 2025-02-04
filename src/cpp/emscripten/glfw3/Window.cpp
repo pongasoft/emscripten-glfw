@@ -803,9 +803,9 @@ void Window::setCursorPos(EmscriptenTouchPoint const *iTouchPoint)
 //------------------------------------------------------------------------
 void Window::onGlobalTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchPoint const *iTouchPoint)
 {
+  setCursorPos(iTouchPoint);
   if(iOriginWindow == asOpaquePtr())
     onMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT);
-  setCursorPos(iTouchPoint);
 }
 
 
