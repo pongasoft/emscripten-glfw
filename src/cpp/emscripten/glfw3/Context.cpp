@@ -629,7 +629,8 @@ bool Context::onTouchEnd(EmscriptenTouchEvent const *iEvent)
     for(auto &w: fWindows)
       w->onGlobalTouchEnd(touchPoint);
 #else
-    fSingleWindow && fSingleWindow->onGlobalTouchEnd(touchPoint);
+    if(fSingleWindow)
+      fSingleWindow->onGlobalTouchEnd(touchPoint);
 #endif
   }
   return false;
