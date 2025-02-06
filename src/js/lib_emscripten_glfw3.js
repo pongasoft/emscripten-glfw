@@ -245,6 +245,10 @@ let emscripten_glfw3_impl = {
         const glfwWindow = ctx.glfwWindow;
 
         ctx.fCanvasResize = { target: canvasResize, destructors: [] };
+        ctx.fCanvasResize.addEventListener = (elt, type, listener) => {
+          elt.addEventListener(type, listener);
+          ctx.fCanvasResize.destructors.push(() => { elt.removeEventListener(type, listener); });
+        }
         ctx.fCanvasResize.destroy = () => {
           for(let destructor of ctx.fCanvasResize.destructors)
             destructor();
@@ -337,8 +341,7 @@ let emscripten_glfw3_impl = {
         lastDownY = e.clientY;
       };
 
-      handle.addEventListener('mousedown', onMouseDown);
-      ctx.fCanvasResize.destructors.push(() => { handle.removeEventListener('mousedown', onMouseDown); });
+      ctx.fCanvasResize.addEventListener(handle, 'mousedown', onMouseDown);
 
       // mouse move (target window) => if resizing, compute new size and make resizable this size
       const onMouseMove = (e) => {
@@ -358,8 +361,7 @@ let emscripten_glfw3_impl = {
         }
       };
 
-      window.addEventListener('mousemove', onMouseMove);
-      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('mousemove', onMouseMove); });
+      ctx.fCanvasResize.addEventListener(window, 'mousemove', onMouseMove);
 
       // mouse up (target window) => if resizing, compute canvas size and adjust resizable accordingly
       const onMouseUp = (e) => {
@@ -371,8 +373,7 @@ let emscripten_glfw3_impl = {
         }
       };
 
-      window.addEventListener('mouseup', onMouseUp);
-      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('mouseup', onMouseUp); });
+      ctx.fCanvasResize.addEventListener(window, 'mouseup', onMouseUp);
 
       // touchstart
       const onTouchStart = (e) => {
@@ -384,8 +385,7 @@ let emscripten_glfw3_impl = {
         }
       };
 
-      handle.addEventListener('touchstart', onTouchStart);
-      ctx.fCanvasResize.destructors.push(() => { handle.removeEventListener('touchstart', onTouchStart); });
+      ctx.fCanvasResize.addEventListener(handle, 'touchstart', onTouchStart);
 
       // touchmove
       const onTouchMove = (e) => {
@@ -397,8 +397,7 @@ let emscripten_glfw3_impl = {
         }
       };
 
-      window.addEventListener('touchmove', onTouchMove);
-      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchmove', onTouchMove); });
+      ctx.fCanvasResize.addEventListener(window, 'touchmove', onTouchMove);
 
       // touchend/touchcancel
       const onTouchEnd = (e) => {
@@ -411,10 +410,8 @@ let emscripten_glfw3_impl = {
         }
       };
 
-      window.addEventListener('touchend', onTouchEnd);
-      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchend', onTouchEnd); });
-      window.addEventListener('touchcancel', onTouchEnd);
-      ctx.fCanvasResize.destructors.push(() => { window.removeEventListener('touchcancel', onTouchEnd); });
+      ctx.fCanvasResize.addEventListener(window, 'touchend', onTouchEnd);
+      ctx.fCanvasResize.addEventListener(window, 'touchcancel', onTouchEnd);
 
       return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
     },
