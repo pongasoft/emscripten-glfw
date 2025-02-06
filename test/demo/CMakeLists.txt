@@ -25,3 +25,8 @@ add_custom_command(
 add_custom_target(copy_shell_html DEPENDS ${SHELL_DST})
 
 add_dependencies(${target} copy_shell_html)
+
+# To build using emcc:
+# mkdir /tmp/build
+# cp shell.html /tmp/build/index.html
+# emcc --use-port=../../port/emscripten-glfw3.py src/main.cpp src/Triangle.cpp -o /tmp/build/main.js
