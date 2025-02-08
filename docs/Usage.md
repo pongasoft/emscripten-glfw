@@ -323,6 +323,17 @@ This [image](https://w3c.github.io/gamepad/#remapping), represents the mapping r
 > auto isGuidePressed = glfwGetGamepadState(jid, &state) == GLFW_TRUE && state.buttons[GLFW_GAMEPAD_BUTTON_GUIDE];
 > ```
 
+## Touch support
+
+GLFW does not natively offer an API for touch (mobile) events.
+This library, in a similar fashion to `library_glfw.js`,
+reports _touch_ events using the cursor APIs (for position) (`glfwGetCursorPos` and `glfwSetCursorPosCallback`)
+and left mouse button for presses/releases ( `glfwGetMouseButton` and `glfwSetMouseButtonCallback`).
+
+> [!TIP]
+> When using the [resizable with handle](#how-to-make-the-canvas-resizable-by-the-user) feature,
+> the handle can also be manipulated with touch. 
+
 ## Clipboard support
 
 In the context of the browser, getting access to the clipboard is a bit tricky as there are restrictions imposed by 

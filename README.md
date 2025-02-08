@@ -4,14 +4,14 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - 4.0.2](https://img.shields.io/badge/emscripten-4.0.2-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250117](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250117-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250209](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250209-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![emscripten - 4.0.1](https://img.shields.io/badge/emscripten-4.0.1-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250112](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250112-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - 4.0.2](https://img.shields.io/badge/emscripten-4.0.2-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250117](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250117-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
@@ -34,7 +34,7 @@ Main features:
   `emscripten::glfw3::SetNextWindowCanvasSelector("#canvas2")` to specify which canvas to use)
 * resizable window/canvas (use `emscripten::glfw3::MakeCanvasResizable(...)` to make the canvas resizable by user.
   Use `"window"` as the resize selector for full frame canvas (ex: ImGui))
-* mouse (includes sticky button behavior)
+* mouse (includes sticky button behavior) & touch
 * keyboard (includes sticky key behavior and Meta key workaround)
 * joystick/gamepad
 * fullscreen
@@ -213,6 +213,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20250209 |
 > | 4.0.2      | 3.4.0.20250117 |
 > | 4.0.1      | 3.4.0.20250112 |
 > | 4.0.0      | 3.4.0.20241230 |
@@ -252,10 +253,10 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
-#### 3.4.0.TBD - TBD | TBD
+#### 3.4.0.20250209 - 2025-02-09 | TBD
 
-- Added support for touch (mobile)
-- Added port option `disableTouch` to disable support for touch when not needed (reduces code size)
+- Added support for [touch](docs/Usage.md#touch-support) (mobile)
+- Added support for wasm64 (`-sMEMORY64` Emscripten [option](https://emscripten.org/docs/tools_reference/settings_reference.html#memory64))
 
 #### 3.4.0.20250117 - 2025-01-17 | Emscripten 4.0.2
 
