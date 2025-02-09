@@ -174,6 +174,7 @@ void Context::addOrRemoveEventListeners(bool iAdd)
     fOnMouseMove
       .target(EMSCRIPTEN_EVENT_TARGET_DOCUMENT)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
+        fInputType = InputType::kMouse;
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
         for(auto &w: fWindows)
           w->onGlobalMouseMove(iEvent);
@@ -317,11 +318,11 @@ void Context::computeWindowPos()
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
   {
-    w->computePos(!isTrackingTouch());
+    w->computePos(fInputType != InputType::kTouch);
   }
 #else
   if(fSingleWindow)
-    fSingleWindow->computePos(!isTrackingTouch());
+    fSingleWindow->computePos(fInputType != InputType::kTouch);
 #endif
 
 }
@@ -575,6 +576,8 @@ EmscriptenTouchPoint const *findFirstTouchPoint(EmscriptenTouchEvent const *iEve
 //------------------------------------------------------------------------
 bool Context::onTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchEvent const *iEvent)
 {
+  fInputType = InputType::kTouch;
+
   // we don't handle multitouch
   if(isTrackingTouch())
     return false;

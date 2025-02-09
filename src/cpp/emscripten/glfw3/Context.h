@@ -125,6 +125,8 @@ public:
   friend class Window;
 
 private:
+  enum class InputType { kUnknown, kMouse, kTouch };
+private:
   Context();
   std::shared_ptr<Window> findWindow(GLFWwindow *iWindow) const;
   std::shared_ptr<Monitor> findMonitor(GLFWmonitor *iMonitor) const;
@@ -163,6 +165,7 @@ private:
   Config fConfig{};
   float fScale{1.0f};
   double fInitialTime{getPlatformTimerValue()};
+  InputType fInputType{InputType::kUnknown};
 
   // clipboard
   Clipboard fClipboard{};
