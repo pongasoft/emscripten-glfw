@@ -622,9 +622,9 @@ bool Context::onTouchMove(EmscriptenTouchEvent const *iEvent)
 bool Context::onTouchEnd(EmscriptenTouchEvent const *iEvent)
 {
   auto touchPoint = findTouchPoint(iEvent);
-  fTouchPointId = std::nullopt;
   if(touchPoint)
   {
+    fTouchPointId = std::nullopt;
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
     for(auto &w: fWindows)
       w->onGlobalTouchEnd(touchPoint);
