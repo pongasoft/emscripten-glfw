@@ -71,9 +71,6 @@ def get(ports, settings, shared):
     root_path = os.path.join(ports.get_dir(), port_name)
     source_path = os.path.join(root_path, 'src', 'cpp')
     source_include_paths = [os.path.join(root_path, 'external'), os.path.join(root_path, 'include')]
-    target = os.path.join(port_name, 'GLFW')
-    for source_include_path in source_include_paths:
-      ports.install_headers(os.path.join(source_include_path, 'GLFW'), target=target)
 
     flags = [f'-O{opts["optimizationLevel"]}']
 
@@ -110,11 +107,15 @@ def linker_setup(ports, settings):
     settings.MAX_WEBGL_VERSION = 2
 
 
-# Using contrib.glfw3 to avoid installing headers into top level include path
-# so that we don't conflict with the builtin GLFW headers that emscripten
-# includes
+# Makes GLFW includes accessible without installing them (ex: #include <GLFW/glfw3.h>)
 def process_args(ports):
-  return ['-isystem', ports.get_include_dir(port_name), f'-DEMSCRIPTEN_USE_PORT_CONTRIB_GLFW3={TAG.replace(".", "")}']
+    root_path = os.path.join(ports.get_dir(), port_name)
+    args = [
+        '-I', os.path.join(root_path, 'external'),  # <GLFW/glfw3.h>
+        '-I', os.path.join(root_path, 'include'),   # <GLFW/emscripten_glfw3.h>
+        f'-DEMSCRIPTEN_USE_PORT_CONTRIB_GLFW3={TAG.replace(".", "")}'
+    ]
+    return args
 
 
 def check_option(option, value, error_handler):
