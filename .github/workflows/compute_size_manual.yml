@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        optimizationLevel: ['2', 'z']
 
     steps:
       - name: Checkout code
@@ -27,44 +30,47 @@ jobs:
           source ./emsdk_env.sh
           emcc -v
 
-      - name: Compiling with library_glfw.js
+      - name: Compiling with library_glfw.js (-O${{ matrix.optimizationLevel }})
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
-          mkdir build-with-library_glfw
+          rm -f build
+          mkdir build
           emcc --version
-          emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp -O2 -o build-with-library_glfw/index.html
-          ls -l build-with-library_glfw
-          js_size=$(stat --format="%s" build-with-library_glfw/index.js)
-          wasm_size=$(stat --format="%s" build-with-library_glfw/index.wasm)
+          emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
           total_size=$((js_size + wasm_size))
           echo "js:$js_size, wasm:$wasm_size, total:$total_size"
           echo "TOTAL_SIZE_LIBRARY_GLFW=$total_size" >> $GITHUB_ENV
 
-      - name: Compiling with contrib.glfw3
+      - name: Compiling with contrib.glfw3 (-O${{ matrix.optimizationLevel }})
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
-          mkdir build-with-port
+          rm -f build
+          mkdir build
           emcc --version
-          emcc --use-port=contrib.glfw3 examples/example_minimal/main.cpp -O2 -o build-with-port/index.html
-          ls -l build-with-port
-          js_size=$(stat --format="%s" build-with-port/index.js)
-          wasm_size=$(stat --format="%s" build-with-port/index.wasm)
+          emcc --use-port=contrib.glfw3:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
           total_size=$((js_size + wasm_size))
           delta=$(echo "scale=10; d=($total_size / $TOTAL_SIZE_LIBRARY_GLFW - 1) * 100; scale=2; d/1" | bc)
           echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
 
-      - name: Compiling with contrib.glfw3 (small)
+      - name: Compiling with contrib.glfw3 (small) (-O${{ matrix.optimizationLevel }})
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
+          rm -f build
           mkdir build-with-port-small
           emcc --version
-          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true examples/example_minimal/main.cpp -O2 -o build-with-port-small/index.html
-          ls -l build-with-port-small
-          js_size=$(stat --format="%s" build-with-port-small/index.js)
-          wasm_size=$(stat --format="%s" build-with-port-small/index.wasm)
+          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
           total_size=$((js_size + wasm_size))
           delta=$(echo "scale=10; d=($total_size / $TOTAL_SIZE_LIBRARY_GLFW - 1) * 100; scale=2; d/1" | bc)
           echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"

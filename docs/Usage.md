@@ -540,28 +540,9 @@ Module = {
 
 This implementation being in C++ and implementing far more features than the `library_glfw.js` Emscripten
 implementation, it has an impact on size.
-As of initial release, I ran the following experiment on both implementations using [`example_minimal`](../examples/example_minimal)
 
-| Mode              | `library_glfw.js`                      | This implementation                      | Delta |
-|-------------------|----------------------------------------|------------------------------------------|-------|
-| Debug             | js: 170775, wasm: 75789, total: 246564 | js: 99559, wasm: 4492007, total: 4591566 | 18.8x |
-| Release           | js: 135433, wasm: 8448, total: 143881  | js: 81285, wasm: 80506, total: 161791    | 1.12x |
-| Release (minimal) | -                                      | js: 79402, wasm: 71195, total: 150197    | 1.04x |
-
-* From these numbers, and for obvious reasons, there is more wasm code than JavaScript code in this implementation
-  (which is a good thing).
-* Although the size is pretty terrible in `Debug` mode (almost a 19x size increase), in `Release`
-  mode it is actually only a 12% increase which shows that wasm optimizes quite well :)
-* The last entry in the table shows the same results when compiling with all _disable_ options turned on
-  (`EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK`, `EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT` and
-  `EMSCRIPTEN_GLFW3_DISABLE_WARNING`) for an even smaller footprint
-* Lastly, `.wasm` files compress extremely well, so it is worth serving them compressed
-
-
-## Implementation size (update)
-
-![emscripten - 4.0.2](https://img.shields.io/badge/emscripten-4.0.2-blue)
-![emscripten-glfw-3.4.0.20250112](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
+![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)
+![emscripten-glfw-3.4.0.20250209](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
 
 ```text
 > cd examples/example_minimal
@@ -575,11 +556,8 @@ As of initial release, I ran the following experiment on both implementations us
 
 | Mode              | `library_glfw.js`                     | This implementation                | Delta  |
 |-------------------|---------------------------------------|------------------------------------|--------|
-| Release           |  js:103889, wasm:13831, total:117720  | js:59879, wasm:73001, total:132880 | 12.87% |
-| Release (minimal) | -                                     | js:56724, wasm:65877, total:122601 | 4.14%  |
-
-> [!NOTE]
-> The good news is that Emscripten is improving and this implementation is benefitting from it.
+| Release           |  js:103372, wasm:13833, total:117205  | js:63114, wasm:81074, total:144188 | 23.02% |
+| Release (minimal) | -                                     | js:59959, wasm:73837, total:133796 | 14.15% |
 
 ## GLFW functions
 
