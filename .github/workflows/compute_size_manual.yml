@@ -34,7 +34,7 @@ jobs:
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
-          rm -f build
+          rm -rf build
           mkdir build
           emcc --version
           emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
@@ -49,7 +49,7 @@ jobs:
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
-          rm -f build
+          rm -rf build
           mkdir build
           emcc --version
           emcc --use-port=contrib.glfw3:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
@@ -64,7 +64,7 @@ jobs:
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
-          rm -f build
+          rm -rf build
           mkdir build-with-port-small
           emcc --version
           emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
