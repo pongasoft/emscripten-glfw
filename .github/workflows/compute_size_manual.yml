@@ -65,7 +65,7 @@ jobs:
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
           rm -rf build
-          mkdir build-with-port-small
+          mkdir build
           emcc --version
           emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
           ls -l build
