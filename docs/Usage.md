@@ -544,6 +544,8 @@ implementation, it has an impact on size.
 ![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)
 ![emscripten-glfw-3.4.0.20250209](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
 
+### Using `-O2`
+
 ```text
 > cd examples/example_minimal
 # using library_glfw.js
@@ -558,6 +560,23 @@ implementation, it has an impact on size.
 |-------------------|---------------------------------------|------------------------------------|--------|
 | Release           |  js:103372, wasm:13833, total:117205  | js:63114, wasm:81074, total:144188 | 23.02% |
 | Release (minimal) | -                                     | js:59959, wasm:73837, total:133796 | 14.15% |
+
+### Using `-Oz` (for absolute minimum size vs performance)
+
+```text
+> cd examples/example_minimal
+# using library_glfw.js
+> emcc -sUSE_GLFW=3 main.cpp -Oz -o /tmp/build/index.html
+# using contrib.glfw3
+> emcc --use-port=contrib.glfw3:optimizationLevel=z main.cpp -Oz -o /tmp/build/index.html
+# using contrib.glfw3 (minimal)
+> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true:optimizationLevel=z main.cpp -Oz -o /tmp/build/index.html
+```
+
+| Mode              | `library_glfw.js`                     | This implementation                | Delta  |
+|-------------------|---------------------------------------|------------------------------------|--------|
+| Release           |  js:102659, wasm:12321, total:114980  | js:61131, wasm:59374, total:120505 | 4.80%  |
+| Release (minimal) | -                                     | js:58077, wasm:53940, total:112017 | -2.57% |
 
 ## GLFW functions
 
