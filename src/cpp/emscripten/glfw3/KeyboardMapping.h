@@ -223,7 +223,7 @@ constexpr glfw_scancode_t keyboardEventCodeToScancode(char const *iCode)
     case 0x2C595B54U /* KeyT               */: return DOM_PK_T;                    /* 0x0014 */
     case 0x2C595B59U /* KeyY               */: return DOM_PK_Y;                    /* 0x0015 */
     case 0x2C595B55U /* KeyU               */: return DOM_PK_U;                    /* 0x0016 */
-    case 0X2C595B49U /* KeyI               */: return DOM_PK_I;                    /* 0x0017 */
+    case 0x2C595B49U /* KeyI               */: return DOM_PK_I;                    /* 0x0017 */
     case 0x2C595B4FU /* KeyO               */: return DOM_PK_O;                    /* 0x0018 */
     case 0x2C595B50U /* KeyP               */: return DOM_PK_P;                    /* 0x0019 */
     case 0x45D8158CU /* BracketLeft        */: return DOM_PK_BRACKET_LEFT;         /* 0x001A */

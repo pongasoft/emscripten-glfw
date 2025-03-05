@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# This code is copied from emscripten/toos/create_dom_pk_codes.py and adapted for
+# This code is copied from emscripten/tools/create_dom_pk_codes.py and adapted for
 # the needs of this project (mapping glfw/dom code). It generates a cpp header only
 # file with constexpr implementation and namespace
 
