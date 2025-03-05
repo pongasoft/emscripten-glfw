@@ -39,6 +39,7 @@ input_strings = [
   (0x14, 'KeyT',                 'DOM_PK_T', 'GLFW_KEY_T'),
   (0x15, 'KeyY',                 'DOM_PK_Y', 'GLFW_KEY_Y'),
   (0x16, 'KeyU',                 'DOM_PK_U', 'GLFW_KEY_U'),
+  (0x17, 'KeyI',                 'DOM_PK_I', 'GLFW_KEY_I'),
   (0x18, 'KeyO',                 'DOM_PK_O', 'GLFW_KEY_O'),
   (0x19, 'KeyP',                 'DOM_PK_P', 'GLFW_KEY_P'),
   (0x1A, 'BracketLeft',          'DOM_PK_BRACKET_LEFT', 'GLFW_KEY_LEFT_BRACKET'),

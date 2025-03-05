@@ -51,6 +51,7 @@ constexpr glfw_scancode_t DOM_PK_R                    = 0x0013; /* "KeyR"       
 constexpr glfw_scancode_t DOM_PK_T                    = 0x0014; /* "KeyT"               */
 constexpr glfw_scancode_t DOM_PK_Y                    = 0x0015; /* "KeyY"               */
 constexpr glfw_scancode_t DOM_PK_U                    = 0x0016; /* "KeyU"               */
+constexpr glfw_scancode_t DOM_PK_I                    = 0x0017; /* "KeyI"               */
 constexpr glfw_scancode_t DOM_PK_O                    = 0x0018; /* "KeyO"               */
 constexpr glfw_scancode_t DOM_PK_P                    = 0x0019; /* "KeyP"               */
 constexpr glfw_scancode_t DOM_PK_BRACKET_LEFT         = 0x001A; /* "BracketLeft"        */
@@ -222,6 +223,7 @@ constexpr glfw_scancode_t keyboardEventCodeToScancode(char const *iCode)
     case 0x2C595B54U /* KeyT               */: return DOM_PK_T;                    /* 0x0014 */
     case 0x2C595B59U /* KeyY               */: return DOM_PK_Y;                    /* 0x0015 */
     case 0x2C595B55U /* KeyU               */: return DOM_PK_U;                    /* 0x0016 */
+    case 0X2C595B49U /* KeyI               */: return DOM_PK_I;                    /* 0x0017 */
     case 0x2C595B4FU /* KeyO               */: return DOM_PK_O;                    /* 0x0018 */
     case 0x2C595B50U /* KeyP               */: return DOM_PK_P;                    /* 0x0019 */
     case 0x45D8158CU /* BracketLeft        */: return DOM_PK_BRACKET_LEFT;         /* 0x001A */
@@ -391,6 +393,7 @@ constexpr char const *scancodeToString(glfw_scancode_t iCode)
     case DOM_PK_T:                    return "DOM_PK_T";
     case DOM_PK_Y:                    return "DOM_PK_Y";
     case DOM_PK_U:                    return "DOM_PK_U";
+    case DOM_PK_I:                    return "DOM_PK_I";
     case DOM_PK_O:                    return "DOM_PK_O";
     case DOM_PK_P:                    return "DOM_PK_P";
     case DOM_PK_BRACKET_LEFT:         return "DOM_PK_BRACKET_LEFT";
@@ -554,6 +557,7 @@ constexpr glfw_key_t scancodeToKeyCode(glfw_scancode_t iCode)
     case DOM_PK_T:                    return GLFW_KEY_T;
     case DOM_PK_Y:                    return GLFW_KEY_Y;
     case DOM_PK_U:                    return GLFW_KEY_U;
+    case DOM_PK_I:                    return GLFW_KEY_I;
     case DOM_PK_O:                    return GLFW_KEY_O;
     case DOM_PK_P:                    return GLFW_KEY_P;
     case DOM_PK_BRACKET_LEFT:         return GLFW_KEY_LEFT_BRACKET;
@@ -684,6 +688,7 @@ constexpr glfw_scancode_t keyCodeToScancode(glfw_key_t iCode)
     case GLFW_KEY_T:             return DOM_PK_T;
     case GLFW_KEY_Y:             return DOM_PK_Y;
     case GLFW_KEY_U:             return DOM_PK_U;
+    case GLFW_KEY_I:             return DOM_PK_I;
     case GLFW_KEY_O:             return DOM_PK_O;
     case GLFW_KEY_P:             return DOM_PK_P;
     case GLFW_KEY_LEFT_BRACKET:  return DOM_PK_BRACKET_LEFT;
