@@ -4,14 +4,14 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250209](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250209-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250305](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250305-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![emscripten - 4.0.2](https://img.shields.io/badge/emscripten-4.0.2-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250117](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250117-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250209](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250209-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
@@ -213,18 +213,11 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20250305 |
 > | 4.0.4      | 3.4.0.20250209 |
 > | 4.0.2      | 3.4.0.20250117 |
 > | 4.0.1      | 3.4.0.20250112 |
 > | 4.0.0      | 3.4.0.20241230 |
-> | 3.1.69     | 3.4.0.20241004 |
-> | 3.1.66     | 3.4.0.20240907 |
-> | 3.1.65     | 3.4.0.20240817 |
-> | 3.1.63     | 3.4.0.20240627 |
-> | 3.1.60     | 3.4.0.20240514 |
-> | 3.1.57     | 3.4.0.20240318 |
-> | 3.1.56     | 1.1.0          |
-> | 3.1.55     | 1.0.5          |
 > 
 > Due to the release cadence of Emscripten, if you want to be in charge of which version you use, you can simply
 > use the port checked in under `port`: `--use-port=port/emscripten-glfw3.py`
@@ -253,7 +246,11 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
-#### 3.4.0.20250209 - 2025-02-09 | 4.0.4
+#### 3.4.0.20250305 - 2025-03-05 | Emscripten TBD
+
+- Fixed missing `i` key in keyboard mapping. Thanks, @iarwain for PR #18.
+
+#### 3.4.0.20250209 - 2025-02-09 | Emscripten 4.0.4
 
 - Added support for [touch](docs/Usage.md#touch-support) (mobile)
 - Added support for wasm64 (`-sMEMORY64` Emscripten [option](https://emscripten.org/docs/tools_reference/settings_reference.html#memory64))
@@ -268,11 +265,11 @@ Release Notes
 - Re-enable GL extensions by default (regression introduced in 3.4.0.20241230). Fixes #13.
 - Changed port to automatically set the proper Emscripten flags to enable `GLFW_CONTEXT_VERSION_MAJOR`. Fixes #14.
 
-#### 3.4.0.20241230 - 2024-12-30 | 4.0.0
+#### 3.4.0.20241230 - 2024-12-30 | Emscripten 4.0.0
 
 - Added support for offscreen canvas (check [example_offscreen_canvas](examples/example_offscreen_canvas) for a comprehensive example)
 
-#### 3.4.0.20241221 - 2024-12-21 | 4.0.0
+#### 3.4.0.20241221 - 2024-12-21 | Emscripten 4.0.0
 
 - Added support for pthread (check [example_pthread](examples/example_pthread) for a comprehensive example)
 
