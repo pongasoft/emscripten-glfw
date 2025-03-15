@@ -541,8 +541,8 @@ Module = {
 This implementation being in C++ and implementing far more features than the `library_glfw.js` Emscripten
 implementation, it has an impact on size.
 
-![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)
-![emscripten-glfw-3.4.0.20250209](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250112-blue)
+![emscripten - 4.0.5](https://img.shields.io/badge/emscripten-4.0.5-blue)
+![emscripten-glfw-3.4.0.20250305](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250305-blue)
 
 ### Using `-O2`
 
@@ -556,10 +556,10 @@ implementation, it has an impact on size.
 > emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true main.cpp -O2 -o /tmp/build/index.html
 ```
 
-| Mode              | `library_glfw.js`                     | This implementation                | Delta  |
-|-------------------|---------------------------------------|------------------------------------|--------|
-| Release           |  js:103372, wasm:13833, total:117205  | js:63114, wasm:81074, total:144188 | 23.02% |
-| Release (minimal) | -                                     | js:59959, wasm:73837, total:133796 | 14.15% |
+| Mode              | `library_glfw.js`                     | This implementation                | Delta   |
+|-------------------|---------------------------------------|------------------------------------|---------|
+| Release           |   js:102603, wasm:13833, total:116436 | js:63033, wasm:81050, total:144083 | 23.74%  |
+| Release (minimal) | -                                     | js:59878, wasm:73813, total:133691 | 14.81%  |
 
 ### Using `-Oz` (for absolute minimum size vs performance)
 
@@ -575,8 +575,8 @@ implementation, it has an impact on size.
 
 | Mode              | `library_glfw.js`                     | This implementation                | Delta  |
 |-------------------|---------------------------------------|------------------------------------|--------|
-| Release           |  js:102659, wasm:12321, total:114980  | js:61131, wasm:59374, total:120505 | 4.80%  |
-| Release (minimal) | -                                     | js:58077, wasm:53940, total:112017 | -2.57% |
+| Release           |  js:101958, wasm:12321, total:114279  | js:61118, wasm:59394, total:120512 | 5.45%  |
+| Release (minimal) | -                                     | js:58064, wasm:53960, total:112024 | -1.97% |
 
 ## GLFW functions
 

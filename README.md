@@ -4,15 +4,11 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![emscripten - 4.0.5](https://img.shields.io/badge/emscripten-4.0.5-blue)](https://emscripten.org)
 [![contrib.glfw3 - 3.4.0.20250305](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250305-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
-
-[![emscripten - 4.0.4](https://img.shields.io/badge/emscripten-4.0.4-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250209](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250209-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
-[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
 ----
@@ -213,7 +209,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.4.0.20250305 |
+> | 4.0.5      | 3.4.0.20250305 |
 > | 4.0.4      | 3.4.0.20250209 |
 > | 4.0.2      | 3.4.0.20250117 |
 > | 4.0.1      | 3.4.0.20250112 |
@@ -246,9 +242,9 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
-#### 3.4.0.20250305 - 2025-03-05 | Emscripten TBD
+#### 3.4.0.20250305 - 2025-03-05 | Emscripten 4.0.5
 
-- Fixed missing `i` key in keyboard mapping. Thanks, @iarwain for PR #18.
+- Fixed missing `i` key in keyboard mapping. Thanks, [@iarwain](https://github.com/iarwain) for PR [#18](https://github.com/pongasoft/emscripten-glfw/pull/18).
 
 #### 3.4.0.20250209 - 2025-02-09 | Emscripten 4.0.4
 
