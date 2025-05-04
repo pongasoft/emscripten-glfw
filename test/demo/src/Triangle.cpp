@@ -358,7 +358,7 @@ void setHtmlValue(std::string_view iElementSelector, std::string_view iValue)
 //------------------------------------------------------------------------
 void hideHTMLElement(std::string_view iElementSelector)
 {
-  EM_ASM({ Module.hideHTMLElement(UTF8ToString($0)); }, iElementSelector.data());
+  EM_ASM({ Module['hideHTMLElement'](UTF8ToString($0)); }, iElementSelector.data());
 }
 
 //------------------------------------------------------------------------
@@ -366,13 +366,13 @@ void hideHTMLElement(std::string_view iElementSelector)
 //------------------------------------------------------------------------
 void showHTMLElement(std::string_view iElementSelector)
 {
-  EM_ASM({ Module.showHTMLElement(UTF8ToString($0)); }, iElementSelector.data());
+  EM_ASM({ Module['showHTMLElement'](UTF8ToString($0)); }, iElementSelector.data());
 }
 
 //------------------------------------------------------------------------
 // getLMBAction
 //------------------------------------------------------------------------
-EM_JS(int, getLMBAction, (char const *iAction), { return Module.getLMBAction(UTF8ToString(iAction)); })
+EM_JS(int, getLMBAction, (char const *iAction), { return Module['getLMBAction'](UTF8ToString(iAction)); })
 
 //------------------------------------------------------------------------
 // setHtmlValue

@@ -47,7 +47,7 @@ void jsRenderFrame(GLFWwindow *glfwWindow, int w, int h, int fw, int fh, double 
 {
   MAIN_THREAD_EM_ASM(
     {
-      const ctx = Module.glfwGetCanvas($0).getContext('2d');
+      const ctx = Module['glfwGetCanvas']($0).getContext('2d');
       const w = $1; const h = $2; const fw = $3; const fh = $4;
       const color = $7;
       const c1 = UTF8ToString($8); const c2 = UTF8ToString($9);

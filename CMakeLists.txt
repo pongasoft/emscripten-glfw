@@ -77,7 +77,11 @@ macro(add_glfw_lib LIBRARY_NAME)
       $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK}>:EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK>
       $<$<BOOL:${EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT}>:EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT>
   )
-  target_link_options(${LIBRARY_NAME} PUBLIC "-lGL" "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js")
+  target_link_options(${LIBRARY_NAME} PUBLIC
+      "-lGL"
+      "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js"
+      "$<$<CONFIG:Release>:--closure=1>"
+  )
 endmacro()
 
 # main library

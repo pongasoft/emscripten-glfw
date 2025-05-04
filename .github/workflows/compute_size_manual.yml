@@ -37,7 +37,7 @@ jobs:
           rm -rf build
           mkdir build
           emcc --version
-          emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          emcc -sUSE_GLFW=3 examples/example_minimal/main.cpp --closure=1 -O${{ matrix.optimizationLevel }} -o build/index.html
           ls -l build
           js_size=$(stat --format="%s" build/index.js)
           wasm_size=$(stat --format="%s" build/index.wasm)
@@ -52,7 +52,7 @@ jobs:
           rm -rf build
           mkdir build
           emcc --version
-          emcc --use-port=contrib.glfw3:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          emcc --use-port=contrib.glfw3:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp --closure=1 -O${{ matrix.optimizationLevel }} -o build/index.html
           ls -l build
           js_size=$(stat --format="%s" build/index.js)
           wasm_size=$(stat --format="%s" build/index.wasm)
@@ -67,7 +67,7 @@ jobs:
           rm -rf build
           mkdir build
           emcc --version
-          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp -O${{ matrix.optimizationLevel }} -o build/index.html
+          emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=${{ matrix.optimizationLevel }} examples/example_minimal/main.cpp --closure=1 -O${{ matrix.optimizationLevel }} -o build/index.html
           ls -l build
           js_size=$(stat --format="%s" build/index.js)
           wasm_size=$(stat --format="%s" build/index.wasm)

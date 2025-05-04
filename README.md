@@ -111,14 +111,14 @@ Examples (part of this project)
   </tr>
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_minimal/main.html">example_minimal</a> (<a href="examples/example_minimal">src</a>)</td>
-    <td>The purpose of this example is to be as minimal as possible: initializes glfw, creates a window, then destroys it and terminates glfw.
+    <td>The purpose of this example is to be as minimal as possible: initializes glfw, creates a window, then destroys it, and terminates glfw.
       Uses the default shell that comes with emscripten</td>
   </tr>
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container/main.html">example_resizable_container</a> (<a href="examples/example_resizable_container">src</a>)</td>
     <td>The purpose of this example is to demonstrate how to make the canvas resizable with another container (a
       surrounding div) driving its size. The container width is proportional to the size of the window and so as the
-      window gets resized so does the div, and so does the canvas</td>
+      window gets resized, so does the div, and so does the canvas</td>
   </tr>
   <tr>
     <td><a href="https://pongasoft.github.io/emscripten-glfw/examples/example_resizable_container_with_handle/main.html">example_resizable_container_with_handle</a> (<a href="examples/example_resizable_container_with_handle">src</a>)</td>

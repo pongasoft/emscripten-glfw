@@ -67,8 +67,8 @@ std::optional<Event> popEvent()
   int type{};
   GLFWwindow *w;
   EM_ASM({
-           if(Module.hasEvents()) {
-             const event = Module.popEvent();
+           if(Module['hasEvents']()) {
+             const event = Module['popEvent']();
              setValue($0, event.type, 'i32');
              setValue($1, event.canvas, '*');
            }
@@ -177,9 +177,9 @@ int main()
   setHtmlValue("#version", glfwGetVersionString());
   setHtmlValue("#action-key", emscripten::glfw3::IsRuntimePlatformApple() ? "&#x2318" : "CTRL");
 
-  auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas1Enabled; ));
+  auto canvas1Enabled = static_cast<bool>(EM_ASM_INT( return Module['canvas1Enabled']; ));
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
-  auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module.canvas2Enabled; ));
+  auto canvas2Enabled = static_cast<bool>(EM_ASM_INT( return Module['canvas2Enabled']; ));
 #else
   auto canvas2Enabled = false;
 #endif
