@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(emscripten-glfw_RELEASE_YEAR  "2025")
-set(emscripten-glfw_RELEASE_MONTH "03"  )
-set(emscripten-glfw_RELEASE_DAY   "05"  )
+set(emscripten-glfw_RELEASE_MONTH "06"  )
+set(emscripten-glfw_RELEASE_DAY   "07"  )
 
 set(emscripten-glfw_GLFW_VERSION "3.4.0")
 
@@ -55,15 +55,8 @@ if(NOT EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK)
   list(APPEND glfw3_sources src/cpp/emscripten/glfw3/Joystick.cpp)
 endif()
 
-# This is very convoluted, but the only way I found for the zip file
-# checksum to not change every time CMake is rerun
-configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h")
-set(VERSION_FILE "${CMAKE_CURRENT_LIST_DIR}/include/GLFW/emscripten_glfw3_version.h")
-file(SHA256 "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" NEW_VERSION_HASH)
-file(SHA256 "${VERSION_FILE}" OLD_VERSION_HASH)
-if(NOT ${NEW_VERSION_HASH} STREQUAL ${OLD_VERSION_HASH})
-  configure_file("${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" "${VERSION_FILE}")
-endif()
+# Update the version appropriately
+configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" @ONLY)
 
 macro(add_glfw_lib LIBRARY_NAME)
   add_library(${LIBRARY_NAME} ${glfw3_sources})
@@ -94,14 +87,30 @@ target_compile_options(glfw3_pthread PUBLIC "-pthread")
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   ### create archive/emscripten-glfw3-${emscripten-glfw_VERSION}.zip for the port
   set(ARCHIVE_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive")
+  set(ARCHIVE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/archive-build")
   set(ARCHIVE_NAME "${ARCHIVE_DIR}/emscripten-glfw3-${emscripten-glfw_VERSION}.zip")
+
+  # Read the list of files from archive.txt
+  file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/archive.txt" ARCHIVE_FILES)
+  set(PROCESSED_FILES "")
+
+  # Process each file
+  foreach(FILE ${ARCHIVE_FILES})
+    set(ARCHIVE_FILE "${ARCHIVE_BUILD_DIR}/${FILE}")
+    get_filename_component(FILE_DIR "${ARCHIVE_FILE}" DIRECTORY)
+    file(MAKE_DIRECTORY "${FILE_DIR}")
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${FILE}" "${ARCHIVE_FILE}" @ONLY)
+    list(APPEND PROCESSED_FILES "${ARCHIVE_FILE}")
+  endforeach()
+
   add_custom_target("create-archive"
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      WORKING_DIRECTORY "${ARCHIVE_BUILD_DIR}"
       COMMAND ${CMAKE_COMMAND} -E remove_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${ARCHIVE_DIR}
       COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--mtime=${emscripten-glfw_RELEASE_DATE}" "--files-from=${CMAKE_CURRENT_LIST_DIR}/archive.txt"
       COMMAND ${CMAKE_COMMAND} -E sha512sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha512"
       COMMAND cat "${ARCHIVE_NAME}.sha512"
+      DEPENDS ${PROCESSED_FILES}
   )
 
   ### create a port pointing to archive

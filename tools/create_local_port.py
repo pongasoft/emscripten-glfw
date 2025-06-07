@@ -22,15 +22,15 @@ with open(local_port_file, 'r+') as file:
     lines = file.readlines()
     file.seek(0)
     for line in lines:
-        if 'HASH = ' in line:
-            file.write(line.replace(line, f"HASH = '{sha512_sum}'\n"))
+        if 'SHA512 = ' in line:
+            file.write(line.replace(line, f"SHA512 = '{sha512_sum}'\n"))
         elif 'TAG = ' in line:
             file.write(line.replace(line, f"TAG = '{version}'\n"))
-        elif 'ZIP_URL = ' in line:
+        elif 'EXTERNAL_PORT = ' in line:
             zip_file = os.path.join(binary_dir, 'archive', f'emscripten-glfw3-{version}.zip')
             zip_url = pathlib.Path(zip_file).as_uri()
             file.write(f'# {line}')
-            file.write(line.replace(line, f"ZIP_URL = '{zip_url}'\n"))
+            file.write(line.replace(line, f"EXTERNAL_PORT = '{zip_url}'\n"))
         else:
             file.write(line)
     file.truncate()
