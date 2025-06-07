@@ -17,7 +17,7 @@
 TAG = '3.4.0.20250607'
 
 EXTERNAL_PORT = f'https://github.com/pongasoft/emscripten-glfw/releases/download/v{TAG}/emscripten-glfw3-{TAG}.zip'
-SHA512 = 'f554ddc22f5b892e3cb9ef63c2f8b0d495f2db237bd3f75ac53a25decb2eb14321db46a1f1de6f58af601d9bd8dc8dd856c5c8837e3e369eedbce5bdb8a8b0e1'
+SHA512 = '1b264ac8891ffff51b899ca5853d4f945294dde9a9191eb5df9dd4cb26a4b27c5e7dac99cad42466833e9aae76d450de8a4b84381a63214321dc0427fd054f1b'
 PORT_FILE = 'port/glfw3.py'
 
 # contrib port information (required)
