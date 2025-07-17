@@ -51,7 +51,7 @@ opts: Dict[str, Union[str, bool]] = {
 
 port_name = 'emscripten-glfw3'
 
-# parent folder of where this file is located port/emscripten-glfw3.py
+# parent folder of where this file is located port/glfw3.py
 root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 def get_lib_name(settings):

@@ -49,7 +49,7 @@ This section describes the main features implemented by both libraries.
 <tr>
   <th>Feature</th>
   <th><code>emscripten-glfw</code><br>(this implementation)</th>
-  <th><code>library_glfw.js</code><br>(built-in implementation)</th>
+  <th><code>libglfw.js</code><br>(built-in implementation)</th>
 </tr>
 </thead>
   <tbody>

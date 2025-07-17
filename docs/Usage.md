@@ -326,7 +326,7 @@ This [image](https://w3c.github.io/gamepad/#remapping), represents the mapping r
 ## Touch support
 
 GLFW does not natively offer an API for touch (mobile) events.
-This library, in a similar fashion to `library_glfw.js`,
+This library, in a similar fashion to `libglfw.js`,
 reports _touch_ events using the cursor APIs (for position) (`glfwGetCursorPos` and `glfwSetCursorPosCallback`)
 and left mouse button for presses/releases ( `glfwGetMouseButton` and `glfwSetMouseButtonCallback`).
 
@@ -538,45 +538,46 @@ Module = {
 
 ## Implementation size
 
-This implementation being in C++ and implementing far more features than the `library_glfw.js` Emscripten
+This implementation being in C++ and implementing far more features than the `libglfw.js` Emscripten
 implementation, it has an impact on size.
+For obvious reasons, there is far less JavaScript (using `--closure=1` shows a 50% reduction) but far more wasm.
 
-![emscripten - 4.0.6](https://img.shields.io/badge/emscripten-4.0.6-blue)
-![emscripten-glfw-3.4.0.20250305](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250305-blue)
+![emscripten - 4.0.11](https://img.shields.io/badge/emscripten-4.0.11-blue)
+![emscripten-glfw-3.4.0.20250607](https://img.shields.io/badge/emscripten--glfw-3.4.0.20250607-blue)
 
-### Using `-O2`
-
-```text
-> cd examples/example_minimal
-# using library_glfw.js
-> emcc -sUSE_GLFW=3 main.cpp -O2 -o /tmp/build/index.html
-# using contrib.glfw3
-> emcc --use-port=contrib.glfw3 main.cpp -O2 -o /tmp/build/index.html
-# using contrib.glfw3 (minimal)
-> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true main.cpp -O2 -o /tmp/build/index.html
-```
-
-| Mode              | `library_glfw.js`                   | This implementation                | Delta   |
-|-------------------|-------------------------------------|------------------------------------|---------|
-| Release           | js:102629, wasm:13868, total:116497 | js:63066, wasm:81089, total:144155 | 23.74%  |
-| Release (minimal) | -                                   | js:59911, wasm:73852, total:133763 | 14.82%  |
-
-### Using `-Oz` (for absolute minimum size vs performance)
+### Using `-O2` and `--closure=1`
 
 ```text
 > cd examples/example_minimal
-# using library_glfw.js
-> emcc -sUSE_GLFW=3 main.cpp -Oz -o /tmp/build/index.html
+# using libglfw.js
+> emcc -sUSE_GLFW=3 main.cpp --closure=1 -O2 -o /tmp/build/index.html
 # using contrib.glfw3
-> emcc --use-port=contrib.glfw3:optimizationLevel=z main.cpp -Oz -o /tmp/build/index.html
+> emcc --use-port=contrib.glfw3 main.cpp --closure=1 -O2 -o /tmp/build/index.html
 # using contrib.glfw3 (minimal)
-> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true:optimizationLevel=z main.cpp -Oz -o /tmp/build/index.html
+> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true main.cpp --closure=1 -O2 -o /tmp/build/index.html
 ```
 
-| Mode              | `library_glfw.js`                   | This implementation                | Delta  |
-|-------------------|-------------------------------------|------------------------------------|--------|
-| Release           | js:101984, wasm:12356, total:114340 | js:61151, wasm:59432, total:120583 | 5.46%  |
-| Release (minimal) | -                                   | js:58097, wasm:53998, total:112095 | -1.96% |
+| Mode              | `libglfw.js`                      | This implementation                | Delta  |
+|-------------------|-----------------------------------|------------------------------------|--------|
+| Release           | js:43193, wasm:13855, total:57048 | js:25457, wasm:80879, total:106336 | 86.39% |
+| Release (minimal) | -                                 | js:24109, wasm:73756, total:97865  | 71.54% |
+
+### Using `-Oz` and `--closure=1` (for absolute minimum size vs performance)
+
+```text
+> cd examples/example_minimal
+# using libglfw.js
+> emcc -sUSE_GLFW=3 main.cpp --closure=1 -Oz -o /tmp/build/index.html
+# using contrib.glfw3
+> emcc --use-port=contrib.glfw3:optimizationLevel=z main.cpp --closure=1 -Oz -o /tmp/build/index.html
+# using contrib.glfw3 (minimal)
+> emcc --use-port=contrib.glfw3:disableWarning=true:disableJoystick=true:disableMultiWindow=true:disableWebGL2=true:optimizationLevel=z main.cpp --closure=1 -Oz -o /tmp/build/index.html
+```
+
+| Mode              | `libglfw.js`                      | This implementation               | Delta  |
+|-------------------|-----------------------------------|-----------------------------------|--------|
+| Release           | js:42735, wasm:12341, total:55076 | js:23556, wasm:59331, total:82887 | 50.49% |
+| Release (minimal) | -                                 | js:22286, wasm:53931, total:76217 | 38.38% |
 
 ## GLFW functions
 
@@ -591,7 +592,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   <tr>
     <th>Function</th>
     <th style="width:50%;"><code>emscripten-glfw</code><br>(this implementation)</th>
-    <th style="width:50%;"><code>library_glfw.js</code><br>(built-in implementation)</th>
+    <th style="width:50%;"><code>libglfw.js</code><br>(built-in implementation)</th>
   </tr>
   <tr>
     <td>glfwCreateCursor</td>
@@ -625,7 +626,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwExtensionSupported</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same implementation as <code>library_glfw.js</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Same implementation as <code>libglfw.js</code></td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"></td>
   </tr>
   <tr>

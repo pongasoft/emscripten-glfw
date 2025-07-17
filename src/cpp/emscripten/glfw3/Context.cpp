@@ -1201,7 +1201,7 @@ void Context::pollEvents()
 //------------------------------------------------------------------------
 void Context::swapInterval(int iInterval) const
 {
-  // Code copied from library_glfw.js
+  // Code copied from libglfw.js
   // GLFW uses negative values to enable GLX_EXT_swap_control_tear, which we don't have,
   // so just treat negative and positive the same.
   iInterval = std::abs(iInterval);

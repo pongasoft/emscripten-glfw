@@ -253,5 +253,5 @@ int main()
     return mods == 0 && action == GLFW_PRESS && key == GLFW_KEY_F12;
   });
 
-  emscripten_set_main_loop(loop, 0, GLFW_FALSE);
+  emscripten_set_main_loop(loop, 0, false);
 }

@@ -495,7 +495,7 @@ let emscripten_glfw3_impl = {
     return ctx ? ctx.glfwWindow : null;
   },
 
-  //! emscripten_glfw3_context_is_extension_supported (copied from library_glfw.js)
+  //! emscripten_glfw3_context_is_extension_supported (copied from libglfw.js)
   emscripten_glfw3_context_is_extension_supported__proxy: 'sync',
   emscripten_glfw3_context_is_extension_supported__sig: 'ip',
   emscripten_glfw3_context_is_extension_supported: (extension) => {

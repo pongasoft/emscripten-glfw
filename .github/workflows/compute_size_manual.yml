@@ -30,7 +30,7 @@ jobs:
           source ./emsdk_env.sh
           emcc -v
 
-      - name: Compiling with library_glfw.js (-O${{ matrix.optimizationLevel }})
+      - name: Compiling with libglfw.js (-O${{ matrix.optimizationLevel }})
         working-directory: ${{github.workspace}}/emscripten-glfw
         run: |
           source ${{github.workspace}}/emscripten/emsdk_env.sh
