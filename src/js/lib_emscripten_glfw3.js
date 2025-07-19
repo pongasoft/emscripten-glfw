@@ -511,12 +511,6 @@ let emscripten_glfw3_impl = {
     return false;
   },
 
-  //! emscripten_glfw3_context_get_now
-  emscripten_glfw3_context_get_now__sig: 'd',
-  emscripten_glfw3_context_get_now: () => {
-    return performance.now();
-  },
-
   //! emscripten_glfw3_context_set_title
   emscripten_glfw3_context_set_title__proxy: 'sync',
   emscripten_glfw3_context_set_title__sig: 'vp',

@@ -38,7 +38,6 @@ bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
 void emscripten_glfw3_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
 int emscripten_glfw3_context_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
 int emscripten_glfw3_context_unmake_canvas_resizable(GLFWwindow *window);
-double emscripten_glfw3_context_get_now();
 }
 
 namespace emscripten::glfw3 {

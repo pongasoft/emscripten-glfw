@@ -16,10 +16,10 @@
  * @author Yan Pujante
  */
 
+#include <emscripten.h>
 #include "Clipboard.h"
 
 extern "C" {
-double emscripten_glfw3_context_get_now();
 void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
 }
 
@@ -32,7 +32,7 @@ namespace clipboard {
 //------------------------------------------------------------------------
 void Timing::update()
 {
-  fTime = emscripten_glfw3_context_get_now();
+  fTime = emscripten_get_now();
 }
 
 }

@@ -42,7 +42,6 @@ void emscripten_glfw3_context_destroy();
 bool emscripten_glfw3_context_is_any_element_focused();
 bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
 void emscripten_glfw3_context_set_title(char const *iTitle);
-double emscripten_glfw3_context_get_now();
 GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
 GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
 int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
@@ -1162,7 +1161,7 @@ void Context::setTimeInSeconds(double iValue)
 //------------------------------------------------------------------------
 double Context::getPlatformTimerValue()
 {
-  return emscripten_glfw3_context_get_now();
+  return emscripten_get_now();
 }
 
 //------------------------------------------------------------------------

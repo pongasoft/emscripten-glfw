@@ -20,10 +20,6 @@
 #include "Config.h"
 #include "ErrorHandler.h"
 
-extern "C" {
-double emscripten_glfw3_context_get_now();
-}
-
 namespace emscripten::glfw3 {
 
 //------------------------------------------------------------------------
@@ -214,7 +210,7 @@ bool Keyboard::handleSuperKeyPressed(glfw_key_t iKey, bool iRepeat)
       return true;
     }
     // we store the current time (processed in handleSuperPlusKeys)
-    fSuperPlusKeys[iKey] = {static_cast<int>(emscripten_glfw3_context_get_now()), iRepeat};
+    fSuperPlusKeys[iKey] = {static_cast<int>(emscripten_get_now()), iRepeat};
   }
 
   // case when it is the super key itself: some keys might already be down
@@ -224,7 +220,7 @@ bool Keyboard::handleSuperKeyPressed(glfw_key_t iKey, bool iRepeat)
     {
       if(!isSpecialKey(k) && fKeyStates[k] != GLFW_RELEASE)
       {
-        fSuperPlusKeys[k] = {static_cast<int>(emscripten_glfw3_context_get_now()), false};
+        fSuperPlusKeys[k] = {static_cast<int>(emscripten_get_now()), false};
       }
     }
   }
@@ -256,7 +252,7 @@ void Keyboard::handleSuperPlusKeys(GLFWwindow *iWindow, SuperPlusKeyTimeout cons
 {
   auto modifierBits = computeModifierBits();
 
-  auto now = static_cast<int>(emscripten_glfw3_context_get_now());
+  auto now = static_cast<int>(emscripten_get_now());
 
   for(auto it = fSuperPlusKeys.begin(); it != fSuperPlusKeys.end();)
   {
