@@ -46,6 +46,7 @@ set(glfw3_sources
     src/cpp/emscripten/glfw3/Clipboard.cpp
     src/cpp/emscripten/glfw3/Context.cpp
     src/cpp/emscripten/glfw3/ErrorHandler.cpp
+    src/cpp/emscripten/glfw3/Events.cpp
     src/cpp/emscripten/glfw3/Keyboard.cpp
     src/cpp/emscripten/glfw3/Window.cpp
 )
