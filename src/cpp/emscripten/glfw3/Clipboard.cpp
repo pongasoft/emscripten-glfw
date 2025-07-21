@@ -20,7 +20,7 @@
 #include "Clipboard.h"
 
 extern "C" {
-void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
+void emglfw3c_set_clipboard_string(char const *iContent);
 }
 
 namespace emscripten::glfw3 {
@@ -63,7 +63,7 @@ void OSClipboard::writeText(char const *iText)
   if(iText)
   {
     update(iText, nullptr);
-    emscripten_glfw3_context_set_clipboard_string(iText);
+    emglfw3c_set_clipboard_string(iText);
   }
 }
 

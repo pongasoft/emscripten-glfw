@@ -25,19 +25,19 @@
 #include <algorithm>
 
 extern "C" {
-void emscripten_glfw3_context_set_title(char const *iTitle);
-void emscripten_glfw3_window_destroy(GLFWwindow *iWindow);
-void emscripten_glfw3_window_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
-void emscripten_glfw3_window_get_position(GLFWwindow *iWindow, int *oX, int *oY);
-void emscripten_glfw3_window_change_focus(GLFWwindow *iWindow, bool isFocussed);
-void emscripten_glfw3_window_set_standard_cursor(GLFWwindow *iWindow, char const *iCursor);
-void emscripten_glfw3_window_set_custom_cursor(GLFWwindow *iWindow, GLFWcursor *iCursor, int iXHot, int iYHot);
-float emscripten_glfw3_window_get_computed_opacity(GLFWwindow *iWindow);
-void emscripten_glfw3_window_set_opacity(GLFWwindow *iWindow, float iOpacity);
-bool emscripten_glfw3_window_get_computed_visibility(GLFWwindow *iWindow);
-void emscripten_glfw3_window_set_visibility(GLFWwindow *iWindow, bool iVisible);
-int emscripten_glfw3_context_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
-int emscripten_glfw3_context_unmake_canvas_resizable(GLFWwindow *window);
+void emglfw3c_set_title(char const *iTitle);
+void emglfw3w_destroy(GLFWwindow *iWindow);
+void emglfw3w_set_size(GLFWwindow *iWindow, int iWidth, int iHeight, int iFramebufferWidth, int iFramebufferHeight);
+void emglfw3w_get_position(GLFWwindow *iWindow, int *oX, int *oY);
+void emglfw3w_change_focus(GLFWwindow *iWindow, bool isFocussed);
+void emglfw3w_set_standard_cursor(GLFWwindow *iWindow, char const *iCursor);
+void emglfw3w_set_custom_cursor(GLFWwindow *iWindow, GLFWcursor *iCursor, int iXHot, int iYHot);
+float emglfw3w_get_computed_opacity(GLFWwindow *iWindow);
+void emglfw3w_set_opacity(GLFWwindow *iWindow, float iOpacity);
+bool emglfw3w_get_computed_visibility(GLFWwindow *iWindow);
+void emglfw3w_set_visibility(GLFWwindow *iWindow, bool iVisible);
+int emglfw3c_make_canvas_resizable(GLFWwindow *window, char const *canvasResizeSelector, char const *handleSelector);
+int emglfw3c_unmake_canvas_resizable(GLFWwindow *window);
 }
 
 namespace emscripten::glfw3 {
@@ -70,7 +70,7 @@ const std::shared_ptr<StandardCursor> StandardCursor::kCursorHidden = std::make_
 //------------------------------------------------------------------------
 void StandardCursor::set(GLFWwindow *iWindow) const
 {
-  emscripten_glfw3_window_set_standard_cursor(iWindow, fCSSValue);
+  emglfw3w_set_standard_cursor(iWindow, fCSSValue);
 }
 
 //------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void StandardCursor::set(GLFWwindow *iWindow) const
 //------------------------------------------------------------------------
 void CustomCursor::set(GLFWwindow *iWindow) const
 {
-  emscripten_glfw3_window_set_custom_cursor(iWindow, asOpaquePtr(), fXHot, fYHot);
+  emglfw3w_set_custom_cursor(iWindow, asOpaquePtr(), fXHot, fYHot);
 }
 
 //------------------------------------------------------------------------
@@ -97,8 +97,8 @@ Window::Window(Context *iContext, Config iConfig, float iMonitorScale, char cons
 //------------------------------------------------------------------------
 void Window::init(int iWidth, int iHeight)
 {
-  fOpacity = emscripten_glfw3_window_get_computed_opacity(asOpaquePtr());
-  fVisible = emscripten_glfw3_window_get_computed_visibility(asOpaquePtr());
+  fOpacity = emglfw3w_get_computed_opacity(asOpaquePtr());
+  fVisible = emglfw3w_get_computed_visibility(asOpaquePtr());
 
   if(fConfig.fVisible == GLFW_FALSE && fVisible)
     setVisibility(false);
@@ -106,7 +106,7 @@ void Window::init(int iWidth, int iHeight)
   if(fConfig.fFocused)
   {
     focus();
-    emscripten_glfw3_context_set_title(getTitle());
+    emglfw3c_set_title(getTitle());
   }
   else
     blur();
@@ -134,7 +134,7 @@ void Window::destroy()
     addOrRemoveEventListeners(false);
     if(hasGLContext())
       emscripten_webgl_destroy_context(fWebGLContextHandle);
-    emscripten_glfw3_window_destroy(asOpaquePtr());
+    emglfw3w_destroy(asOpaquePtr());
     fDestroyed = true;
   }
 }
@@ -145,7 +145,7 @@ void Window::destroy()
 void Window::changeFocus(bool isFocussed)
 {
   fFocused = isFocussed;
-  emscripten_glfw3_window_change_focus(asOpaquePtr(), isFocussed);
+  emglfw3w_change_focus(asOpaquePtr(), isFocussed);
 }
 
 //------------------------------------------------------------------------
@@ -279,7 +279,7 @@ void Window::getPosition(int *oX, int *oY) const
 void Window::computePos(bool iAdjustCursor)
 {
   Vec2<int> pos{};
-  emscripten_glfw3_window_get_position(asOpaquePtr(), &pos.x, &pos.y);
+  emglfw3w_get_position(asOpaquePtr(), &pos.x, &pos.y);
   if(fPos != pos)
   {
     if(iAdjustCursor && !isPointerLock())
@@ -319,7 +319,7 @@ void Window::setCanvasSize(Vec2<int> const &iSize)
 
   fFramebufferSize = fbSize;
 
-  emscripten_glfw3_window_set_size(asOpaquePtr(), fSize.width, fSize.height, fFramebufferSize.width, fFramebufferSize.height);
+  emglfw3w_set_size(asOpaquePtr(), fSize.width, fSize.height, fFramebufferSize.width, fFramebufferSize.height);
 
   if(sizeChanged)
   {
@@ -381,7 +381,7 @@ void Window::onGlobalMouseMove(EmscriptenMouseEvent const *iEvent)
 void Window::setOpacity(float iOpacity)
 {
   fOpacity = std::clamp(iOpacity, 0.0f, 1.0f);
-  emscripten_glfw3_window_set_opacity(asOpaquePtr(), fOpacity);
+  emglfw3w_set_opacity(asOpaquePtr(), fOpacity);
 }
 
 
@@ -391,7 +391,7 @@ void Window::setOpacity(float iOpacity)
 void Window::setVisibility(bool iVisible)
 {
   fVisible = iVisible;
-  emscripten_glfw3_window_set_visibility(asOpaquePtr(), fVisible);
+  emglfw3w_set_visibility(asOpaquePtr(), fVisible);
   if(fVisible && fConfig.fFocusOnShow)
     focus();
 }
@@ -731,7 +731,7 @@ bool Window::onFocusChange(bool iFocus)
   else
   {
     fContext->onFocus(asOpaquePtr());
-    emscripten_glfw3_context_set_title(getTitle());
+    emglfw3c_set_title(getTitle());
   }
   if(fFocusCallback)
     fFocusCallback(asOpaquePtr(), toGlfwBool(isFocused()));
@@ -973,9 +973,9 @@ bool Window::onExitFullscreen()
 //------------------------------------------------------------------------
 int Window::makeCanvasResizable(std::string_view canvasResizeSelector, std::optional<std::string_view> handleSelector)
 {
-  return emscripten_glfw3_context_make_canvas_resizable(asOpaquePtr(),
-                                                        canvasResizeSelector.data(),
-                                                        handleSelector ? handleSelector->data() : nullptr);
+  return emglfw3c_make_canvas_resizable(asOpaquePtr(),
+                                        canvasResizeSelector.data(),
+                                        handleSelector ? handleSelector->data() : nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -983,7 +983,7 @@ int Window::makeCanvasResizable(std::string_view canvasResizeSelector, std::opti
 //------------------------------------------------------------------------
 int Window::unmakeCanvasResizable()
 {
-  return emscripten_glfw3_context_unmake_canvas_resizable(asOpaquePtr());
+  return emglfw3c_unmake_canvas_resizable(asOpaquePtr());
 }
 
 

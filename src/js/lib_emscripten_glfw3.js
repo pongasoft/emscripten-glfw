@@ -11,7 +11,7 @@ let emscripten_glfw3_impl = {
     Module["glfwMakeCanvasResizable"] = (any, resizableSelector, handleSelector) => { GLFW3.makeCanvasResizable(any, resizableSelector, handleSelector); };
     Module["glfwUnmakeCanvasResizable"] = (any) => { GLFW3.unmakeCanvasResizable(any); };
     Module["glfwRequestFullscreen"] = GLFW3.requestFullscreen;
-    Module["glfwIsRuntimePlatformApple"] = () => { return _emscripten_glfw3_context_is_runtime_platform_apple() };
+    Module["glfwIsRuntimePlatformApple"] = () => { return _emglfw3c_is_runtime_platform_apple() };
     `,
   $GLFW3: {
     fDestructors: [],
@@ -422,11 +422,11 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  //! emscripten_glfw3_context_init
-  emscripten_glfw3_context_init__deps: ['$specialHTMLTargets'],
-  emscripten_glfw3_context_init__proxy: 'sync',
-  emscripten_glfw3_context_init__sig: 'vpfpppppp',
-  emscripten_glfw3_context_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardCallback, requestFullscreen, errorHandler) => {
+  //! emglfw3c_init
+  emglfw3c_init__deps: ['$specialHTMLTargets'],
+  emglfw3c_init__proxy: 'sync',
+  emglfw3c_init__sig: 'vpfpppppp',
+  emglfw3c_init: (context, scale, scaleChangeCallback, windowResizeCallback, keyboardCallback, clipboardCallback, requestFullscreen, errorHandler) => {
     // For backward compatibility with emscripten, defaults to getting the canvas from Module
     specialHTMLTargets["Module['canvas']"] = Module.canvas;
     specialHTMLTargets["window"] = window;
@@ -472,33 +472,33 @@ let emscripten_glfw3_impl = {
     GLFW3.fDestructors.push(() => { document.removeEventListener('paste', GLFW3.onPaste); });
   },
 
-  //! emscripten_glfw3_context_is_any_element_focused
-  emscripten_glfw3_context_is_any_element_focused__proxy: 'sync',
-  emscripten_glfw3_context_is_any_element_focused__sig: 'i',
-  emscripten_glfw3_context_is_any_element_focused: () => {
+  //! emglfw3c_is_any_element_focused
+  emglfw3c_is_any_element_focused__proxy: 'sync',
+  emglfw3c_is_any_element_focused__sig: 'i',
+  emglfw3c_is_any_element_focused: () => {
     return GLFW3.isAnyElementFocused();
   },
 
-  //! emscripten_glfw3_context_get_fullscreen_window
-  emscripten_glfw3_context_get_fullscreen_window__proxy: 'sync',
-  emscripten_glfw3_context_get_fullscreen_window__sig: 'p',
-  emscripten_glfw3_context_get_fullscreen_window: () => {
+  //! emglfw3c_get_fullscreen_window
+  emglfw3c_get_fullscreen_window__proxy: 'sync',
+  emglfw3c_get_fullscreen_window__sig: 'p',
+  emglfw3c_get_fullscreen_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.fullscreenElement);
     return ctx ? ctx.glfwWindow : null;
   },
 
-  //! emscripten_glfw3_context_get_pointer_lock_window
-  emscripten_glfw3_context_get_pointer_lock_window__proxy: 'sync',
-  emscripten_glfw3_context_get_pointer_lock_window__sig: 'p',
-  emscripten_glfw3_context_get_pointer_lock_window: () => {
+  //! emglfw3c_get_pointer_lock_window
+  emglfw3c_get_pointer_lock_window__proxy: 'sync',
+  emglfw3c_get_pointer_lock_window__sig: 'p',
+  emglfw3c_get_pointer_lock_window: () => {
     const ctx = GLFW3.findContextByCanvas(document.pointerLockElement);
     return ctx ? ctx.glfwWindow : null;
   },
 
-  //! emscripten_glfw3_context_is_extension_supported (copied from libglfw.js)
-  emscripten_glfw3_context_is_extension_supported__proxy: 'sync',
-  emscripten_glfw3_context_is_extension_supported__sig: 'ip',
-  emscripten_glfw3_context_is_extension_supported: (extension) => {
+  //! emglfw3c_is_extension_supported (copied from libglfw.js)
+  emglfw3c_is_extension_supported__proxy: 'sync',
+  emglfw3c_is_extension_supported__sig: 'ip',
+  emglfw3c_is_extension_supported: (extension) => {
     extension = UTF8ToString(extension);
     if(!GLFW3.fGLExtensions)
       GLFW3.fGLExtensions = GL.getExtensions();
@@ -511,18 +511,18 @@ let emscripten_glfw3_impl = {
     return false;
   },
 
-  //! emscripten_glfw3_context_set_title
-  emscripten_glfw3_context_set_title__proxy: 'sync',
-  emscripten_glfw3_context_set_title__sig: 'vp',
-  emscripten_glfw3_context_set_title: (title) => {
+  //! emglfw3c_set_title
+  emglfw3c_set_title__proxy: 'sync',
+  emglfw3c_set_title__sig: 'vp',
+  emglfw3c_set_title: (title) => {
     if(title)
       document.title = UTF8ToString(title);
   },
 
-  //! emscripten_glfw3_context_destroy
-  emscripten_glfw3_context_destroy__proxy: 'sync',
-  emscripten_glfw3_context_destroy__sig: 'v',
-  emscripten_glfw3_context_destroy: () => {
+  //! emglfw3c_destroy
+  emglfw3c_destroy__proxy: 'sync',
+  emglfw3c_destroy__sig: 'v',
+  emglfw3c_destroy: () => {
     GLFW3.fWindowContexts = null;
     GLFW3.fCustomCursors = null;
     GLFW3.fCSSValues = null;
@@ -536,11 +536,11 @@ let emscripten_glfw3_impl = {
     GLFW3.fContext = null;
   },
 
-  //! emscripten_glfw3_window_init
-  emscripten_glfw3_window_init__deps: ['$findEventTarget'],
-  emscripten_glfw3_window_init__proxy: 'sync',
-  emscripten_glfw3_window_init__sig: 'ipp',
-  emscripten_glfw3_window_init: (glfwWindow, canvasSelector) => {
+  //! emglfw3w_init
+  emglfw3w_init__deps: ['$findEventTarget'],
+  emglfw3w_init__proxy: 'sync',
+  emglfw3w_init__sig: 'ipp',
+  emglfw3w_init: (glfwWindow, canvasSelector) => {
     canvasSelector = UTF8ToString(canvasSelector);
 
     const canvas =  findEventTarget(canvasSelector);
@@ -573,19 +573,19 @@ let emscripten_glfw3_impl = {
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
 
-  //! emscripten_glfw3_window_on_created
-  emscripten_glfw3_window_on_created__proxy: 'sync',
-  emscripten_glfw3_window_on_created__sig: 'vp',
-  emscripten_glfw3_window_on_created: (glfwWindow) => {
+  //! emglfw3w_on_created
+  emglfw3w_on_created__proxy: 'sync',
+  emglfw3w_on_created__sig: 'vp',
+  emglfw3w_on_created: (glfwWindow) => {
     if(Module.glfwOnWindowCreated) {
       Module.glfwOnWindowCreated(glfwWindow, GLFW3.fWindowContexts[glfwWindow].selector);
     }
   },
 
-  //! emscripten_glfw3_window_destroy
-  emscripten_glfw3_window_destroy__proxy: 'sync',
-  emscripten_glfw3_window_destroy__sig: 'vp',
-  emscripten_glfw3_window_destroy: (glfwWindow) => {
+  //! emglfw3w_destroy
+  emglfw3w_destroy__proxy: 'sync',
+  emglfw3w_destroy__sig: 'vp',
+  emglfw3w_destroy: (glfwWindow) => {
     if(GLFW3.fWindowContexts)
     {
       const ctx = GLFW3.fWindowContexts[glfwWindow];
@@ -615,18 +615,18 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  //! emscripten_glfw3_window_change_focus
-  emscripten_glfw3_window_change_focus__proxy: 'sync',
-  emscripten_glfw3_window_change_focus__sig: 'vpi',
-  emscripten_glfw3_window_change_focus: (glfwWindow, isFocussed) => {
+  //! emglfw3w_change_focus
+  emglfw3w_change_focus__proxy: 'sync',
+  emglfw3w_change_focus__sig: 'vpi',
+  emglfw3w_change_focus: (glfwWindow, isFocussed) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     if(isFocussed) { canvas.focus(); } else { canvas.blur(); }
   },
 
-  //! emscripten_glfw3_window_set_size
-  emscripten_glfw3_window_set_size__proxy: 'sync',
-  emscripten_glfw3_window_set_size__sig: 'vpiiii',
-  emscripten_glfw3_window_set_size: (glfwWindow, width, height, fbWidth, fbHeight) => {
+  //! emglfw3w_set_size
+  emglfw3w_set_size__proxy: 'sync',
+  emglfw3w_set_size__sig: 'vpiiii',
+  emglfw3w_set_size: (glfwWindow, width, height, fbWidth, fbHeight) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const canvas = ctx.canvas;
 
@@ -645,20 +645,20 @@ let emscripten_glfw3_impl = {
       ctx.fCanvasResize.onSizeChanged(width, height);
   },
 
-  //! emscripten_glfw3_window_get_position
-  emscripten_glfw3_window_get_position__proxy: 'sync',
-  emscripten_glfw3_window_get_position__sig: 'vppp',
-  emscripten_glfw3_window_get_position: (glfwWindow, x, y) => {
+  //! emglfw3w_get_position
+  emglfw3w_get_position__proxy: 'sync',
+  emglfw3w_get_position__sig: 'vppp',
+  emglfw3w_get_position: (glfwWindow, x, y) => {
     const canvas = GLFW3.fWindowContexts[glfwWindow].canvas;
     const rect = getBoundingClientRect(canvas);
     {{{ makeSetValue('x', '0', 'rect.x', 'i32') }}};
     {{{ makeSetValue('y', '0', 'rect.y', 'i32') }}};
   },
 
-  //! emscripten_glfw3_window_set_standard_cursor
-  emscripten_glfw3_window_set_standard_cursor__proxy: 'sync',
-  emscripten_glfw3_window_set_standard_cursor__sig: 'vpp',
-  emscripten_glfw3_window_set_standard_cursor: (glfwWindow, cursor) => {
+  //! emglfw3w_set_standard_cursor
+  emglfw3w_set_standard_cursor__proxy: 'sync',
+  emglfw3w_set_standard_cursor__sig: 'vpp',
+  emglfw3w_set_standard_cursor: (glfwWindow, cursor) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(cursor)
       ctx.setCSSValue("cursor", UTF8ToString(cursor));
@@ -666,10 +666,10 @@ let emscripten_glfw3_impl = {
       ctx.restoreCSSValue("cursor");
   },
 
-  //! emscripten_glfw3_window_set_custom_cursor
-  emscripten_glfw3_window_set_custom_cursor__proxy: 'sync',
-  emscripten_glfw3_window_set_custom_cursor__sig: 'vppii',
-  emscripten_glfw3_window_set_custom_cursor: (glfwWindow, glfwCursor, xhot, yhot) => {
+  //! emglfw3w_set_custom_cursor
+  emglfw3w_set_custom_cursor__proxy: 'sync',
+  emglfw3w_set_custom_cursor__sig: 'vppii',
+  emglfw3w_set_custom_cursor: (glfwWindow, glfwCursor, xhot, yhot) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     const cursor = GLFW3.fCustomCursors[glfwCursor];
     if(cursor)
@@ -678,32 +678,32 @@ let emscripten_glfw3_impl = {
       ctx.restoreCSSValue("cursor");
   },
 
-  //! emscripten_glfw3_window_get_computed_opacity
-  emscripten_glfw3_window_get_computed_opacity__proxy: 'sync',
-  emscripten_glfw3_window_get_computed_opacity__sig: 'fp',
-  emscripten_glfw3_window_get_computed_opacity: (glfwWindow) => {
+  //! emglfw3w_get_computed_opacity
+  emglfw3w_get_computed_opacity__proxy: 'sync',
+  emglfw3w_get_computed_opacity__sig: 'fp',
+  emglfw3w_get_computed_opacity: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("opacity");
   },
 
-  //! emscripten_glfw3_window_set_opacity
-  emscripten_glfw3_window_set_opacity__proxy: 'sync',
-  emscripten_glfw3_window_set_opacity__sig: 'vpf',
-  emscripten_glfw3_window_set_opacity: (glfwWindow, opacity) => {
+  //! emglfw3w_set_opacity
+  emglfw3w_set_opacity__proxy: 'sync',
+  emglfw3w_set_opacity__sig: 'vpf',
+  emglfw3w_set_opacity: (glfwWindow, opacity) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     ctx.setCSSValue("opacity", opacity);
   },
 
-  //! emscripten_glfw3_window_get_computed_visibility
-  emscripten_glfw3_window_get_computed_visibility__proxy: 'sync',
-  emscripten_glfw3_window_get_computed_visibility__sig: 'ip',
-  emscripten_glfw3_window_get_computed_visibility: (glfwWindow) => {
+  //! emglfw3w_get_computed_visibility
+  emglfw3w_get_computed_visibility__proxy: 'sync',
+  emglfw3w_get_computed_visibility__sig: 'ip',
+  emglfw3w_get_computed_visibility: (glfwWindow) => {
     return GLFW3.fWindowContexts[glfwWindow].getComputedCSSValue("display") !== "none";
   },
 
-  //! emscripten_glfw3_window_set_visibility
-  emscripten_glfw3_window_set_visibility__proxy: 'sync',
-  emscripten_glfw3_window_set_visibility__sig: 'vpi',
-  emscripten_glfw3_window_set_visibility: (glfwWindow, visible) => {
+  //! emglfw3w_set_visibility
+  emglfw3w_set_visibility__proxy: 'sync',
+  emglfw3w_set_visibility__sig: 'vpi',
+  emglfw3w_set_visibility: (glfwWindow, visible) => {
     const ctx = GLFW3.fWindowContexts[glfwWindow];
     if(!visible)
       ctx.setCSSValue("display", "none");
@@ -741,26 +741,26 @@ let emscripten_glfw3_impl = {
     delete GLFW3.fCustomCursors[glfwCursor];
   },
 
-  //! emscripten_glfw3_context_make_canvas_resizable
-  emscripten_glfw3_context_make_canvas_resizable__proxy: 'sync',
-  emscripten_glfw3_context_make_canvas_resizable__sig: 'ippp',
-  emscripten_glfw3_context_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
+  //! emglfw3c_make_canvas_resizable
+  emglfw3c_make_canvas_resizable__proxy: 'sync',
+  emglfw3c_make_canvas_resizable__sig: 'ippp',
+  emglfw3c_make_canvas_resizable: (glfwWindow, resizableSelector, handleSelector) => {
     resizableSelector = resizableSelector ? UTF8ToString(resizableSelector) : null;
     handleSelector = handleSelector ? UTF8ToString(handleSelector) : null;
     return GLFW3.makeCanvasResizable(glfwWindow, resizableSelector, handleSelector);
   },
 
-  //! emscripten_glfw3_context_unmake_canvas_resizable
-  emscripten_glfw3_context_unmake_canvas_resizable__proxy: 'sync',
-  emscripten_glfw3_context_unmake_canvas_resizable__sig: 'ip',
-  emscripten_glfw3_context_unmake_canvas_resizable: (glfwWindow) => {
+  //! emglfw3c_unmake_canvas_resizable
+  emglfw3c_unmake_canvas_resizable__proxy: 'sync',
+  emglfw3c_unmake_canvas_resizable__sig: 'ip',
+  emglfw3c_unmake_canvas_resizable: (glfwWindow) => {
     return GLFW3.unmakeCanvasResizable(glfwWindow);
   },
 
-  // emscripten_glfw3_context_set_clipboard_string
-  emscripten_glfw3_context_set_clipboard_string__proxy: 'sync',
-  emscripten_glfw3_context_set_clipboard_string__sig: 'vp',
-  emscripten_glfw3_context_set_clipboard_string: (content) => {
+  // emglfw3c_set_clipboard_string
+  emglfw3c_set_clipboard_string__proxy: 'sync',
+  emglfw3c_set_clipboard_string__sig: 'vp',
+  emglfw3c_set_clipboard_string: (content) => {
     content = content ? UTF8ToString(content): '';
     const errorHandler = (err) => {
       if(GLFW3.fClipboardCallback) {
@@ -788,10 +788,10 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  // emscripten_glfw3_context_open_url
-  emscripten_glfw3_context_open_url__proxy: 'sync',
-  emscripten_glfw3_context_open_url__sig: 'vpp',
-  emscripten_glfw3_context_open_url: (url, target) => {
+  // emglfw3c_open_url
+  emglfw3c_open_url__proxy: 'sync',
+  emglfw3c_open_url__sig: 'vpp',
+  emglfw3c_open_url: (url, target) => {
     if(url) {
       url = UTF8ToString(url);
       target = target ? UTF8ToString(target) : null;
@@ -801,10 +801,10 @@ let emscripten_glfw3_impl = {
     }
   },
 
-  // emscripten_glfw3_context_is_runtime_platform_apple
-  emscripten_glfw3_context_is_runtime_platform_apple__proxy: 'sync',
-  emscripten_glfw3_context_is_runtime_platform_apple__sig: 'i',
-  emscripten_glfw3_context_is_runtime_platform_apple: () => {
+  // emglfw3c_is_runtime_platform_apple
+  emglfw3c_is_runtime_platform_apple__proxy: 'sync',
+  emglfw3c_is_runtime_platform_apple__sig: 'i',
+  emglfw3c_is_runtime_platform_apple: () => {
     return navigator.platform.indexOf("Mac") === 0 || navigator.platform === "iPhone";
   },
 

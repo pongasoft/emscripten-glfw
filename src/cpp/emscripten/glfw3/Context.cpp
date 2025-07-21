@@ -35,20 +35,20 @@ using RequestFullscreen = int (*)(GLFWwindow *, EM_BOOL, EM_BOOL);
 using ErrorHandler = void (*)(int, char const *);
 
 
-void emscripten_glfw3_context_init(emscripten::glfw3::Context *iContext,
+void emglfw3c_init(emscripten::glfw3::Context *iContext,
                                    float iScale,
                                    ScaleChangeCallback, WindowResizeCallback, KeyboardCallback, ClipboardStringCallback, RequestFullscreen, ErrorHandler);
-void emscripten_glfw3_context_destroy();
-bool emscripten_glfw3_context_is_any_element_focused();
-bool emscripten_glfw3_context_is_extension_supported(char const *iExtension);
-void emscripten_glfw3_context_set_title(char const *iTitle);
-GLFWwindow *emscripten_glfw3_context_get_fullscreen_window();
-GLFWwindow *emscripten_glfw3_context_get_pointer_lock_window();
-int emscripten_glfw3_window_init(GLFWwindow *iWindow, char const *iCanvasSelector);
-void emscripten_glfw3_window_on_created(GLFWwindow *iWindow);
-void emscripten_glfw3_context_set_clipboard_string(char const *iContent);
-void emscripten_glfw3_context_open_url(char const *, char const *);
-bool emscripten_glfw3_context_is_runtime_platform_apple();
+void emglfw3c_destroy();
+bool emglfw3c_is_any_element_focused();
+bool emglfw3c_is_extension_supported(char const *iExtension);
+void emglfw3c_set_title(char const *iTitle);
+GLFWwindow *emglfw3c_get_fullscreen_window();
+GLFWwindow *emglfw3c_get_pointer_lock_window();
+int emglfw3w_init(GLFWwindow *iWindow, char const *iCanvasSelector);
+void emglfw3w_on_created(GLFWwindow *iWindow);
+void emglfw3c_set_clipboard_string(char const *iContent);
+void emglfw3c_open_url(char const *, char const *);
+bool emglfw3c_is_runtime_platform_apple();
 void emscripten_glfw3_create_custom_cursor(GLFWcursor *iCursor, int iWidth, int iHeight, unsigned char *iPixels);
 void emscripten_glfw3_destroy_custom_cursor(GLFWcursor *iCursor);
 }
@@ -121,14 +121,14 @@ void ContextErrorHandler(int iErrorCode, char const *iErrorMessage)
 Context::Context()
 {
   fScale = static_cast<float>(emscripten_get_device_pixel_ratio());
-  emscripten_glfw3_context_init(this,
-                                fScale,
-                                ContextScaleChangeCallback,
-                                ContextWindowResizeCallback,
-                                ContextKeyboardCallback,
-                                ContextClipboardStringCallback,
-                                emscripten_glfw_request_fullscreen,
-                                ContextErrorHandler);
+  emglfw3c_init(this,
+                fScale,
+                ContextScaleChangeCallback,
+                ContextWindowResizeCallback,
+                ContextKeyboardCallback,
+                ContextClipboardStringCallback,
+                emscripten_glfw_request_fullscreen,
+                ContextErrorHandler);
   addOrRemoveEventListeners(true);
 }
 
@@ -139,7 +139,7 @@ Context::~Context()
 {
   terminate();
   addOrRemoveEventListeners(false);
-  emscripten_glfw3_context_destroy();
+  emglfw3c_destroy();
 }
 
 
@@ -289,7 +289,7 @@ bool Context::onKeyDown(Keyboard::Event const &iEvent)
 {
   bool handled = false;
   auto w = findFocusedOrSingleWindow();
-  if(w && (w->isFocused() || !emscripten_glfw3_context_is_any_element_focused()))
+  if(w && (w->isFocused() || !emglfw3c_is_any_element_focused()))
     handled |= w->onKeyDown(iEvent, fBrowserKeyCallback);
   return handled;
 }
@@ -437,7 +437,7 @@ bool Context::onEnterFullscreen(EmscriptenFullscreenChangeEvent const *iEvent)
   auto fullscreenRequest = std::exchange(fFullscreenRequest, std::nullopt);
 
   // which window is being targeted
-  if(auto window = findWindow(emscripten_glfw3_context_get_fullscreen_window()); window)
+  if(auto window = findWindow(emglfw3c_get_fullscreen_window()); window)
   {
     if(!fullscreenRequest || fullscreenRequest->fWindow != window->asOpaquePtr())
     {
@@ -480,7 +480,7 @@ bool Context::onPointerLock(EmscriptenPointerlockChangeEvent const *iEvent)
 {
   auto lockPointerRequest = std::exchange(fPointerLockRequest, std::nullopt);
 
-  if(auto window = findWindow(emscripten_glfw3_context_get_pointer_lock_window()); window)
+  if(auto window = findWindow(emglfw3c_get_pointer_lock_window()); window)
   {
     if(!lockPointerRequest || lockPointerRequest->fWindow != window->asOpaquePtr())
     {
@@ -751,7 +751,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   auto const canvasSelector = std::exchange(fConfig.fCanvasSelector, Config::kDefaultCanvasSelector);
 
-  auto res = emscripten_glfw3_window_init(window->asOpaquePtr(), canvasSelector.c_str());
+  auto res = emglfw3w_init(window->asOpaquePtr(), canvasSelector.c_str());
   if(res != EMSCRIPTEN_RESULT_SUCCESS)
   {
     if(res == EMSCRIPTEN_RESULT_UNKNOWN_TARGET)
@@ -776,7 +776,7 @@ GLFWwindow *Context::createWindow(int iWidth, int iHeight, const char* iTitle, G
 
   window->registerEventListeners();
 
-  emscripten_glfw3_window_on_created(window->asOpaquePtr());
+  emglfw3w_on_created(window->asOpaquePtr());
 
   return window->asOpaquePtr();
 }
@@ -825,7 +825,7 @@ void Context::setWindowTitle(GLFWwindow *iWindow, char const *iTitle)
 
     // do we need to update the browser title?
     if(window->isFocused() || window == findFocusedOrSingleWindow())
-      emscripten_glfw3_context_set_title(iTitle);
+      emglfw3c_set_title(iTitle);
   }
 }
 
@@ -1217,7 +1217,7 @@ void Context::swapInterval(int iInterval) const
 glfw_bool_t Context::isExtensionSupported(char const *extension)
 {
   if(extension)
-    return toGlfwBool(emscripten_glfw3_context_is_extension_supported(extension));
+    return toGlfwBool(emglfw3c_is_extension_supported(extension));
   else
     return GLFW_FALSE;
 }
@@ -1244,7 +1244,7 @@ char const *Context::getClipboardString()
 //------------------------------------------------------------------------
 void Context::openURL(std::string_view url, std::optional<std::string_view> target)
 {
-  emscripten_glfw3_context_open_url(url.data(), target ? target->data() : nullptr);
+  emglfw3c_open_url(url.data(), target ? target->data() : nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -1252,7 +1252,7 @@ void Context::openURL(std::string_view url, std::optional<std::string_view> targ
 //------------------------------------------------------------------------
 bool Context::isRuntimePlatformApple() const
 {
-  return emscripten_glfw3_context_is_runtime_platform_apple();
+  return emglfw3c_is_runtime_platform_apple();
 }
 
 }
