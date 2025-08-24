@@ -140,6 +140,18 @@ void Window::destroy()
 }
 
 //------------------------------------------------------------------------
+// Window::handleResizeRequest
+//------------------------------------------------------------------------
+void Window::handleResizeRequest()
+{
+  if(fResizeRequest)
+  {
+    resize(*fResizeRequest);
+    fResizeRequest = std::nullopt;
+  }
+}
+
+//------------------------------------------------------------------------
 // Window::changeFocus
 //------------------------------------------------------------------------
 void Window::changeFocus(bool isFocussed)

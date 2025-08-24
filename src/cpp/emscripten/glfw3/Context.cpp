@@ -350,7 +350,7 @@ void Context::onWindowResize(GLFWwindow *iWindow, int iWidth, int iHeight)
 {
   auto window = findWindow(iWindow);
   if(window)
-    window->resize({iWidth, iHeight});
+    window->onResizeRequest({iWidth, iHeight});
 }
 
 //------------------------------------------------------------------------
@@ -1177,17 +1177,24 @@ uint64_t Context::getTimerValue()
 //------------------------------------------------------------------------
 void Context::pollEvents()
 {
-  computeWindowPos();
-
+  // 1. Handle resize requests first which could end up moving the window
+  //    Handle super + key which is not order-dependent
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT
   for(auto &w: fWindows)
   {
+    w->handleResizeRequest();
     w->handleSuperPlusKeys(fSuperPlusKeyTimeout);
   }
 #else
   if(fSingleWindow)
+  {
+    fSingleWindow->handleResizeRequest();
     fSingleWindow->handleSuperPlusKeys(fSuperPlusKeyTimeout);
+  }
 #endif
+
+  // 2. We compute the new window positions
+  computeWindowPos();
 
 #ifndef EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK
   if(fPresentJoystickCount > 0)

@@ -175,6 +175,7 @@ public:
 protected:
   void init(int iWidth, int iHeight);
   void destroy();
+  void handleResizeRequest();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
   bool onMouseButtonDown(int iGLFWButton);
   bool onMouseButtonUp(EmscriptenMouseEvent const *iEvent);
@@ -188,6 +189,7 @@ protected:
   inline void setResizable(bool iResizable) { fConfig.fResizable = toGlfwBool(iResizable); }
   inline bool isResizable() const { return toCBool(fConfig.fResizable); }
   void setCanvasSize(Vec2<int> const &iSize);
+  void onResizeRequest(Vec2<int> const &iSize) { fResizeRequest = iSize; }
   void resize(Vec2<int> const &iSize);
   Vec2<int> maybeApplySizeConstraints(Vec2<int> const &iSize) const;
 
@@ -231,6 +233,7 @@ private:
   Vec2<int> fMaxSize{GLFW_DONT_CARE, GLFW_DONT_CARE};
   int fAspectRatioNumerator{GLFW_DONT_CARE};
   int fAspectRatioDenominator{GLFW_DONT_CARE};
+  std::optional<Vec2<int>> fResizeRequest{};
   std::optional<Vec2<int>> fSizeBeforeFullscreen{};
   std::optional<std::string> fTitle{};
   float fOpacity{1.0f};
