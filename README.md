@@ -4,11 +4,15 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - 4.0.11](https://img.shields.io/badge/emscripten-4.0.11-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20250607](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250607-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250824](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250824-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
+
+[![emscripten - 4.0.11](https://img.shields.io/badge/emscripten-4.0.11-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.4.0.20250607](https://img.shields.io/badge/contrib.glfw3-3.4.0.20250607-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
 ----
@@ -209,6 +213,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.4.0.20250824 |
 > | 4.0.11     | 3.4.0.20250607 |
 > | 4.0.5      | 3.4.0.20250305 |
 > | 4.0.4      | 3.4.0.20250209 |
@@ -243,6 +248,14 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
+#### 3.4.0.20250824 - 2025-08-24 | Emscripten TBD
+
+- The code has been optimized for size
+- Fixed [#21](https://github.com/pongasoft/emscripten-glfw/issues/21): Flicker when resizing
+  - to fix this issue, resizing (when the handle is moved or the window resized) is now delayed until `glfwPollEvents()`
+    is called. Make sure to call `glfwPollEvents()` at the beginning of the loop to ensure a flicker-free experience.
+    See [Events & Main loop](docs/Usage.md#events--main-loop) for more details.
+
 #### 3.4.0.20250607 - 2025-06-07 | Emscripten 4.0.11
 
 - The main port file has been simplified and is now using the new (as of 4.0.10) "external port file" Emscripten feature

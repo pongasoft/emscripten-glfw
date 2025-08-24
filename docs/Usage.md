@@ -165,6 +165,55 @@ emscripten::glfw3::MakeCanvasResizable(window, "#canvas1-container", "canvas1-ha
 > If you do not want the canvas to be resizable by the user, you can simply set its size during window creation
 > (`glfwCreateWindow`) or with `glfwSetWindowSize` and don't do anything else.
 
+## Events & Main loop
+
+It is strongly recommended to use the `emscripten_set_main_loop` (or `emscripten_set_main_loop_arg`) API 
+provided by Emscripten to run the main loop.
+
+Here is an example:
+
+```cpp
+//! The main loop (called by emscripten for each frame)
+void main_loop(void *user_data)
+{
+  auto window = reinterpret_cast<GLFWwindow *>(user_data);
+  if(!glfwWindowShouldClose(window))
+  {
+    glfwPollEvents();
+    
+    // render frame
+    // ...
+  }
+  else
+  {
+    // done => terminating
+    glfwTerminate();
+    emscripten_cancel_main_loop();
+  }
+}
+
+//! main
+int main()
+{
+  // create the window...
+  // auto window = glfwCreateWindow(...);
+  
+  // tell emscripten to use "main_loop" as the main loop (window is user data)
+  emscripten_set_main_loop_arg(main_loop, window, 0, GLFW_FALSE);
+}
+```
+
+This ensures that the `requestAnimationFrame` mechanism of the browser is used
+(see [documentation](https://emscripten.org/docs/api_reference/emscripten.h.html#c.emscripten_set_main_loop)).
+
+> [!Note]
+> `glfwPollEvents()` is called at the beginning of the loop because it processes the events that are necessary
+> for rendering the frame. In particular, it applies any window resize request, which triggers the canvas to be 
+> resized. When the canvas gets resized, the browser paints it black, which is why the "render frame" section
+> needs to re-render the content (using the new size).
+
+
+
 ## Fullscreen support
 
 GLFW has a concept of a fullscreen window.

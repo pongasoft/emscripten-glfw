@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(emscripten-glfw_RELEASE_YEAR  "2025")
-set(emscripten-glfw_RELEASE_MONTH "06"  )
-set(emscripten-glfw_RELEASE_DAY   "07"  )
+set(emscripten-glfw_RELEASE_MONTH "08"  )
+set(emscripten-glfw_RELEASE_DAY   "24"  )
 
 set(emscripten-glfw_GLFW_VERSION "3.4.0")
 
@@ -57,7 +57,7 @@ if(NOT EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK)
 endif()
 
 # Update the version appropriately
-configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/emscripten_glfw3_version.h" @ONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/version.h.in" "${CMAKE_CURRENT_LIST_DIR}/include/GLFW/emscripten_glfw3_version.h" @ONLY)
 
 macro(add_glfw_lib LIBRARY_NAME)
   add_library(${LIBRARY_NAME} ${glfw3_sources})
