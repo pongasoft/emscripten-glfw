@@ -42,6 +42,13 @@ let emscripten_glfw3_impl = {
       if(GLFW3.fScaleChangeCallback) {
         {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fContext);
       }
+
+      // Re-register MQL with current DPR so subsequent scale changes are detected.
+      if(GLFW3.fScaleMQL) {
+        GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
+      }
+      GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + window.devicePixelRatio + 'dppx)');
+      GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
     },
 
     //! onWindowResize
