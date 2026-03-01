@@ -43,11 +43,17 @@ let emscripten_glfw3_impl = {
         {{{ makeDynCall('vp', 'GLFW3.fScaleChangeCallback') }}}(GLFW3.fContext);
       }
 
-      // Re-register MQL with current DPR so subsequent scale changes are detected.
+      // Since the scale has changed, we need to register a new query/listener
+      GLFW3.registerScaleChange();
+    },
+
+    //! registerScaleChange
+    registerScaleChange(scale) {
+      const deviceScale = scale !== undefined ? scale : window.devicePixelRatio;
       if(GLFW3.fScaleMQL) {
         GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
       }
-      GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + window.devicePixelRatio + 'dppx)');
+      GLFW3.fScaleMQL = window.matchMedia(`(resolution: ${deviceScale}dppx)`);
       GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
     },
 
@@ -450,8 +456,8 @@ let emscripten_glfw3_impl = {
     GLFW3.fContext = context;
 
     // handle scale change
-    GLFW3.fScaleMQL = window.matchMedia('(resolution: ' + scale + 'dppx)');
-    GLFW3.fScaleMQL.addEventListener('change', GLFW3.onScaleChange);
+    GLFW3.registerScaleChange(scale);
+
     GLFW3.fDestructors.push(() => {
       if(GLFW3.fScaleMQL) {
         GLFW3.fScaleMQL.removeEventListener('change', GLFW3.onScaleChange);
