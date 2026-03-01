@@ -28,7 +28,7 @@ int main()
 {
   // print the version on the console
   printf("%s\n", glfwGetVersionString());
-  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
+  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_MAJOR__, __EMSCRIPTEN_MINOR__, __EMSCRIPTEN_TINY__);
 
   if(!glfwInit())
     return -1;

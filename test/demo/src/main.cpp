@@ -203,7 +203,7 @@ int main()
   debugEventHandlers("After glfwInit()");
 
   printf("GLFW: %s | Platform: 0x%x\n", glfwGetVersionString(), glfwGetPlatform());
-  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__);
+  printf("emscripten: v%d.%d.%d\n", __EMSCRIPTEN_MAJOR__, __EMSCRIPTEN_MINOR__, __EMSCRIPTEN_TINY__);
   setHtmlValue("#version", glfwGetVersionString());
   setHtmlValue("#action-key", emscripten::glfw3::IsRuntimePlatformApple() ? "&#x2318" : "CTRL");
 
