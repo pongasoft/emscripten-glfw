@@ -569,6 +569,12 @@ let emscripten_glfw3_impl = {
       return window.getComputedStyle(canvas).getPropertyValue(name);
     };
 
+    // this is to make sure that glfwSetWindowFocusCallback works
+    // see https://github.com/pongasoft/emscripten-glfw/issues/29
+    if(!canvas.hasAttribute('tabindex')) {
+      canvas.setAttribute('tabindex', '-1');
+    }
+
     GLFW3.fWindowContexts[canvasCtx.glfwWindow] = canvasCtx;
     return {{{ cDefs.EMSCRIPTEN_RESULT_SUCCESS }}};
   },
