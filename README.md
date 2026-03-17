@@ -4,15 +4,11 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
 GLFW API is 3.4.
 
-[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![emscripten - 5.0.3](https://img.shields.io/badge/emscripten-5.0.3-blue)](https://emscripten.org)
 [![contrib.glfw3 - 3.4.0.20260301](https://img.shields.io/badge/contrib.glfw3-3.4.0.20260301-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
-
-[![emscripten - 4.0.23](https://img.shields.io/badge/emscripten-4.0.23-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.4.0.20251230](https://img.shields.io/badge/contrib.glfw3-3.4.0.20251230-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
-[![GLFW - 3.4.0](https://img.shields.io/badge/GLFW-3.4.0-blue)](https://www.glfw.org/)
 
 Goal
 ----
@@ -213,7 +209,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.4.0.20260301 |
+> | 5.0.3      | 3.4.0.20260301 |
 > | 4.0.23     | 3.4.0.20251230 |
 > | 4.0.16     | 3.4.0.20250927 |
 > | 4.0.14     | 3.4.0.20250824 |
@@ -251,7 +247,7 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
-#### 3.4.0.20260301 - 2026-03-01 | Emscripten TBD
+#### 3.4.0.20260301 - 2026-03-01 | Emscripten 5.0.3
 
 - Fixed [GH#27](https://github.com/pongasoft/emscripten-glfw/issues/27):
   properly handles scale change (it was only working when switching back and forth between 2 scales) 
