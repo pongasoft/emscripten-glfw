@@ -299,7 +299,7 @@ codepoint (provided to the `GLFWcharfun` callback) and not the deprecated  `Keyb
 implementations.
 
 Internally, the library uses the keyboard events provided by JavaScript and calls `e.preventDefault()` on all 
-keyboard events except for the 3 keyboard shortcuts associated with cut, copy and paste (based on the runtime platform:
+keyboard events except for the 3 keyboard shortcuts associated with cut, copy, and paste (based on the runtime platform:
 &#x2318; + C, &#x2318; + X + &#x2318; + V, for macOS and ^ + C, ^ + X, ^ + V for the other platforms).
 
 In particular, this allows an application written using this library to automatically ignore ^ + F (resp. &#x2318; + F) 
@@ -307,7 +307,7 @@ which displays a "Find in page" interface, which is usually not desirable nor us
 
 In the event you want to change this behavior, you can add your own callback by calling 
 `emscripten::glfw3::AddBrowserKeyCallback()` or entirely replace it with `emscripten::glfw3::SetBrowserKeyCallback()`.
-The callback is called on key down, key repeat and key up and should return `true` for the event to bubble up to 
+The callback is called on key down, key repeat, and key up and should return `true` for the event to bubble up to 
 the browser (`e.preventDefault()` will **not** be called).
 
 Here is an example:
@@ -979,7 +979,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwPollEvents</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Polls for joysticks only (can be disabled with <code>disableJoystick=true</code> port option or <code>EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK</code> define)</td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Polls for joysticks (can be disabled with <code>disableJoystick=true</code> port option or <code>EMSCRIPTEN_GLFW3_DISABLE_JOYSTICK</code> define), handle windows positions, resize requests, and more. Crucial to call at the beginning of every frame.</td>
     <td><img alt="No" src="https://img.shields.io/badge/No-aaaaaa"></td>
   </tr>
   <tr>
