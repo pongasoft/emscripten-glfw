@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(emscripten-glfw_RELEASE_YEAR  "2026")
-set(emscripten-glfw_RELEASE_MONTH "03"  )
-set(emscripten-glfw_RELEASE_DAY   "01"  )
+set(emscripten-glfw_RELEASE_MONTH "08"  )
+set(emscripten-glfw_RELEASE_DAY   "09"  )
 
-set(emscripten-glfw_GLFW_VERSION "3.4.0")
+set(emscripten-glfw_GLFW_VERSION "3.5.1")
 
 set(emscripten-glfw_RELEASE_DATE "${emscripten-glfw_RELEASE_YEAR}-${emscripten-glfw_RELEASE_MONTH}-${emscripten-glfw_RELEASE_DAY}")
 string(REPLACE "-" "" emscripten-glfw_PORT_VERSION "${emscripten-glfw_RELEASE_DATE}")

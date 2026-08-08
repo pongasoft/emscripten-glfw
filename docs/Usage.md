@@ -729,7 +729,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwGetInputMode</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code> and <code>GLFW_STICKY_MOUSE_BUTTONS</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code>, <code>GLFW_STICKY_MOUSE_BUTTONS</code>, <code>GLFW_UNLIMITED_MOUSE_BUTTONS</code></td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code></td>
   </tr>
   <tr>
@@ -1064,7 +1064,7 @@ This table contains the list of all the GLFW functions API and whether they are 
   </tr>
   <tr>
     <td>glfwSetInputMode</td>
-    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code> and <code>GLFW_STICKY_MOUSE_BUTTONS</code></td>
+    <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code>, <code>GLFW_STICKY_KEYS</code>, <code>GLFW_STICKY_MOUSE_BUTTONS</code>, <code>GLFW_UNLIMITED_MOUSE_BUTTONS</code></td>
     <td><img alt="Yes" src="https://img.shields.io/badge/Yes-00aa00"> Supports only <code>GLFW_CURSOR</code></td>
   </tr>
   <tr>
