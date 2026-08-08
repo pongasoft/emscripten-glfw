@@ -244,6 +244,7 @@ int main()
       glfwTerminate();
       return -1;
     }
+    glfwSetInputMode(window2, GLFW_UNLIMITED_MOUSE_BUTTONS, GLFW_TRUE);
     setHtmlValue("input.canvas2.opacity", std::to_string(static_cast<int>(glfwGetWindowOpacity(window2) * 100.0f)));
     debugEventHandlers("After glfwCreateWindow(window2)");
   }

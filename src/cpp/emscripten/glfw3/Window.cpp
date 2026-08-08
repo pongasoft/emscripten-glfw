@@ -600,6 +600,9 @@ int Window::getInputMode(int iMode) const
     case GLFW_STICKY_MOUSE_BUTTONS:
       return fMouse.fStickyMouseButtons;
 
+    case GLFW_UNLIMITED_MOUSE_BUTTONS:
+      return fMouse.fUnlimitedMouseButtons;
+
     case GLFW_LOCK_KEY_MODS:
       kErrorHandler.logWarning("glfwGetInputMode: input mode [%d] not implemented yet", iMode);
       break;
@@ -641,6 +644,12 @@ void Window::setInputMode(int iMode, int iValue)
     case GLFW_STICKY_KEYS:
       fKeyboard.setStickyKeys(toCBool(iValue));
       break;
+
+    case GLFW_UNLIMITED_MOUSE_BUTTONS:
+    {
+      fMouse.fUnlimitedMouseButtons = toGlfwBool(iValue);
+      return;
+    }
 
     case GLFW_LOCK_KEY_MODS: // TODO: need to implement my own keyboard event to get this info
       kErrorHandler.logWarning("glfwSetInputMode: input mode [%d] not implemented yet", iMode);
@@ -738,6 +747,9 @@ inline glfw_mouse_button_t emscriptenToGLFWButton(unsigned short iEmscriptenButt
     case 2:
       return GLFW_MOUSE_BUTTON_RIGHT;
     default:
+      if(iEmscriptenButton <= GLFW_MOUSE_BUTTON_LAST)
+        return iEmscriptenButton;
+
       return -1;
   }
 }
@@ -763,21 +775,28 @@ bool Window::onFocusChange(bool iFocus)
 //------------------------------------------------------------------------
 // Window::onMouseButtonDown
 //------------------------------------------------------------------------
-bool Window::onMouseButtonDown(int iGLFWButton)
+bool Window::onMouseButtonDown(int iGLFWButton, unsigned short iEmscriptenButton)
 {
+  // if it is not a valid GLFW button and unlimited mouse buttons is not enabled, we bail out
+  if(iGLFWButton < 0 && !fMouse.fUnlimitedMouseButtons)
+    return false;
+
   if(iGLFWButton >= 0)
   {
     // down can only happen when inside the window
-    fMouse.fLastButton = iGLFWButton;
-    fMouse.fLastButtonState = GLFW_PRESS;
     fMouse.fButtonStates[iGLFWButton] = GLFW_PRESS;
-
-    if(fFocusOnMouse && !isFocused())
-      focus();
-
-    if(fMouse.fButtonCallback)
-      fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
   }
+  else
+  {
+    fMouse.fExtendedButtonStates[iEmscriptenButton] = GLFW_PRESS;
+  }
+
+  if(fFocusOnMouse && !isFocused())
+    focus();
+
+  if(fMouse.fButtonCallback)
+    fMouse.fButtonCallback(asOpaquePtr(), iGLFWButton >= 0 ? iGLFWButton : iEmscriptenButton, GLFW_PRESS, fKeyboard.computeModifierBits());
+
   return true;
 }
 
@@ -786,25 +805,41 @@ bool Window::onMouseButtonDown(int iGLFWButton)
 //------------------------------------------------------------------------
 bool Window::onMouseButtonUp(EmscriptenMouseEvent const *iEvent)
 {
-  return onMouseButtonUp(emscriptenToGLFWButton(iEvent->button));
+  return onMouseButtonUp(emscriptenToGLFWButton(iEvent->button), iEvent->button);
 }
 
 //------------------------------------------------------------------------
 // Window::onMouseButtonUp
 //------------------------------------------------------------------------
-bool Window::onMouseButtonUp(int iGLFWButton)
+bool Window::onMouseButtonUp(int iGLFWButton, unsigned short iEmscriptenButton)
 {
+  // if it is not a valid GLFW button and unlimited mouse buttons is not enabled, we bail out
+  if(iGLFWButton < 0 && !fMouse.fUnlimitedMouseButtons)
+    return false;
+
   if(iGLFWButton >= 0)
   {
     // up can happen even if mouse is outside the window
     if(fMouse.fButtonStates[iGLFWButton] == GLFW_PRESS)
     {
-      fMouse.fLastButton = iGLFWButton;
-      fMouse.fLastButtonState = GLFW_RELEASE;
       fMouse.fButtonStates[iGLFWButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
 
       if(fMouse.fButtonCallback)
-        fMouse.fButtonCallback(asOpaquePtr(), fMouse.fLastButton, fMouse.fLastButtonState, fKeyboard.computeModifierBits());
+        fMouse.fButtonCallback(asOpaquePtr(), iGLFWButton, GLFW_RELEASE, fKeyboard.computeModifierBits());
+
+      return true;
+    }
+  }
+  else
+  {
+    auto iter = fMouse.fExtendedButtonStates.find(iEmscriptenButton);
+    if(iter != fMouse.fExtendedButtonStates.end() && iter->second == GLFW_PRESS)
+    {
+      // sticky is not supported for extended buttons and is not available via glfwGetMouseButton
+      fMouse.fExtendedButtonStates.erase(iter);
+
+      if(fMouse.fButtonCallback)
+        fMouse.fButtonCallback(asOpaquePtr(), iEmscriptenButton, GLFW_RELEASE, fKeyboard.computeModifierBits());
 
       return true;
     }
@@ -828,7 +863,7 @@ void Window::onGlobalTouchStart(GLFWwindow *iOriginWindow, EmscriptenTouchPoint 
 {
   setCursorPos(iTouchPoint);
   if(iOriginWindow == asOpaquePtr())
-    onMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT);
+    onMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT, 0);
 }
 
 
@@ -846,7 +881,7 @@ void Window::onGlobalTouchMove(EmscriptenTouchPoint const *iTouchPoint)
 void Window::onGlobalTouchEnd(EmscriptenTouchPoint const *iTouchPoint)
 {
   setCursorPos(iTouchPoint);
-  onMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT);
+  onMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT, 0);
 }
 
 //------------------------------------------------------------------------
@@ -862,7 +897,7 @@ void Window::addOrRemoveEventListeners(bool iAdd)
     fOnMouseButtonDown
       .target(selector)
       .listener([this](int iEventType, const EmscriptenMouseEvent *iEvent) {
-        return onMouseButtonDown(emscriptenToGLFWButton(iEvent->button));
+        return onMouseButtonDown(emscriptenToGLFWButton(iEvent->button), iEvent->button);
       })
       .add(EMSCRIPTEN_EVENT_MOUSEDOWN, emscripten_set_mousedown_callback_on_thread);
 

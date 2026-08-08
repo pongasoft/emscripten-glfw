@@ -21,6 +21,7 @@
 
 #include <GLFW/glfw3.h>
 #include <array>
+#include <map>
 #include "Types.h"
 #include "Cursor.h"
 
@@ -55,12 +56,13 @@ public:
   friend class Window;
 
 public:
-  glfw_mouse_button_state_t fLastButtonState{GLFW_RELEASE};
-  glfw_mouse_button_t fLastButton{-1};
   std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
+  // for unlimited mouse buttons
+  std::map<unsigned short, glfw_mouse_button_state_t> fExtendedButtonStates{};
 
   glfw_cursor_mode_t fCursorMode{GLFW_CURSOR_NORMAL};
   glfw_bool_t fStickyMouseButtons{GLFW_FALSE};
+  glfw_bool_t fUnlimitedMouseButtons{GLFW_FALSE};
 
   Vec2<double> fCursorPos{};
   Vec2<double> fCursorPosBeforePointerLock{};

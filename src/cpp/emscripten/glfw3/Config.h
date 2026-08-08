@@ -26,10 +26,10 @@ namespace emscripten::glfw3 {
 
 using glfw_bool_t = int;
 
-constexpr inline glfw_bool_t toGlfwBool(bool iCBool) { return iCBool ? GLFW_TRUE : GLFW_FALSE; }
-constexpr inline glfw_bool_t toGlfwBool(int iValue) { return iValue == GLFW_FALSE ? GLFW_FALSE : GLFW_TRUE; }
-constexpr inline bool toCBool(int iValue) { return toGlfwBool(iValue) != GLFW_FALSE; }
-constexpr inline char const *boolToString(bool b) { return b ? "true" : "false"; }
+constexpr glfw_bool_t toGlfwBool(bool iCBool) { return iCBool ? GLFW_TRUE : GLFW_FALSE; }
+constexpr glfw_bool_t toGlfwBool(int iValue) { return iValue == GLFW_FALSE ? GLFW_FALSE : GLFW_TRUE; }
+constexpr bool toCBool(int iValue) { return toGlfwBool(iValue) != GLFW_FALSE; }
+constexpr char const *boolToString(bool b) { return b ? "true" : "false"; }
 
 struct Config
 {

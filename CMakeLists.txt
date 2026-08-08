@@ -6,10 +6,10 @@ set(emscripten-glfw_RELEASE_DAY   "01"  )
 
 set(emscripten-glfw_GLFW_VERSION "3.4.0")
 
-set(emscripten-glfw_PORT_VERSION "${emscripten-glfw_RELEASE_YEAR}${emscripten-glfw_RELEASE_MONTH}${emscripten-glfw_RELEASE_DAY}")
-set(emscripten-glfw_VERSION "${emscripten-glfw_GLFW_VERSION}.${emscripten-glfw_PORT_VERSION}")
-set(emscripten-glfw_VERSION_AS_NUMBER "3'4'0'${emscripten-glfw_PORT_VERSION}")
 set(emscripten-glfw_RELEASE_DATE "${emscripten-glfw_RELEASE_YEAR}-${emscripten-glfw_RELEASE_MONTH}-${emscripten-glfw_RELEASE_DAY}")
+string(REPLACE "-" "" emscripten-glfw_PORT_VERSION "${emscripten-glfw_RELEASE_DATE}")
+set(emscripten-glfw_VERSION "${emscripten-glfw_GLFW_VERSION}.${emscripten-glfw_PORT_VERSION}")
+string(REPLACE "." "'" emscripten-glfw_VERSION_AS_NUMBER "${emscripten-glfw_VERSION}")
 
 project(emscripten-glfw VERSION "${emscripten-glfw_VERSION}" LANGUAGES CXX)
 
@@ -76,6 +76,7 @@ macro(add_glfw_lib LIBRARY_NAME)
       "--js-library" "${CMAKE_CURRENT_LIST_DIR}/src/js/lib_emscripten_glfw3.js"
       "$<$<CONFIG:Release>:--closure=1>"
   )
+  target_compile_options(${LIBRARY_NAME} PRIVATE -Werror=zero-as-null-pointer-constant)
 endmacro()
 
 # main library

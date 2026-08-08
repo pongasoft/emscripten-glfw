@@ -178,9 +178,9 @@ protected:
   void destroy();
   void handleResizeRequest();
   void registerEventListeners() { addOrRemoveEventListeners(true); }
-  bool onMouseButtonDown(int iGLFWButton);
+  bool onMouseButtonDown(int iGLFWButton, unsigned short iEmscriptenButton);
   bool onMouseButtonUp(EmscriptenMouseEvent const *iEvent);
-  bool onMouseButtonUp(int iGLFWButton);
+  bool onMouseButtonUp(int iGLFWButton, unsigned short iEmscriptenButton);
   inline bool onKeyDown(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyDown(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   inline bool onKeyUp(Keyboard::Event const &iEvent, emscripten::glfw3::browser_key_fun_t const &iBrowserKeyCallback) { return fKeyboard.onKeyUp(asOpaquePtr(), iEvent, iBrowserKeyCallback); }
   void handleSuperPlusKeys(Keyboard::SuperPlusKeyTimeout const &iTimeout) { if(fKeyboard.hasSuperPlusKeys()) fKeyboard.handleSuperPlusKeys(asOpaquePtr(), iTimeout); }
