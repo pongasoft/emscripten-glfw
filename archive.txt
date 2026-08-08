@@ -1,5 +1,6 @@
 LICENSE.txt
 external/GLFW/glfw3.h
+external/GLFW/glfw3native.h
 include/GLFW/emscripten_glfw3.h
 include/GLFW/emscripten_glfw3_version.h
 port/glfw3.py

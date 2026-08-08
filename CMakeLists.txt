@@ -96,14 +96,19 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/archive.txt" ARCHIVE_FILES)
   set(PROCESSED_FILES "")
 
-  # Process each file
-  foreach(FILE ${ARCHIVE_FILES})
-    set(ARCHIVE_FILE "${ARCHIVE_BUILD_DIR}/${FILE}")
-    get_filename_component(FILE_DIR "${ARCHIVE_FILE}" DIRECTORY)
-    file(MAKE_DIRECTORY "${FILE_DIR}")
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${FILE}" "${ARCHIVE_FILE}" @ONLY)
-    list(APPEND PROCESSED_FILES "${ARCHIVE_FILE}")
-  endforeach()
+  # Generate the configured files at build time instead of configure time
+  add_custom_command(
+      OUTPUT "${ARCHIVE_BUILD_DIR}/archive_configured.stamp"
+      DEPENDS "${CMAKE_CURRENT_LIST_DIR}/archive.txt"
+      COMMAND ${CMAKE_COMMAND}
+      -DARCHIVE_FILES_LIST="${CMAKE_CURRENT_LIST_DIR}/archive.txt"
+      -DSOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+      -DBUILD_DIR="${ARCHIVE_BUILD_DIR}"
+      -Demscripten-glfw_VERSION="${emscripten-glfw_VERSION}"
+      -P "${CMAKE_CURRENT_LIST_DIR}/cmake/configure_archive_files.cmake"
+      COMMAND ${CMAKE_COMMAND} -E touch "${ARCHIVE_BUILD_DIR}/archive_configured.stamp"
+      COMMENT "Configuring archive files at build time..."
+  )
 
   add_custom_target("create-archive"
       WORKING_DIRECTORY "${ARCHIVE_BUILD_DIR}"
@@ -112,7 +117,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ARCHIVE_NAME}" "--format=zip" "--mtime=${emscripten-glfw_RELEASE_DATE}" "--files-from=${CMAKE_CURRENT_LIST_DIR}/archive.txt"
       COMMAND ${CMAKE_COMMAND} -E sha512sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha512"
       COMMAND cat "${ARCHIVE_NAME}.sha512"
-      DEPENDS ${PROCESSED_FILES}
+      DEPENDS "${ARCHIVE_BUILD_DIR}/archive_configured.stamp"
   )
 
   ### create a port pointing to archive
