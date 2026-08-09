@@ -556,13 +556,13 @@ glfw_mouse_button_state_t Window::getMouseButtonState(glfw_mouse_button_t iButto
     return GLFW_RELEASE;
   }
 
-  if(fMouse.fButtonStates[iButton] == Mouse::kStickyPress)
+  if(fMouse.fButtons.isSticky(iButton))
   {
-    fMouse.fButtonStates[iButton] = GLFW_RELEASE;
+    fMouse.fButtons.releaseSticky(iButton);
     return GLFW_PRESS;
   }
 
-  return fMouse.fButtonStates[iButton];
+  return fMouse.fButtons.isPressed(iButton) ? GLFW_PRESS : GLFW_RELEASE;
 }
 
 //------------------------------------------------------------------------
@@ -633,11 +633,7 @@ void Window::setInputMode(int iMode, int iValue)
       fMouse.fStickyMouseButtons = toGlfwBool(iValue);
       if(fMouse.fStickyMouseButtons == GLFW_FALSE)
       {
-        for(auto &state: fMouse.fButtonStates)
-        {
-          if(state == Mouse::kStickyPress)
-            state = GLFW_RELEASE;
-        }
+        fMouse.fButtons.clearSticky();
       }
       break;
 
@@ -781,21 +777,16 @@ bool Window::onMouseButtonDown(int iGLFWButton, unsigned short iEmscriptenButton
   if(iGLFWButton < 0 && !fMouse.fUnlimitedMouseButtons)
     return false;
 
-  if(iGLFWButton >= 0)
-  {
-    // down can only happen when inside the window
-    fMouse.fButtonStates[iGLFWButton] = GLFW_PRESS;
-  }
-  else
-  {
-    fMouse.fExtendedButtonStates[iEmscriptenButton] = GLFW_PRESS;
-  }
+  auto button = iGLFWButton >= 0 ? iGLFWButton : iEmscriptenButton;
+
+  // down can only happen when inside the window
+  fMouse.fButtons.press(button);
 
   if(fFocusOnMouse && !isFocused())
     focus();
 
   if(fMouse.fButtonCallback)
-    fMouse.fButtonCallback(asOpaquePtr(), iGLFWButton >= 0 ? iGLFWButton : iEmscriptenButton, GLFW_PRESS, fKeyboard.computeModifierBits());
+    fMouse.fButtonCallback(asOpaquePtr(), button, GLFW_PRESS, fKeyboard.computeModifierBits());
 
   return true;
 }
@@ -817,32 +808,15 @@ bool Window::onMouseButtonUp(int iGLFWButton, unsigned short iEmscriptenButton)
   if(iGLFWButton < 0 && !fMouse.fUnlimitedMouseButtons)
     return false;
 
-  if(iGLFWButton >= 0)
+  auto button = iGLFWButton >= 0 ? iGLFWButton : iEmscriptenButton;
+
+  // up can happen even if mouse is outside the window
+  if(fMouse.fButtons.isPressed(button))
   {
-    // up can happen even if mouse is outside the window
-    if(fMouse.fButtonStates[iGLFWButton] == GLFW_PRESS)
-    {
-      fMouse.fButtonStates[iGLFWButton] = fMouse.fStickyMouseButtons ? Mouse::kStickyPress : GLFW_RELEASE;
-
-      if(fMouse.fButtonCallback)
-        fMouse.fButtonCallback(asOpaquePtr(), iGLFWButton, GLFW_RELEASE, fKeyboard.computeModifierBits());
-
-      return true;
-    }
-  }
-  else
-  {
-    auto iter = fMouse.fExtendedButtonStates.find(iEmscriptenButton);
-    if(iter != fMouse.fExtendedButtonStates.end() && iter->second == GLFW_PRESS)
-    {
-      // sticky is not supported for extended buttons and is not available via glfwGetMouseButton
-      fMouse.fExtendedButtonStates.erase(iter);
-
-      if(fMouse.fButtonCallback)
-        fMouse.fButtonCallback(asOpaquePtr(), iEmscriptenButton, GLFW_RELEASE, fKeyboard.computeModifierBits());
-
-      return true;
-    }
+    fMouse.fButtons.release(button, fMouse.fStickyMouseButtons);
+    if(fMouse.fButtonCallback)
+      fMouse.fButtonCallback(asOpaquePtr(), iGLFWButton, GLFW_RELEASE, fKeyboard.computeModifierBits());
+    return true;
   }
 
   return false;

@@ -24,6 +24,7 @@
 #include <map>
 #include "Types.h"
 #include "Cursor.h"
+#include "Config.h"
 
 using glfw_mouse_button_state_t = int; // ex: GLFW_RELEASE
 using glfw_mouse_button_t = int; // ex: GLFW_MOUSE_BUTTON_LEFT
@@ -33,6 +34,16 @@ namespace emscripten::glfw3 {
 
 class Window;
 
+struct BitSet
+{
+  void set(unsigned short iBit) { fBits |= (1 << iBit); }
+  void clear(unsigned short iBit) { fBits &= ~(1 << iBit); }
+  void clear() { fBits = 0; }
+  bool isSet(unsigned short iBit) const { return fBits & (1 << iBit); }
+
+private:
+  unsigned long fBits{};
+};
 
 class Mouse
 {
@@ -56,9 +67,32 @@ public:
   friend class Window;
 
 public:
-  std::array<glfw_mouse_button_state_t, GLFW_MOUSE_BUTTON_LAST + 1> fButtonStates{GLFW_RELEASE};
-  // for unlimited mouse buttons
-  std::map<unsigned short, glfw_mouse_button_state_t> fExtendedButtonStates{};
+  struct Buttons
+  {
+    static_assert(sizeof(unsigned long) * 8 >= 32, "There should be enough buttons");
+
+    void press(unsigned short iButton) { fButtons.set(iButton); }
+    void release(unsigned short iButton, bool iIsSticky)
+    {
+      fButtons.clear(iButton);
+      if(iIsSticky && iButton <= GLFW_MOUSE_BUTTON_LAST)
+        fStickyButtons.set(iButton);
+    }
+    void releaseSticky(unsigned short iButton) { fStickyButtons.clear(iButton); }
+    bool isPressed(unsigned short iButton) const { return fButtons.isSet(iButton); }
+    bool isSticky(unsigned short iButton) const { return fStickyButtons.isSet(iButton); }
+    void clearSticky() { fStickyButtons.clear(); }
+
+  private:
+    // at least 32 buttons which, while not being "unlimited", seems to be enough for the number of buttons for a mouse...
+    BitSet fButtons;
+    // only "known" GLFW buttons can be sticky (due to padding and alignment, using an unsigned long instead of
+    // uint8_t is not wasting any space)
+    BitSet fStickyButtons{};
+  };
+
+public:
+  Buttons fButtons{};
 
   glfw_cursor_mode_t fCursorMode{GLFW_CURSOR_NORMAL};
   glfw_bool_t fStickyMouseButtons{GLFW_FALSE};
@@ -72,9 +106,6 @@ public:
   GLFWscrollfun fScrollCallback{};
   GLFWcursorenterfun fCursorEnterCallback{};
   GLFWcursorposfun fCursorPosCallback{};
-
-private:
-  static constexpr glfw_mouse_button_state_t kStickyPress = 3;
 
 private:
   std::shared_ptr<Cursor> fCursor{StandardCursor::getDefault()};

@@ -162,4 +162,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
       COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${EXAMPLES_ZIP_FILE}" "--format=zip" "--files-from=${EXAMPLES_BUILD_FILES}"
       DEPENDS "examples-all"
   )
+
+  ### compile the unit tests
+  add_subdirectory("test/unit" EXCLUDE_FROM_ALL)
+
 endif()
