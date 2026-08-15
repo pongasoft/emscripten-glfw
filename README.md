@@ -1,8 +1,7 @@
 Introduction
 ------------
 
-This project is an Emscripten port of GLFW written in C++ for the web/wasm platform. The currently supported
-GLFW API is 3.4.
+This project is an Emscripten port of GLFW written in C++ for the web/wasm platform.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
 [![contrib.glfw3 - 3.5.1.20260809](https://img.shields.io/badge/contrib.glfw3-3.5.1.20260809-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
