@@ -595,8 +595,8 @@ This implementation being in C++ and implementing far more features than the `li
 implementation, it has an impact on size.
 For obvious reasons, there is far less JavaScript (using `--closure=1` shows a 50% reduction) but far more wasm.
 
-![emscripten - 5.0.3](https://img.shields.io/badge/emscripten-5.0.3-blue)
-![emscripten-glfw-3.4.0.20260301](https://img.shields.io/badge/emscripten--glfw-3.4.0.20260301-blue)
+![emscripten - 6.0.7](https://img.shields.io/badge/emscripten-6.0.7-blue)
+![emscripten-glfw-3.5.1.20260809](https://img.shields.io/badge/emscripten--glfw-3.5.1.20260809-blue)
 
 ### Using `-O2` and `--closure=1`
 
@@ -612,8 +612,8 @@ For obvious reasons, there is far less JavaScript (using `--closure=1` shows a 5
 
 | Mode              | `libglfw.js`                      | This implementation                | Delta  |
 |-------------------|-----------------------------------|------------------------------------|--------|
-| Release           | js:42906, wasm:13827, total:56733 | js:27527, wasm:75537, total:103064 | 81.66% |
-| Release (minimal) | -                                 | js:26178, wasm:68796, total:94974  | 67.40% |
+| Release           | js:41333, wasm:13776, total:55109 | js:26743, wasm:75270, total:102013 | 85.11% |
+| Release (minimal) | -                                 | js:25512, wasm:68360, total:93872  | 70.33% |
 
 ### Using `-Oz` and `--closure=1` (for absolute minimum size vs performance)
 
@@ -629,8 +629,8 @@ For obvious reasons, there is far less JavaScript (using `--closure=1` shows a 5
 
 | Mode              | `libglfw.js`                      | This implementation               | Delta  |
 |-------------------|-----------------------------------|-----------------------------------|--------|
-| Release           | js:42459, wasm:12325, total:54784 | js:25929, wasm:58109, total:84038 | 53.39% |
-| Release (minimal) | -                                 | js:24634, wasm:52989, total:77623 | 41.68% |
+| Release           | js:40889, wasm:12277, total:53166 | js:25134, wasm:58561, total:83695 | 57.42% |
+| Release (minimal) | -                                 | js:23960, wasm:53244, total:77204 | 45.21% |
 
 ## GLFW functions
 
