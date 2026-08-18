@@ -1,0 +1,66 @@
+name: Emscripten Build
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags-ignore:
+      - '*'
+
+jobs:
+  build:
+    runs-on: emscripten-latest
+
+    steps:
+      - name: Checking installation
+        run: |
+          git --version
+          cmake --version
+          emcc --version
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: emscripten-glfw
+
+      - name: Configure CMake Project
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release .
+
+      - name: Compile all
+        working-directory: ${{github.workspace}}/emscripten-glfw/build
+        run: cmake --build . --target examples-all
+
+      - name: Result
+        working-directory: ${{github.workspace}}/emscripten-glfw/build
+        run: ls -l examples/example_minimal
+
+      - name: Configure CMake Project (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          emcmake cmake -B build-small -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN_GLFW3_DISABLE_JOYSTICK=ON -DEMSCRIPTEN_GLFW3_DISABLE_MULTI_WINDOW_SUPPORT=ON .
+
+      - name: Compile all (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw/build-small
+        run: cmake --build . --target examples-all
+
+      - name: Result (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw/build-small
+        run: ls -l examples/example_minimal
+
+      - name: Compile with port
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          mkdir build-with-port
+          em++ --version
+          em++ --use-port=contrib.glfw3 examples/example_minimal/main.cpp --closure=1 -O2 -o build-with-port/index.html
+          ls -l build-with-port
+
+      - name: Compile with port (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          mkdir build-with-port-small
+          em++ --version
+          em++ --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true examples/example_minimal/main.cpp --closure=1 -O2 -o build-with-port-small/index.html
+          ls -l build-with-port-small

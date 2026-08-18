@@ -1,0 +1,42 @@
+# The purpose of this action is to test that the port defined in this project
+# (port/emscripten-glfw3.py) works properly and that the Release includes the
+# archive.
+# The output of the 2 "Compile" phases can be used as a sanity check on the sizes of the
+# minimal use case for each release.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: emscripten-latest
+
+    steps:
+      - name: Checking installation
+        run: |
+          git --version
+          cmake --version
+          emcc --version
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: emscripten-glfw
+
+      - name: Compile with released port
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          mkdir build-with-port
+          em++ --version
+          em++ --use-port=port/emscripten-glfw3.py examples/example_minimal/main.cpp --closure=1 -O2 -o build-with-port/index.html
+          ls -l build-with-port
+
+      - name: Compile with released port (small)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          mkdir build-with-port-small
+          em++ --version
+          em++ --use-port=port/emscripten-glfw3.py:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true examples/example_minimal/main.cpp --closure=1 -O2 -o build-with-port-small/index.html
+          ls -l build-with-port-small

@@ -1,0 +1,104 @@
+name: Compute Size (Manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compute-size:
+    runs-on: emscripten-latest
+
+    steps:
+      - name: Checking installation
+        run: |
+          git --version
+          cmake --version
+          emcc --version
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: emscripten-glfw
+
+      - name: Compiling with libglfw.js (-O2)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ -sUSE_GLFW=3 examples/example_minimal/main.cpp --closure=1 -O2 -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size"
+          echo "TOTAL_SIZE_LIBRARY_GLFW=$total_size" >> $GITHUB_ENV
+
+      - name: Compiling with contrib.glfw3 (-O2)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ --use-port=contrib.glfw3:optimizationLevel=2 examples/example_minimal/main.cpp --closure=1 -O2 -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          delta=$(awk -v t="$total_size" -v ref="$TOTAL_SIZE_LIBRARY_GLFW" 'BEGIN { printf "%.2f", ((t / ref - 1) * 100) }')
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
+
+      - name: Compiling with contrib.glfw3 (small) (-O2)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=2 examples/example_minimal/main.cpp --closure=1 -O2 -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          delta=$(awk -v t="$total_size" -v ref="$TOTAL_SIZE_LIBRARY_GLFW" 'BEGIN { printf "%.2f", ((t / ref - 1) * 100) }')
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
+
+      - name: Compiling with libglfw.js (-Oz)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ -sUSE_GLFW=3 examples/example_minimal/main.cpp --closure=1 -Oz -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size"
+          echo "TOTAL_SIZE_LIBRARY_GLFW=$total_size" >> $GITHUB_ENV
+
+      - name: Compiling with contrib.glfw3 (-Oz)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ --use-port=contrib.glfw3:optimizationLevel=z examples/example_minimal/main.cpp --closure=1 -Oz -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          delta=$(awk -v t="$total_size" -v ref="$TOTAL_SIZE_LIBRARY_GLFW" 'BEGIN { printf "%.2f", ((t / ref - 1) * 100) }')
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
+
+      - name: Compiling with contrib.glfw3 (small) (-Oz)
+        working-directory: ${{github.workspace}}/emscripten-glfw
+        run: |
+          rm -rf build
+          mkdir build
+          em++ --version
+          em++ --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true:disableJoystick=true:disableWebGL2=true:optimizationLevel=z examples/example_minimal/main.cpp --closure=1 -Oz -o build/index.html
+          ls -l build
+          js_size=$(stat --format="%s" build/index.js)
+          wasm_size=$(stat --format="%s" build/index.wasm)
+          total_size=$((js_size + wasm_size))
+          delta=$(awk -v t="$total_size" -v ref="$TOTAL_SIZE_LIBRARY_GLFW" 'BEGIN { printf "%.2f", ((t / ref - 1) * 100) }')
+          echo "js:$js_size, wasm:$wasm_size, total:$total_size | ${delta}%"
