@@ -174,6 +174,18 @@ browser_key_fun_t AddBrowserKeyCallback(browser_key_fun_t callback);
 browser_key_fun_t SetBrowserKeyCallback(browser_key_fun_t callback);
 browser_key_fun_t GetPlatformBrowserKeyCallback();
 
+/**
+ * @return whether the window will automatically get the focus when the mouse is clicked */
+bool GetFocusOnMouseDown(GLFWwindow* window);
+
+/**
+ * Traditionally, on the desktop, the window manager assigns the focus to the window when the mouse is clicked
+ * within its boundaries. This implementation, by default, replicates this behavior by automatically focusing the
+ * window (= canvas) when the mouse is clicked (as well as when a touch event is received) within its boundaries.
+ *
+ * This API lets you disable this autofocus behavior */
+void SetFocusOnMouseDown(GLFWwindow* window, bool focusOnMouseDown);
+
 } // namespace emscripten::glfw3
 
 #endif // __cplusplus
@@ -280,8 +292,8 @@ int emscripten_glfw_make_canvas_resizable(GLFWwindow *window,
 int emscripten_glfw_unmake_canvas_resizable(GLFWwindow *window);
 
 /**
- * Returns `EM_TRUE` if the window is fullscreen, `EM_FALSE` otherwise */
-EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
+ * Returns `true` if the window is fullscreen, `false` otherwise */
+bool emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
 
 /**
  * Requests the window to go fullscreen. Note that due to browser restrictions, this function should only
@@ -294,7 +306,7 @@ EM_BOOL emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
  * @param lockPointer whether to lock the pointer or not
  * @param resizeCanvas whether to resize the canvas to match the fullscreen size or not
  * @return `EMSCRIPTEN_RESULT_SUCCESS` if there was no issue, or an emscripten error code otherwise */
-int emscripten_glfw_request_fullscreen(GLFWwindow *window, EM_BOOL lockPointer, EM_BOOL resizeCanvas);
+int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 
 /**
  * Convenient call to open a url
@@ -305,7 +317,7 @@ void emscripten_glfw_open_url(char const *url, char const *target);
 
 /**
  * @return `true` if running on an Apple platform only */
-EM_BOOL emscripten_glfw_is_runtime_platform_apple();
+bool emscripten_glfw_is_runtime_platform_apple();
 
 #ifdef __cplusplus
 }

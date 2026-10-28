@@ -167,6 +167,10 @@ public:
                           std::optional<std::string_view> handleSelector = std::nullopt);
   int unmakeCanvasResizable();
 
+  // Focus on mouse
+  bool getFocusOnMouse() const { return fFocusOnMouse; }
+  void setFocusOnMouse(bool iFocusOnMouse) { fFocusOnMouse = iFocusOnMouse; }
+
   Window(Context *iContext, Config iConfig, float iMonitorScale, char const *iTitle);
   ~Window() override;
   constexpr bool isDestroyed() const { return fDestroyed; }

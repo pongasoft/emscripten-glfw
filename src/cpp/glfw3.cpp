@@ -1509,4 +1509,25 @@ browser_key_fun_t GetPlatformBrowserKeyCallback()
   };
 }
 
+//------------------------------------------------------------------------
+// GetFocusOnMouseDown
+//------------------------------------------------------------------------
+bool GetFocusOnMouseDown(GLFWwindow *window)
+{
+  auto w = getWindow(window);
+  if(w)
+    return w->getFocusOnMouse();
+  return false;
+}
+
+//------------------------------------------------------------------------
+// SetFocusOnMouseDown
+//------------------------------------------------------------------------
+void SetFocusOnMouseDown(GLFWwindow *window, bool focusOnMouseDown)
+{
+  auto w = getWindow(window);
+  if(w)
+    w->setFocusOnMouse(focusOnMouseDown);
+}
+
 }

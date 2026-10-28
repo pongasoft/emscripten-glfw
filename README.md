@@ -4,11 +4,16 @@ Introduction
 This project is an Emscripten port of GLFW written in C++ for the web/wasm platform.
 The currently supported GLFW API is 3.5.1.
 
+[![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.5.1.20261028](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261028-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![GLFW - 3.5.1](https://img.shields.io/badge/GLFW-3.5.1-blue)](https://www.glfw.org/)
+[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
+
 [![emscripten - 6.0.7](https://img.shields.io/badge/emscripten-6.0.7-blue)](https://emscripten.org)
 [![contrib.glfw3 - 3.5.1.20260809](https://img.shields.io/badge/contrib.glfw3-3.5.1.20260809-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.5.1](https://img.shields.io/badge/GLFW-3.5.1-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
 Goal
 ----
@@ -87,6 +92,10 @@ Live Applications
   <tr>
     <td><a href="https://pongasoft.github.io/webgpu-shader-toy/">WebGPU Shader Toy</a> (<a href="https://github.com/pongasoft/webgpu-shader-toy">src</a>)</td>
     <td>WebGPU Shader Toy is a free and open source tool for experimenting with WebGPU fragment shaders and the WebGPU Shader Language (WGSL)</td>
+  </tr>
+  <tr>
+    <td><a href="https://pthom.github.io/imgui_explorer/?lib=imgui">Dear ImGui Explorer</a> (<a href="https://github.com/pthom/imgui_bundle/tree/main/external/imgui_explorer/imgui_explorer">src</a>)</td>
+    <td>An interactive manual for Dear ImGui, ImPlot &amp; ImPlot3D</td>
   </tr>
   </tbody>
 </table>
@@ -209,6 +218,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.5.1.20261028 |
 > | 6.0.7      | 3.5.1.20260809 |
 > | 5.0.3      | 3.4.0.20260301 |
 > | 4.0.23     | 3.4.0.20251230 |
@@ -248,6 +258,11 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
+#### 3.5.1.20261028 - 2026-10-28 | Emscripten TBD
+
+- Implemented [GH#32](https://github.com/pongasoft/emscripten-glfw/issues/32)
+  - Added a way to disable autofocus on mouse down (`emscripten::glfw3::SetFocusOnMouseDown` extension function) 
+
 #### 3.5.1.20260809 - 2026-08-09 | Emscripten 6.0.7
 
 - Upgraded to GLFW 3.5.1 (check the [Changelog](https://www.glfw.org/changelog.html) for details, although most changes

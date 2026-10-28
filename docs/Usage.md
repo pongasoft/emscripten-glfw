@@ -387,6 +387,20 @@ and left mouse button for presses/releases ( `glfwGetMouseButton` and `glfwSetMo
 > When using the [resizable with handle](#how-to-make-the-canvas-resizable-by-the-user) feature,
 > the handle can also be manipulated with touch. 
 
+## Focus support
+
+Traditionally, on the desktop, the window manager assigns the focus to the window when the mouse is clicked 
+within its boundaries. This implementation, by default, replicates this behavior by automatically focusing the
+window (= canvas) when the mouse is clicked (as well as when a touch event is received) within its boundaries.
+
+You can disable this autofocus behavior by calling:
+
+```cpp
+auto window = glfwCreateWindow(...);
+emscripten::glfw3::SetFocusOnMouseDown(window, false);
+```
+
+
 ## Clipboard support
 
 In the context of the browser, getting access to the clipboard is a bit tricky as there are restrictions imposed by 
