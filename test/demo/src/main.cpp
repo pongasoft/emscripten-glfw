@@ -21,6 +21,7 @@
 #include <emscripten/html5.h>
 #include "Triangle.h"
 #include <map>
+#include <vector>
 
 /**
  * This program acts both as a demo and as a test of many of the features of the implementation. As a result it is

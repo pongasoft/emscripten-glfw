@@ -20,6 +20,7 @@
 #define EMSCRIPTEN_GLFW_HELLO_TRIANGLE_H
 
 #include <memory>
+#include <vector>
 #include <GLES3/gl3.h>
 #include <GLFW/emscripten_glfw3.h>
 

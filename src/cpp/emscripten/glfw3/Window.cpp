@@ -23,6 +23,7 @@
 #include "ErrorHandler.h"
 #include "Cursor.h"
 #include <algorithm>
+#include <cmath>
 
 extern "C" {
 void emglfw3c_set_title(char const *iTitle);

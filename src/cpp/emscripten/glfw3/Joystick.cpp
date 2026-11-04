@@ -18,6 +18,7 @@
 
 #include "Joystick.h"
 #include "ErrorHandler.h"
+#include <algorithm>
 
 namespace emscripten::glfw3 {
 

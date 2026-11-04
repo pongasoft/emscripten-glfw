@@ -19,6 +19,7 @@
 #include "Context.h"
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#include <cstdlib>
 
 #include "ErrorHandler.h"
 
