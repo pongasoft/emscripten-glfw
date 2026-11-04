@@ -5,7 +5,7 @@ This project is an Emscripten port of GLFW written in C++ for the web/wasm platf
 The currently supported GLFW API is 3.5.1.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.5.1.20261028](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261028-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![contrib.glfw3 - 3.5.1.20261104](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261104-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.5.1](https://img.shields.io/badge/GLFW-3.5.1-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
@@ -218,6 +218,7 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
+> | TBD        | 3.5.1.20261104 |
 > | TBD        | 3.5.1.20261028 |
 > | 6.0.7      | 3.5.1.20260809 |
 > | 5.0.3      | 3.4.0.20260301 |
@@ -258,6 +259,10 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
+#### 3.5.1.20261104 - 2026-11-04 | Emscripten TBD
+
+- Merged PR [GH#33](https://github.com/pongasoft/emscripten-glfw/pull/33): _Add missing library includes for LLVM 23 libc++_ (thanks aheejin)
+
 #### 3.5.1.20261028 - 2026-10-28 | Emscripten TBD
 
 - Implemented [GH#32](https://github.com/pongasoft/emscripten-glfw/issues/32)
@@ -511,13 +516,13 @@ Release Notes
 #### wip-0.5.0 - 2024/01/12
 
 - Added support for resizable canvas (`glfwWindowHintString(GLFW_EMSCRIPTEN_CANVAS_RESIZE_SELECTOR, "#canvas2-container")` 
-  from c/c++ code or `Module.glfwSetCanvasResizableSelector('#canvas2', '#canvas2-container')` from javascript) 
+  from c/c++ code or `Module.glfwSetCanvasResizableSelector('#canvas2', '#canvas2-container')` from JavaScript) 
 - Added support fo visibility (`glfwShowWindow` and `glfwHideWindow`)
 - Added support for `GLFW_FOCUS_ON_SHOW` window hint/attribute
 - Added support for dynamic Hi DPI Awareness (`GLFW_SCALE_FRAMEBUFFER` can be used in `glfwSetWindowAttrib`)
 - Added support for "sticky" mouse button and keyboard
 - Added support for window size constraints (`glfwSetWindowSizeLimits` and `glfwSetWindowAspectRatio`)
-- Added support for providing a callback function in javascript to be notified when a window is created (`Module.glfwOnWindowCreated`)
+- Added support for providing a callback function in JavaScript to be notified when a window is created (`Module.glfwOnWindowCreated`)
 
 #### wip-0.4.0 - 2024/01/03
 
