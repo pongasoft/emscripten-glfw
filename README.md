@@ -5,13 +5,13 @@ This project is an Emscripten port of GLFW written in C++ for the web/wasm platf
 The currently supported GLFW API is 3.5.1.
 
 [![emscripten - TBD](https://img.shields.io/badge/emscripten-TBD-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.5.1.20261104](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261104-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![contrib.glfw3 - 3.5.1.20261109](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261109-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.5.1](https://img.shields.io/badge/GLFW-3.5.1-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Compiles](https://github.com/pongasoft/emscripten-glfw/actions/workflows/main.yml/badge.svg)
 
-[![emscripten - 6.0.7](https://img.shields.io/badge/emscripten-6.0.7-blue)](https://emscripten.org)
-[![contrib.glfw3 - 3.5.1.20260809](https://img.shields.io/badge/contrib.glfw3-3.5.1.20260809-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
+[![emscripten - 7.0.0](https://img.shields.io/badge/emscripten-7.0.0-blue)](https://emscripten.org)
+[![contrib.glfw3 - 3.5.1.20261104](https://img.shields.io/badge/contrib.glfw3-3.5.1.20261104-blue)](https://github.com/pongasoft/emscripten-glfw/releases/latest)
 [![GLFW - 3.5.1](https://img.shields.io/badge/GLFW-3.5.1-blue)](https://www.glfw.org/)
 [![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -218,8 +218,9 @@ emcc --use-port=contrib.glfw3:disableWarning=true:disableMultiWindow=true main.c
 > #### Note about availability in Emscripten
 > | Emscripten | this port      |
 > |------------|----------------|
-> | TBD        | 3.5.1.20261104 |
-> | TBD        | 3.5.1.20261028 |
+> | TBD        | 3.5.1.20261109 |
+> | 7.0.0      | 3.5.1.20261104 |
+> | 7.0.0      | 3.5.1.20261028 |
 > | 6.0.7      | 3.5.1.20260809 |
 > | 5.0.3      | 3.4.0.20260301 |
 > | 4.0.23     | 3.4.0.20251230 |
@@ -259,11 +260,18 @@ Check the [Building](docs/Building.md) page for details on how to build this pro
 
 Release Notes
 -------------
-#### 3.5.1.20261104 - 2026-11-04 | Emscripten TBD
+#### 3.5.1.20261109 - 2026-11-09 | Emscripten TBD
+
+- Added optional `windowFeatures` argument to `emscripten::glfw3::OpenURL` with a default of `"noopener"` for 
+  security reasons. See [GH#34](https://github.com/pongasoft/emscripten-glfw/issues/34) for details.
+- Added C function `emscripten_glfw_open_url_ex` with an extra `windowFeatures` argument
+- The C function `emscripten_glfw_open_url` now delegates to `emscripten_glfw_open_url_ex` with a default value of `"noopener"`
+
+#### 3.5.1.20261104 - 2026-11-04 | Emscripten 7.0.0
 
 - Merged PR [GH#33](https://github.com/pongasoft/emscripten-glfw/pull/33): _Add missing library includes for LLVM 23 libc++_ (thanks aheejin)
 
-#### 3.5.1.20261028 - 2026-10-28 | Emscripten TBD
+#### 3.5.1.20261028 - 2026-10-28 | Emscripten 7.0.0
 
 - Implemented [GH#32](https://github.com/pongasoft/emscripten-glfw/issues/32)
   - Added a way to disable autofocus on mouse down (`emscripten::glfw3::SetFocusOnMouseDown` extension function) 
