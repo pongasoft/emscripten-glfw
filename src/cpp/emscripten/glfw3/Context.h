@@ -108,7 +108,7 @@ public:
   browser_key_fun_t getBrowserKeyCallback() const { return fBrowserKeyCallback; }
 
   // misc
-  void openURL(std::string_view url, std::optional<std::string_view> target);
+  void openURL(std::string_view url, std::optional<std::string_view> target, std::optional<std::string_view> windowFeatures);
   bool isRuntimePlatformApple() const;
 
 public:

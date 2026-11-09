@@ -48,7 +48,7 @@ GLFWwindow *emglfw3c_get_pointer_lock_window();
 int emglfw3w_init(GLFWwindow *iWindow, char const *iCanvasSelector);
 void emglfw3w_on_created(GLFWwindow *iWindow);
 void emglfw3c_set_clipboard_string(char const *iContent);
-void emglfw3c_open_url(char const *, char const *);
+void emglfw3c_open_url(char const *, char const *, char const *);
 bool emglfw3c_is_runtime_platform_apple();
 void emscripten_glfw3_create_custom_cursor(GLFWcursor *iCursor, int iWidth, int iHeight, unsigned char *iPixels);
 void emscripten_glfw3_destroy_custom_cursor(GLFWcursor *iCursor);
@@ -1264,9 +1264,9 @@ char const *Context::getClipboardString()
 //------------------------------------------------------------------------
 // Context::openURL
 //------------------------------------------------------------------------
-void Context::openURL(std::string_view url, std::optional<std::string_view> target)
+void Context::openURL(std::string_view url, std::optional<std::string_view> target, std::optional<std::string_view> windowFeatures)
 {
-  emglfw3c_open_url(url.data(), target ? target->data() : nullptr);
+  emglfw3c_open_url(url.data(), target ? target->data() : nullptr, windowFeatures ? windowFeatures->data() : nullptr);
 }
 
 //------------------------------------------------------------------------

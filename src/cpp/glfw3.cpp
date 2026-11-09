@@ -1282,9 +1282,9 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window)
 }
 
 //------------------------------------------------------------------------
-// emscripten_glfw_get_clipboard_string
+// emscripten_glfw_open_url_ex
 //------------------------------------------------------------------------
-void emscripten_glfw_open_url(char const *url, char const *target)
+void emscripten_glfw_open_url_ex(char const *url, char const *target, char const *windowFeatures)
 {
   if(!url)
   {
@@ -1294,7 +1294,17 @@ void emscripten_glfw_open_url(char const *url, char const *target)
 
   auto context = getContext();
   if(context)
-    context->openURL(url, target == nullptr ? std::nullopt : std::optional<std::string_view>(target));
+    context->openURL(url,
+                     target == nullptr ? std::nullopt : std::optional<std::string_view>(target),
+                     windowFeatures == nullptr ? std::nullopt : std::optional<std::string_view>(windowFeatures));
+}
+
+//------------------------------------------------------------------------
+// emscripten_glfw_open_url
+//------------------------------------------------------------------------
+void emscripten_glfw_open_url(char const *url, char const *target)
+{
+  emscripten_glfw_open_url_ex(url, target, "noopener");
 }
 
 //------------------------------------------------------------------------
@@ -1474,11 +1484,11 @@ browser_key_fun_t AddBrowserKeyCallback(browser_key_fun_t callback)
 //------------------------------------------------------------------------
 // OpenURL
 //------------------------------------------------------------------------
-void OpenURL(std::string_view url, std::optional<std::string_view> target)
+void OpenURL(std::string_view url, std::optional<std::string_view> target, std::optional<std::string_view> windowFeatures)
 {
   auto context = getContext();
   if(context)
-    context->openURL(url, target);
+    context->openURL(url, target, windowFeatures);
 }
 
 //------------------------------------------------------------------------

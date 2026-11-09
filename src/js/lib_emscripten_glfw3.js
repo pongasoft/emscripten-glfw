@@ -809,13 +809,14 @@ let emscripten_glfw3_impl = {
 
   // emglfw3c_open_url
   emglfw3c_open_url__proxy: 'sync',
-  emglfw3c_open_url__sig: 'vpp',
-  emglfw3c_open_url: (url, target) => {
+  emglfw3c_open_url__sig: 'vppp',
+  emglfw3c_open_url: (url, target, windowFeatures) => {
     if(url) {
       url = UTF8ToString(url);
       target = target ? UTF8ToString(target) : null;
+      windowFeatures = windowFeatures ? UTF8ToString(windowFeatures) : null;
       GLFW3.deferAction(() => {
-        window.open(url, target);
+        window.open(url, target, windowFeatures);
       });
     }
   },

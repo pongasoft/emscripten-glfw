@@ -152,10 +152,15 @@ std::pair<int, int> GetSuperPlusKeyTimeouts();
 void SetSuperPlusKeyTimeouts(int timeoutMilliseconds, int repeatTimeoutMilliseconds);
 
 /**
- * Convenient call to open a url.
+ * Convenient call to open a url. `windowFeatures` was added as an optional argument after the creation of this API
+ * with a default value of "noopener" for security reasons. It can be changed to provide any other window features.
  *
- * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options */
-void OpenURL(std::string_view url, std::optional<std::string_view> target = std::nullopt);
+ * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options
+ * @param windowFeatures an optional comma separated list of window features (described in the same documentation)
+ */
+void OpenURL(std::string_view url,
+             std::optional<std::string_view> target = std::nullopt,
+             std::optional<std::string_view> windowFeatures = "noopener");
 
 /**
  * @return `true` if running on an Apple platform only */
@@ -309,7 +314,15 @@ bool emscripten_glfw_is_window_fullscreen(GLFWwindow *window);
 int emscripten_glfw_request_fullscreen(GLFWwindow *window, bool lockPointer, bool resizeCanvas);
 
 /**
- * Convenient call to open a url
+ * Convenient call to open a url.
+ *
+ * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options
+ *               (`nullptr` is valid) */
+void emscripten_glfw_open_url_ex(char const *url, char const *target, char const *windowFeatures);
+
+/**
+ * Convenient call to open a url. This function is a wrapper around `emscripten_glfw_open_url_ex` with
+ * `windowFeatures` set to `"noopener"`. Kept for backwards compatibility.
  *
  * @param target check https://developer.mozilla.org/en-US/docs/Web/API/Window/open for valid options
  *               (`nullptr` is valid) */
